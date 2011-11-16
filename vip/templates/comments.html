@@ -13,7 +13,15 @@
     <div id="ctxtnav" class="nav"></div>
 
     <div id="content" class="helloworld">
-      <h1>Hello World!</h1>
+        <h1>Code Comments</h1>
+        <h2>$comments</h2>
+        <ul>
+            <li py:for="id, version, text, path, revision, line, author, time in comments">
+                <p>$text</p>
+                <a href="${href.browser(None, path, rev=revision)}#L$line">$path</a>
+            </li>
+        </ul>
     </div>
+    <p>${}</p>
   </body>
 </html>
