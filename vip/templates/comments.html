@@ -16,13 +16,13 @@
         <h1>Code Comments</h1>
         <h2>$comments</h2>
         <ul>
-            <li py:for="id, version, text, path, revision, line, author, time, html in comments">
-                <p>$text</p>
-                <p>$html</p>
-                <a href="${href.browser(None, path, rev=revision)}#L$line">$path</a>
+            <li py:for="comment in comments">
+                <p>$comment.text</p>
+                <p>$comment.html</p>
+                <a href="${href.browser(None, comment.path, rev=comment.revision)}#L$comment.line">$comment.path</a>
             </li>
         </ul>
     </div>
-    <p>${}</p>
+    <p>$x</p>
   </body>
 </html>
