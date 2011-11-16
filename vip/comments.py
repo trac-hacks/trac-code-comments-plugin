@@ -1,8 +1,10 @@
 from trac.core import *
 from trac.web.chrome import INavigationContributor, ITemplateProvider, add_script, add_stylesheet
 from trac.web.main import IRequestHandler, IRequestFilter
-from trac.util import escape, Markup
+from trac.util import Markup
 from trac.versioncontrol.api import RepositoryManager
+from trac.wiki.formatter import format_to_html
+from trac.mimeview.api import Context
 
 class VIPComments(Component):
     implements(INavigationContributor, IRequestHandler, IRequestFilter, ITemplateProvider)
@@ -32,6 +34,8 @@ class VIPComments(Component):
             cursor = db.cursor()
             cursor.execute("SELECT * FROM vip_comments")
             data['comments'] = cursor.fetchall()
+        context = Context.from_request(req, 'wiki')
+        data['comments'] = [list(comment) + [format_to_html(self.env, context, comment[2])] for comment in data['comments']]
         return 'comments.html', data, None
 
     # ITemplateProvider methods
