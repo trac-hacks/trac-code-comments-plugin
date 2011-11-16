@@ -8,14 +8,14 @@ db_version = 1
 # Database schema
 schema = [
     Table('vip_comments', key=('id', 'version'))[
-        Column('id'),
+        Column('id', auto_increment=True),
         Column('version', type='int'),
         Column('text'),
         Column('path'),        
         Column('revision', type='int'),
         Column('line', type='int'),
         Column('author'),
-        Column('time'),
+        Column('time', type='int'),
     ],
 ]
 
