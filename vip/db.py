@@ -6,8 +6,8 @@ from trac.env import IEnvironmentSetupParticipant
 db_version = 1
 
 # Database schema
-schema = [
-    Table('vip_comments', key=('id', 'version'))[
+schema = {
+    'vip_comments': Table('vip_comments', key=('id', 'version'))[
         Column('id', auto_increment=True),
         Column('version', type='int'),
         Column('text'),
@@ -17,7 +17,7 @@ schema = [
         Column('author'),
         Column('time', type='int'),
     ],
-]
+}
 
 def to_sql(env, table):
     """ Convenience function to get the to_sql for the active connector."""
@@ -27,21 +27,19 @@ def to_sql(env, table):
 
 def create_tables(env, db):
     cursor = db.cursor()
-    for table in schema:
-        for stmt in to_sql(env, table):
+    for table_name in schema:
+        for stmt in to_sql(env, schema[table_name]):
             cursor.execute(stmt)
     cursor.execute("INSERT into system values ('vip_schema_version', %s)",
                         str(db_version))
 # Upgrades
-"""
 def upgrade_from_1_to_2(env, db):
-    cursor = db.cursor()
-    cursor.execute(...)
+    pass
 
 upgrade_map = {
         2: upgrade_from_1_to_2
     }
-"""
+
 
 class VIPSetup(Component):
     """Component that deals with database setup and upgrades."""
