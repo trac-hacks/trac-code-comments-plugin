@@ -20,6 +20,7 @@
                     <th>ID</th>
                     <th>Bundle?</th>
                     <th>Author</th>
+                    <th>Date</th>
                     <th>Path</th>
                     <th>Text</th>
                 </tr>
@@ -29,7 +30,8 @@
                 <tr class="${idx % 2 and 'odd' or 'even'}">
                     <td>$comment.id</td>
                     <td class="check"><input type="checkbox" id="bundle-$comment-id" checked=""/></td>
-                    <th>$comment.author</th>                    
+                    <th>$comment.author</th>
+                    <th>${dateinfo(comment.time)}</th>
                     <td><a href="${href.browser(None, comment.path, rev=comment.revision, codecomment=comment.id)}#L$comment.line">$comment.path<py:if test="comment.line">#$comment.line</py:if></a></td>
                     <td>$comment.html</td>
                 </tr>
