@@ -40,6 +40,7 @@ class VIPComments(Component):
     # IRequestFilter methods
     def pre_process_request(self, req, handler):
         add_script(req, 'vip/x.js')
+        add_stylesheet(req, 'vip/vip.css')
         return handler
 
     def post_process_request(self, req, template, data, content_type):
