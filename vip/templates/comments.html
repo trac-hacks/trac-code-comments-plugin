@@ -47,7 +47,7 @@
                     <td class="check"><input type="checkbox" id="bundle-$comment.id" /></td>
                     <th>$comment.author</th>
                     <th>${dateinfo(comment.time)}</th>
-                    <td><a href="${href.browser(None, comment.path, rev=comment.revision, codecomment=comment.id)}#L$comment.line">$comment.path<py:if test="comment.line">#$comment.line</py:if></a></td>
+                    <td><a href="${comment.href()}">$comment.path@$comment.revision<py:if test="comment.line">#$comment.line</py:if></a></td>
                     <td>$comment.html</td>
                 </tr>
             </py:for>

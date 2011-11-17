@@ -57,7 +57,8 @@ class BundleCommentsRedirect(Component):
     def process_request(self, req):
         text = ''
         for id in req.args['ids'].split(','):
-            text += str(id) + '\n'
+            comment = Comments(req, self.env).by_id(id)
+            text += '[' + comment.traclink()+' '+comment.path_revision_line()+']\n' + comment.text+'\n\n'
         req.redirect(req.href.newticket(description=text))
 
 # create ticket
