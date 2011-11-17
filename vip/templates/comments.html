@@ -14,14 +14,29 @@
 
     <div id="content" class="helloworld">
         <h1>Code Comments</h1>
-        <h2>$comments</h2>
-        <ul>
-            <li py:for="comment in comments">
-                <p>$comment.text</p>
-                <p>$comment.html</p>
-                <a href="${href.browser(None, comment.path, rev=comment.revision)}#L$comment.line">$comment.path</a>
-            </li>
-        </ul>
+        <table class="listing code-comments">
+            <thead>
+                <tr class="tarc-columns">
+                    <th>ID</th>
+                    <th>Bundle?</th>
+                    <th>Author</th>
+                    <th>Path</th>
+                    <th>Text</th>
+                </tr>
+            </thead>
+            <tbody>
+            <py:for each="idx, comment in enumerate(comments)">
+                <tr class="${idx % 2 and 'odd' or 'even'}">
+                    <td>$comment.id</td>
+                    <td class="check"><input type="checkbox" id="bundle-$comment-id" checked=""/></td>
+                    <th>$comment.author</th>                    
+                    <td><a href="${href.browser(None, comment.path, rev=comment.revision, codecomment=comment.id)}#L$comment.line">$comment.path<py:if test="comment.line">#$comment.line</py:if></a></td>
+                    <td>$comment.html</td>
+                </tr>
+            </py:for>
+            </tbody>
+            
+        </table>
     </div>
     <p>$x</p>
   </body>
