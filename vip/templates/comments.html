@@ -7,6 +7,20 @@
   <xi:include href="layout.html" />
   <head>
     <title>Helloworld</title>
+    <script type="text/javascript" charset="utf-8">/*<![CDATA[*/
+        jQuery(function($) {
+        	$('#send-to-ticket').click(function(e) {
+        	    e.preventDefault();
+                var ids = $('table.code-comments input:checked' ).map(function(i, e) {return e.id.replace('bundle-', '')}).get();
+                if (!ids.length) {
+                    alert("Please select comments to bundle.");
+                    return;
+                }
+                window.location = '${href('code-comments', 'bundle')}?ids=' + ids.join(',');
+        	});
+        });
+    /*]]>*/</script>
+    
   </head>
 
   <body>
@@ -14,6 +28,7 @@
 
     <div id="content" class="helloworld">
         <h1>Code Comments</h1>
+        <button id="send-to-ticket" type="submit">Send selected to ticket</button>
         <table class="listing code-comments">
             <thead>
                 <tr class="tarc-columns">
@@ -29,7 +44,7 @@
             <py:for each="idx, comment in enumerate(comments)">
                 <tr class="${idx % 2 and 'odd' or 'even'}">
                     <td>$comment.id</td>
-                    <td class="check"><input type="checkbox" id="bundle-$comment-id" checked=""/></td>
+                    <td class="check"><input type="checkbox" id="bundle-$comment.id" /></td>
                     <th>$comment.author</th>
                     <th>${dateinfo(comment.time)}</th>
                     <td><a href="${href.browser(None, comment.path, rev=comment.revision, codecomment=comment.id)}#L$comment.line">$comment.path<py:if test="comment.line">#$comment.line</py:if></a></td>

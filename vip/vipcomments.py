@@ -5,7 +5,7 @@ from trac.util import Markup
 from trac.versioncontrol.api import RepositoryManager
 from vip.comments import Comments
 
-class VIPComments(Component):
+class CodeComments(Component):
     implements(INavigationContributor, IRequestHandler, IRequestFilter, ITemplateProvider)
 
     href = 'code-comments'
@@ -20,7 +20,7 @@ class VIPComments(Component):
 
     # IRequestHandler methods
     def match_request(self, req):
-        return req.path_info.startswith('/' + self.href)
+        return req.path_info == '/' + self.href
 
     def process_request(self, req):
         data = {}
@@ -46,6 +46,19 @@ class VIPComments(Component):
     def post_process_request(self, req, template, data, content_type):
         return template, data, content_type
 
+
+class BundleCommentsRedirect(Component):
+    implements(IRequestHandler)
+
+    # IRequestHandler methods
+    def match_request(self, req):
+        return req.path_info == '/' + CodeComments.href + '/bundle'
+
+    def process_request(self, req):
+        text = ''
+        for id in req.args['ids'].split(','):
+            text += str(id) + '\n'
+        req.redirect(req.href.newticket(description=text))
 
 # create ticket
 # http://trac-hacks.org/browser/xmlrpcplugin/trunk/tracrpc/ticket.py#L138
