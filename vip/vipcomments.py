@@ -39,7 +39,7 @@ class CodeComments(Component):
 
     # IRequestFilter methods
     def pre_process_request(self, req, handler):
-        add_script(req, 'vip/x.js')
+        add_script(req, 'vip/code-comments.js')
         add_stylesheet(req, 'vip/vip.css')
         return handler
 

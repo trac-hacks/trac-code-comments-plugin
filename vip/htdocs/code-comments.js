@@ -1,0 +1,1 @@
+/* Truth will live here (by itself, of course, it has now friends) */
