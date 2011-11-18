@@ -38,6 +38,7 @@
                     <th>Date</th>
                     <th>Path</th>
                     <th>Text</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -49,6 +50,12 @@
                     <th>${dateinfo(comment.time)}</th>
                     <td><a href="${comment.href()}">$comment.path@$comment.revision<py:if test="comment.line">#$comment.line</py:if></a></td>
                     <td>$comment.html</td>
+                    <td>
+                        <form action="${href('code-comments', 'delete')}" method="post">
+                            <input type="hidden" name="id" value="$comment.id" />
+                            <input type="submit" name="delete" value="Delete" />
+                        </form>
+                    </td>
                 </tr>
             </py:for>
             </tbody>

@@ -6,7 +6,7 @@ from trac.versioncontrol.api import RepositoryManager
 from vip.comments import Comments
 
 class CodeComments(Component):
-    implements(INavigationContributor, IRequestHandler, IRequestFilter, ITemplateProvider)
+    implements(INavigationContributor, IRequestFilter, ITemplateProvider)
 
     href = 'code-comments'
 
@@ -17,16 +17,6 @@ class CodeComments(Component):
     def get_navigation_items(self, req):
         yield 'mainnav', 'code-comments', Markup('<a href="%s">Code Comments</a>' % (
                  req.href('code-comments') ) )
-
-    # IRequestHandler methods
-    def match_request(self, req):
-        return req.path_info == '/' + self.href
-
-    def process_request(self, req):
-        data = {}
-        data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
-        data['comments'] = Comments(req, self.env).all()
-        return 'comments.html', data, None
 
     # ITemplateProvider methods
     def get_templates_dirs(self):
@@ -46,13 +36,34 @@ class CodeComments(Component):
     def post_process_request(self, req, template, data, content_type):
         return template, data, content_type
 
+class ListComments(CodeComments):
+    # IRequestHandler methods
+    def match_request(self, req):
+        return req.path_info == '/' + self.href
 
-class BundleCommentsRedirect(Component):
+    def process_request(self, req):
+        data = {}
+        data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
+        data['comments'] = Comments(req, self.env).all()
+        return 'comments.html', data, None
+    
+
+class DeleteComment(CodeComments):
+    implements(IRequestHandler)
+    # IRequestHandler methods
+    def match_request(self, req):
+        return req.path_info == '/' + self.href + '/delete' and req.method == 'POST'
+
+    def process_request(self, req):
+        #TODO: delete comment
+        req.redirect(req.href())
+
+class BundleCommentsRedirect(CodeComments):
     implements(IRequestHandler)
 
     # IRequestHandler methods
     def match_request(self, req):
-        return req.path_info == '/' + CodeComments.href + '/bundle'
+        return req.path_info == '/' + self.href + '/bundle'
 
     def process_request(self, req):
         text = ''
@@ -60,8 +71,3 @@ class BundleCommentsRedirect(Component):
             comment = Comments(req, self.env).by_id(id)
             text += '[' + comment.traclink()+' '+comment.path_revision_line()+']\n' + comment.text+'\n\n'
         req.redirect(req.href.newticket(description=text))
-
-# create ticket
-# http://trac-hacks.org/browser/xmlrpcplugin/trunk/tracrpc/ticket.py#L138
-
-# req.authname
