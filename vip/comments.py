@@ -1,5 +1,7 @@
 from trac.wiki.formatter import format_to_html
 from trac.mimeview.api import Context
+from trac.util.datefmt import format_datetime
+from time import gmtime, strftime
 from vip import db
 
 class Comment:
@@ -21,6 +23,9 @@ class Comment:
     
     def traclink(self):
         return 'source:' + self.path_revision_line()
+    
+    def formatted_time(self):
+        return strftime('%b, %d %Y %H:%M:%S', gmtime(self.time))
         
 
 class Comments:
@@ -40,7 +45,7 @@ class Comments:
         return [self.comment_from_row(row) for row in result['comments']]
 
     def all(self):
-        return self.query("SELECT * FROM vip_comments")
+        return self.query("SELECT * FROM vip_comments ORDER BY time DESC")
     
     def by_id(self, id):
-        return self.query("SELECT * FROM vip_comments WHERE id=%s", [id])[0]
+        return self.query("SELECT * FROM vip_comments WHERE id=%s ORDER BY time DESC", [id])[0]
