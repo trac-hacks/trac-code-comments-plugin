@@ -1,5 +1,5 @@
 from trac.core import *
-from trac.web.chrome import INavigationContributor, ITemplateProvider, add_script, add_stylesheet
+from trac.web.chrome import INavigationContributor, ITemplateProvider, add_script, add_stylesheet, add_notice
 from trac.web.main import IRequestHandler, IRequestFilter
 from trac.util import Markup
 from trac.versioncontrol.api import RepositoryManager
@@ -46,17 +46,29 @@ class ListComments(CodeComments):
         data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
         data['comments'] = Comments(req, self.env).all()
         return 'comments.html', data, None
-    
 
-class DeleteComment(CodeComments):
+class DeleteCommentForm(CodeComments):
     implements(IRequestHandler)
+
     # IRequestHandler methods
     def match_request(self, req):
-        return req.path_info == '/' + self.href + '/delete' and req.method == 'POST'
+        return req.path_info == '/' + self.href + '/delete'
 
     def process_request(self, req):
-        #TODO: delete comment
-        req.redirect(req.href())
+        return self.form(req) if req.method == 'GET' else self.delete(req)
+        
+    def form(self, req):
+        data = {}
+        referrer = req.get_header('Referer')
+        data['comment'] = Comments(req, self.env).by_id(req.args['id'])
+        data['return_to'] = referrer
+        return 'delete.html', data, None
+        
+    def delete(self, req):
+        comment = Comments(req, self.env).by_id(req.args['id'])
+        comment.delete()
+        add_notice(req, 'Comment deleted.')
+        req.redirect(req.args['return_to'] or req.href())
 
 class BundleCommentsRedirect(CodeComments):
     implements(IRequestHandler)

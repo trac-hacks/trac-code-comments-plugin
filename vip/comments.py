@@ -31,7 +31,11 @@ class Comment:
     def formatted_time(self):
         return strftime('%b, %d %Y %H:%M:%S', gmtime(self.time))
     
-        
+    def delete(self):
+        @self.env.with_transaction()
+        def delete_comment(db):
+            cursor = db.cursor()
+            cursor.execute("DELETE FROM vip_comments WHERE id=%s", [self.id])
 
 class Comments:
     def __init__(self, req, env):
@@ -40,7 +44,7 @@ class Comments:
     def comment_from_row(self, row):
         return Comment(self.req, self.env, row)
 
-    def query(self, *query):
+    def select(self, *query):
         result = {}
         @self.env.with_transaction()
         def get_comments(db):
@@ -50,7 +54,7 @@ class Comments:
         return [self.comment_from_row(row) for row in result['comments']]
 
     def all(self):
-        return self.query("SELECT * FROM vip_comments ORDER BY time DESC")
+        return self.select("SELECT * FROM vip_comments ORDER BY time DESC")
     
     def by_id(self, id):
-        return self.query("SELECT * FROM vip_comments WHERE id=%s ORDER BY time DESC", [id])[0]
+        return self.select("SELECT * FROM vip_comments WHERE id=%s ORDER BY time DESC", [id])[0]
