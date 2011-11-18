@@ -46,7 +46,7 @@
                     <td class="check"><input type="checkbox" id="bundle-$comment.id" /></td>
                     <th>$comment.author</th>
                     <th>${comment.formatted_time()}</th>
-                    <td><a href="${comment.href()}">$comment.path@$comment.revision<py:if test="comment.line">#$comment.line</py:if></a></td>
+                    <td>${comment.path_link_tag()}</td>
                     <td>$comment.html</td>
                     <td>
                         <form action="${href('code-comments', 'delete')}" method="post">

@@ -3,6 +3,7 @@ from trac.mimeview.api import Context
 from trac.util.datefmt import format_datetime
 from time import gmtime, strftime
 from vip import db
+from trac.util import Markup
 
 class Comment:
     columns = [column.name for column in db.schema['vip_comments'].columns]
@@ -21,11 +22,15 @@ class Comment:
     def path_revision_line(self):
         return '%s@%s%s' % (self.path, self.revision, '#L'+str(self.line) if self.line else '')        
     
-    def traclink(self):
+    def trac_link(self):
         return 'source:' + self.path_revision_line()
+    
+    def path_link_tag(self):
+        return Markup('<a href="%s">%s</a>' % (self.href(), self.path_revision_line()))
     
     def formatted_time(self):
         return strftime('%b, %d %Y %H:%M:%S', gmtime(self.time))
+    
         
 
 class Comments:
