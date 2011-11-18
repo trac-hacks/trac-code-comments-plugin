@@ -24,9 +24,7 @@
   </head>
 
   <body>
-    <div id="ctxtnav" class="nav"></div>
-
-    <div id="content" class="helloworld">
+    <div id="content">
         <h1>Code Comments</h1>
         <button id="send-to-ticket" type="submit">Send selected to ticket</button>
         <table class="listing code-comments">
@@ -47,7 +45,7 @@
                     <td>$comment.id</td>
                     <td class="check"><input type="checkbox" id="bundle-$comment.id" /></td>
                     <th>$comment.author</th>
-                    <th>${dateinfo(comment.time)}</th>
+                    <th>${comment.formatted_time()}</th>
                     <td><a href="${comment.href()}">$comment.path@$comment.revision<py:if test="comment.line">#$comment.line</py:if></a></td>
                     <td>$comment.html</td>
                     <td>
@@ -62,6 +60,5 @@
             
         </table>
     </div>
-    <p>$x</p>
   </body>
 </html>
