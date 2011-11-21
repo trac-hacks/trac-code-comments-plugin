@@ -1,12 +1,12 @@
 from trac.core import *
-from trac.web.chrome import INavigationContributor, ITemplateProvider, add_script, add_stylesheet, add_notice
+from trac.web.chrome import INavigationContributor, ITemplateProvider, add_script, add_script_data, add_stylesheet, add_notice
 from trac.web.main import IRequestHandler, IRequestFilter
 from trac.util import Markup
 from trac.versioncontrol.api import RepositoryManager
 from vip.comments import Comments
 
 class CodeComments(Component):
-    implements(INavigationContributor, IRequestFilter, ITemplateProvider)
+    implements(INavigationContributor, ITemplateProvider, IRequestFilter)
 
     href = 'code-comments'
 
@@ -29,14 +29,42 @@ class CodeComments(Component):
 
     # IRequestFilter methods
     def pre_process_request(self, req, handler):
-        add_script(req, 'vip/code-comments.js')
-        add_stylesheet(req, 'vip/vip.css')
         return handler
 
     def post_process_request(self, req, template, data, content_type):
+        add_stylesheet(req, 'vip/vip.css')
         return template, data, content_type
 
+class JSDataForRequests(CodeComments):
+    implements(IRequestFilter)
+
+    # IRequestFilter methods
+    def pre_process_request(self, req, handler):
+        return handler
+
+    def post_process_request(self, req, template, data, content_type):
+        return_value = template, data, content_type
+        if req.path_info.startswith('/changeset/'):
+            data = self.changeset_js_data(data)
+        elif req.path_info.startswith('/browser'):
+            data = self.browser_js_data(data)
+        else:
+            return return_value
+
+        add_script(req, 'vip/code-comments.js')
+        add_script_data(req, {'CodeCommentsData': {'path': req.path_info}})
+        return return_value
+
+    def changeset_js_data(self, data):
+        pass
+
+    def browser_js_data(self, data):
+        pass
+
+
 class ListComments(CodeComments):
+    implements(IRequestHandler)
+
     # IRequestHandler methods
     def match_request(self, req):
         return req.path_info == '/' + self.href
