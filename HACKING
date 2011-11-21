@@ -1,0 +1,55 @@
+YOU WANT TO CONTRIBUTE BUT YOU DON'T KNOW HOW? NO MORE SUCH EXCUSES
+
+0. Install Trac
+
+On Mac OS X this is as easy as:
+
+ # easy_install Trac
+
+1. Create a test Trac install somewhere:
+
+ $ trac-admin <trac-name> initenv
+
+The default offered values are good.
+
+This will create a <trac-name> directory with the Trac install in the
+current directory.
+
+2. Create a local SVN repo:
+
+ $ svnadmin create <repo-name>
+
+3. Checkout the repo and add a dummy file:
+
+ $ svn co file://<full-path-to-svn-repo>
+
+4. Add the repo in the trac.ini:
+
+ $ $EDITOR <trac-name>/conf/trac.ini
+
+Change:
+
+repository_dir = <full-path-to-svn-repo>
+repository_type = svn
+
+5. Create htpasswd file for Trac auth:
+
+ $ htpasswd -c <auth-file-name> <desired-username>
+
+Remember the file location.
+
+6. Run trac server:
+
+ $ tracd -s -r --port 8000 --basic-auth='trac,<full-path-to-auth-file-name>,Whatever' <path-to-trac-folder>
+
+You should now have a working vanilla Trac at http://localhost:8000/, where you can log in and be an admin.
+
+7. Checkout the plugin in R/W mode
+
+ $ git clone git@github.com:Automattic/vip-trac-code-comments.git
+
+8. Deploy the plugin in development mode
+
+ $ python setup.py develop -mxd <path-to-trac>/plugins
+
+9. Restart trac and enjoy!
