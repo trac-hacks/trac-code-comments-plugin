@@ -50,16 +50,16 @@ class JSDataForRequests(CodeComments):
             data = self.browser_js_data(data)
         else:
             return return_value
-
+        
         add_script(req, 'vip/code-comments.js')
-        add_script_data(req, {'CodeCommentsData': {'path': req.path_info}})
+        add_script_data(req, {'CodeComments': data})
         return return_value
 
     def changeset_js_data(self, data):
         pass
 
     def browser_js_data(self, data):
-        pass
+        return {'page': 'browser', 'args': {'revision': data['rev'], 'path': data['path']}}
 
 
 class ListComments(CodeComments):
