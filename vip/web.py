@@ -56,14 +56,14 @@ class DeleteCommentForm(CodeComments):
 
     def process_request(self, req):
         return self.form(req) if req.method == 'GET' else self.delete(req)
-        
+
     def form(self, req):
         data = {}
         referrer = req.get_header('Referer')
         data['comment'] = Comments(req, self.env).by_id(req.args['id'])
         data['return_to'] = referrer
         return 'delete.html', data, None
-        
+
     def delete(self, req):
         comment = Comments(req, self.env).by_id(req.args['id'])
         comment.delete()
