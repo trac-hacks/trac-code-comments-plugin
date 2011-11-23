@@ -2,9 +2,6 @@ jQuery(function($) {
 	window.Comment = Backbone.Model.extend({
 	});
 
-	window.Comment = Backbone.Model.extend({
-	});
-
 	window.CommentsList = Backbone.Collection.extend({
 		model: Comment,
 		url: '/code-comments/comments',
