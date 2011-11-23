@@ -38,6 +38,10 @@ repository_type = svn
 
 Remember the file location.
 
+6. Add yourself as admin:
+ 
+ $ $ trac-admin <trac-name> permission add <username> TRAC_ADMIN
+
 6. Run trac server:
 
  $ tracd -s -r --port 8000 --basic-auth='trac,<full-path-to-auth-file-name>,Whatever' <path-to-trac-folder>
@@ -52,4 +56,4 @@ You should now have a working vanilla Trac at http://localhost:8000/, where you 
 
  $ python setup.py develop -mxd <path-to-trac>/plugins
 
-9. Restart trac and enjoy!
+9. Go to the Admin section in Trac, then Plugins and enable all the components of the TracCodeComments plugin
