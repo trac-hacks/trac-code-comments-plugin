@@ -1,9 +1,10 @@
+import json
 from trac.core import *
 from trac.web.chrome import INavigationContributor, ITemplateProvider, add_script, add_script_data, add_stylesheet, add_notice
 from trac.web.main import IRequestHandler, IRequestFilter
 from trac.util import Markup
 from trac.versioncontrol.api import RepositoryManager
-from code_comments.comments import Comments
+from code_comments.comments import Comments, CommentJSONEncoder
 
 class CodeComments(Component):
     implements(INavigationContributor, ITemplateProvider, IRequestFilter)
@@ -40,7 +41,7 @@ class CodeComments(Component):
 
 class JSDataForRequests(CodeComments):
     implements(IRequestFilter)
-    
+
     def __init__(self):
         self.js_data = {}
         self.js_data['templates'] = {};
@@ -52,20 +53,20 @@ class JSDataForRequests(CodeComments):
     def post_process_request(self, req, template, data, content_type):
         js_data = {}
         js_data['templates'] = {}
-        
+
         return_value = template, data, content_type
-        
+
         if req.path_info.startswith('/changeset/'):
             js_data.update(self.changeset_js_data(data))
         elif req.path_info.startswith('/browser'):
             js_data.update(self.browser_js_data(data))
         else:
             return return_value
-        
+
         js_data['templates'].update(self.template_js_data('top-comments-block'))
         js_data['templates'].update(self.template_js_data('top-comment'))
         js_data['templates'].update(self.template_js_data('side-comment'))
-        
+
         add_script(req, 'code-comments/json2.js')
         add_script(req, 'code-comments/underscore-min.js')
         add_script(req, 'code-comments/backbone-min.js')
@@ -139,3 +140,24 @@ class BundleCommentsRedirect(CodeComments):
 
 """.lstrip() % {'link': comment.trac_link(), 'path': comment.path_revision_line(), 'text': comment.text}
         req.redirect(req.href.newticket(description=text))
+
+class CommentsREST(CodeComments):
+    implements(IRequestHandler)
+
+    # IRequestHandler methods
+    def match_request(self, req):
+        return req.path_info.startswith('/' + self.href + '/comments')
+
+    def return_json(self, req, data, code=200):
+        content = json.dumps(data, cls=CommentJSONEncoder)
+        req.send_response(code)
+        req.send_header('Content-Type', 'application/json')
+        req.send_header('Content-Length', len(content))
+        req.end_headers()
+        req.write(content)
+
+    def process_request(self, req):
+        #TODO: catch errors
+        if '/' + self.href + '/comments' == req.path_info:
+            if 'GET' == req.method:
+                self.return_json(req, Comments(req, self.env).search(req.args))
