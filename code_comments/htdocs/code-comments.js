@@ -51,7 +51,6 @@ jQuery(function($) {
 
         addOne: function(comment) {
             var view = new TopCommentView({model: comment});
-            window.x =view.render().el;
             this.$("ul").append(view.render().el);
         },
         addAll: function() {
