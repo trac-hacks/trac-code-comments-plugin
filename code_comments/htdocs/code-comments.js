@@ -1,38 +1,74 @@
 jQuery(function($) {
-	var console = window.console || {log: function() {}};
+    window.Comment = Backbone.Model.extend({
+    });
 
-	var page_name = CodeComments.page;
-	var args = CodeComments.args;
-	var pages = {};
-
-	var dispatch = function() {
-		if (pages[page_name]) {
-			var page = new pages[page_name](args);
-			page.init();
-		} else {
-			console.log("Unknown page: "+page_name);
-		}		
-	}
-
-	pages['browser'] = function(args) {
-		
-		this.init = function() {
-			getComments(args.path, args.revision, 0, this.loadTopComments);
-			getComments(args.path, args.revision, null, this.loadLineComments);
-		}
-		
-		this.loadTopComments = function(comments) {
-			console.log(comments);
-		}
-		
-		this.loadLineComments = function(comments) {
-			
-		}
-	}	
-	
-	var getComments = function(path, revision, line, callback) {
-		callback([{id: 5, html: "Wonka <code>wonka</code>", text: "Wonka {{{wonka}}}", path: '', revision: 2, line: 0, author: 'nb', time: 1321879157}]);
-	}
-	
-	dispatch();
+    window.Comment = Backbone.Model.extend({
+    });
+    
+    window.CommentsList = Backbone.Collection.extend({
+        model: Comment,
+        localStorage: new Store("comments"),
+        comparator: function(comment) {
+            return comment.get('time');
+        }
+    });
+    window.TopComments = new CommentsList;
+    
+    window.CommentView = Backbone.View.extend({
+        tagName: 'li',
+        template:  _.template($('#comment-template').html()),
+        events: {
+           'click .delete': 'del', 
+        },
+        initialize: function() {
+           this.model.bind('change', this.render, this);
+           this.model.bind('destroy', this.remove, this);
+        },                
+        render: function() {
+           $(this.el).html(this.template(this.model.toJSON()));
+           return this;
+        },
+        remove: function() {
+           $(this.el).remove();
+         },
+         del: function() {
+            this.model.destroy();
+         }
+    });
+    
+    window.TopCommentsView = Backbone.View.extend({
+        el: $('#top-comments'),
+        
+        events: {
+            'click #add-comment': 'createOnAddButton'
+        },
+        
+        initialize: function() {
+            this.textarea = this.$('#comment-text');
+            console.log(this.textarea);
+            TopComments.bind('add',   this.addOne, this);
+            TopComments.bind('reset', this.addAll, this);                    
+            TopComments.fetch();
+        },
+        
+        addOne: function(comment) {
+            var view = new CommentView({model: comment});
+            window.x =view.render().el;
+            console.log(this.$);
+            console.log($);
+            console.log(this);
+            this.$("ul").append(view.render().el);
+        },
+        addAll: function() {
+            TopComments.each(this.addOne);
+        },
+        createOnAddButton: function(e) {
+            var text = this.textarea.val();
+            var author = 'nb';
+            if (!text) return;
+            TopComments.create({text: text, html: text, author: 'nb', permalink: 'http://dir.bg/',formatted_date: 'Nov 23rd, 2011', time: 5});
+        }
+    });
+    
+    window.TopCommentsBlock = new TopCommentsView;	
 });

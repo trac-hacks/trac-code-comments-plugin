@@ -20,8 +20,11 @@ class CodeComments(Component):
 
     # ITemplateProvider methods
     def get_templates_dirs(self):
+        return [self.get_template_dir()]
+
+    def get_template_dir(self):
         from pkg_resources import resource_filename
-        return [resource_filename(__name__, 'templates')]
+        return resource_filename(__name__, 'templates')
 
     def get_htdocs_dirs(self):
         from pkg_resources import resource_filename
@@ -37,29 +40,50 @@ class CodeComments(Component):
 
 class JSDataForRequests(CodeComments):
     implements(IRequestFilter)
+    
+    def __init__(self):
+        self.js_data = {}
+        self.js_data['templates'] = {};
 
     # IRequestFilter methods
     def pre_process_request(self, req, handler):
         return handler
 
     def post_process_request(self, req, template, data, content_type):
+        js_data = {}
+        js_data['templates'] = {}
+        
         return_value = template, data, content_type
+        
         if req.path_info.startswith('/changeset/'):
-            data = self.changeset_js_data(data)
+            js_data.update(self.changeset_js_data(data))
         elif req.path_info.startswith('/browser'):
-            data = self.browser_js_data(data)
+            js_data.update(self.browser_js_data(data))
         else:
             return return_value
         
+        js_data['templates'].update(self.template_js_data('top-comments-block'))
+        js_data['templates'].update(self.template_js_data('top-comment'))
+        js_data['templates'].update(self.template_js_data('side-comment'))
+        
+        add_script(req, 'code-comments/json2.js')
+        add_script(req, 'code-comments/underscore-min.js')
+        add_script(req, 'code-comments/backbone-min.js')
         add_script(req, 'code-comments/code-comments.js')
-        add_script_data(req, {'CodeComments': data})
+        add_script_data(req, {'CodeComments': js_data})
         return return_value
 
-    def changeset_js_data(self, data):
+    def changeset_js_data(self, req, data):
         pass
+        
+    def template_js_data(self, name):
+        if not name.endswith('.html'):
+            name += '.html'
+        return {name: open(self.get_template_dir() + '/js/' + name).read()}
+    
 
     def browser_js_data(self, data):
-        return {'page': 'browser', 'args': {'revision': data['rev'], 'path': data['path']}}
+        return {'page': 'browser', 'revision': data['rev'], 'path': data['path']}
 
 
 class ListComments(CodeComments):
