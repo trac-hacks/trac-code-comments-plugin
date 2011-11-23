@@ -4,6 +4,7 @@ from trac.util.datefmt import format_datetime
 from time import gmtime, strftime
 from code_comments import db
 from trac.util import Markup
+from json import JSONEncoder
 
 class Comment:
     columns = [column.name for column in db.schema['code_comments'].columns]
@@ -36,6 +37,17 @@ class Comment:
         def delete_comment(db):
             cursor = db.cursor()
             cursor.execute("DELETE FROM code_comments WHERE id=%s", [self.id])
+
+class CommentJSONEncoder(JSONEncoder):
+    def default(self, o):
+        if isinstance(o, Comment):
+            for_json = dict(((column, getattr(o, column)) for column in o.columns))
+            for_json['formatted_date'] = o.formatted_time()
+            for_json['permalink'] = o.href()
+            for_json['html'] = o.html
+            return for_json
+        else:
+            return JSONEncoder.default(self, o)
 
 class Comments:
     def __init__(self, req, env):
