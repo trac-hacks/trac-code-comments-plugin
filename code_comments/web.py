@@ -75,12 +75,12 @@ class JSDataForRequests(CodeComments):
 
     def changeset_js_data(self, req, data):
         pass
-        
+
     def template_js_data(self, name):
-        if not name.endswith('.html'):
-            name += '.html'
-        return {name: open(self.get_template_dir() + '/js/' + name).read()}
-    
+        file_name = name + '.html'
+        name = name.replace('-', '_')
+        return {name: open(self.get_template_dir() + '/js/' + file_name).read()}
+
 
     def browser_js_data(self, data):
         return {'page': 'browser', 'revision': data['rev'], 'path': data['path']}
