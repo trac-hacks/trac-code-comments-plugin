@@ -18,7 +18,10 @@ class Comment:
 
     def href(self):
         #TODO: if the user doesn't have permissions, don't add the codecomment argument
-        return self.req.href.browser(None, self.path, rev=self.revision, codecomment=self.id) + '#L' + str(self.line)
+        if self.path:
+            return self.req.href.browser(None, self.path, rev=self.revision, codecomment=self.id) + '#L' + str(self.line)
+        else:
+            return self.req.href.changeset(self.revision, codecomment=self.id)
 
     def path_revision_line(self):
         return '%s@%s%s' % (self.path, self.revision, '#L'+str(self.line) if self.line else '')
