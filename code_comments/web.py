@@ -3,7 +3,7 @@ from trac.web.chrome import INavigationContributor, ITemplateProvider, add_scrip
 from trac.web.main import IRequestHandler, IRequestFilter
 from trac.util import Markup
 from trac.versioncontrol.api import RepositoryManager
-from vip.comments import Comments
+from code_comments.comments import Comments
 
 class CodeComments(Component):
     implements(INavigationContributor, ITemplateProvider, IRequestFilter)
@@ -25,14 +25,14 @@ class CodeComments(Component):
 
     def get_htdocs_dirs(self):
         from pkg_resources import resource_filename
-        return [('vip', resource_filename(__name__, 'htdocs'))]
+        return [('code-comments', resource_filename(__name__, 'htdocs'))]
 
     # IRequestFilter methods
     def pre_process_request(self, req, handler):
         return handler
 
     def post_process_request(self, req, template, data, content_type):
-        add_stylesheet(req, 'vip/vip.css')
+        add_stylesheet(req, 'code-comments/code-comments.css')
         return template, data, content_type
 
 class JSDataForRequests(CodeComments):
@@ -51,7 +51,7 @@ class JSDataForRequests(CodeComments):
         else:
             return return_value
         
-        add_script(req, 'vip/code-comments.js')
+        add_script(req, 'code-comments/code-comments.js')
         add_script_data(req, {'CodeComments': data})
         return return_value
 

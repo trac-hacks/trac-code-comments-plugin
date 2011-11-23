@@ -7,15 +7,17 @@ db_version = 1
 
 # Database schema
 schema = {
-    'vip_comments': Table('vip_comments', key=('id', 'version'))[
+    'code_comments': Table('code_comments', key=('id', 'version'))[
         Column('id', auto_increment=True),
         Column('version', type='int'),
         Column('text'),
-        Column('path'),        
+        Column('path'),
         Column('revision', type='int'),
         Column('line', type='int'),
         Column('author'),
         Column('time', type='int'),
+        Index(['path']),
+        Index(['author']),
     ],
 }
 
@@ -30,7 +32,7 @@ def create_tables(env, db):
     for table_name in schema:
         for stmt in to_sql(env, schema[table_name]):
             cursor.execute(stmt)
-    cursor.execute("INSERT into system values ('vip_schema_version', %s)",
+    cursor.execute("INSERT into system values ('code_comments_schema_version', %s)",
                         str(db_version))
 # Upgrades
 def upgrade_from_1_to_2(env, db):
@@ -41,9 +43,9 @@ upgrade_map = {
     }
 
 
-class VIPSetup(Component):
+class CodeCommentsSetup(Component):
     """Component that deals with database setup and upgrades."""
-    
+
     implements(IEnvironmentSetupParticipant)
 
     def environment_created(self):
@@ -66,13 +68,13 @@ class VIPSetup(Component):
                 upgrade_map[current_ver+1](self.env, db)
                 current_ver += 1
             cursor = db.cursor()
-            cursor.execute("UPDATE system SET value=%s WHERE name='vip_schema_version'",
+            cursor.execute("UPDATE system SET value=%s WHERE name='code_comments_schema_version'",
                                 str(db_version))
 
     def _get_version(self, db):
         cursor = db.cursor()
         try:
-            sql = "SELECT value FROM system WHERE name='vip_schema_version'"
+            sql = "SELECT value FROM system WHERE name='code_comments_schema_version'"
             self.log.debug(sql)
             cursor.execute(sql)
             for row in cursor:
