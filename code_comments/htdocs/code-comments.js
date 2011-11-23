@@ -7,6 +7,7 @@ jQuery(function($) {
 
 	window.CommentsList = Backbone.Collection.extend({
 		model: Comment,
+		url: '/code-comments/comments',
 		comparator: function(comment) {
 			return comment.get('time');
 		}
@@ -15,7 +16,7 @@ jQuery(function($) {
 
 	window.TopCommentView = Backbone.View.extend({
 		tagName: 'li',
-		template:  _.template($('#comment-template').html()),
+		template:  _.template(CodeComments.templates.top_comment),
 		events: {
 		   'click .delete': 'del',
 		},
@@ -36,8 +37,9 @@ jQuery(function($) {
 	});
 
 	window.TopCommentsView = Backbone.View.extend({
+		id: 'top-comments',
 
-
+		template:  _.template(CodeComments.templates.top_comments_block),
 		events: {
 			'click #add-comment': 'createOnAddButton'
 		},
@@ -46,7 +48,12 @@ jQuery(function($) {
 			this.textarea = this.$('#comment-text');
 			TopComments.bind('add',	  this.addOne, this);
 			TopComments.bind('reset', this.addAll, this);
-			TopComments.fetch();
+		},
+
+		render: function() {
+			$(this.el).html(this.template());
+			TopComments.fetch({data: {path: CodeComments.path, revision: CodeComments.revision, line: 0}});
+			return this;
 		},
 
 		addOne: function(comment) {
@@ -64,5 +71,7 @@ jQuery(function($) {
 		}
 	});
 
-	window.TopCommentsBlock = new TopCommentsView;
+	window.TopCommentsBlock = new TopCommentsView();
+
+	$('table#info').before(TopCommentsBlock.render().el);
 });
