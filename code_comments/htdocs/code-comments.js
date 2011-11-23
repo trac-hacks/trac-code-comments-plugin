@@ -61,7 +61,10 @@ jQuery(function($) {
 			this.$("ul").append(view.render().el);
 		},
 		addAll: function() {
-			TopComments.each(this.addOne);
+			var view = this;
+			TopComments.each(function(comment) {
+				view.addOne.call(view, comment);
+			});
 		},
 		createOnAddButton: function(e) {
 			var text = this.textarea.val();
