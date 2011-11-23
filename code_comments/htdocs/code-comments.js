@@ -76,5 +76,5 @@ jQuery(function($) {
 
 	window.TopCommentsBlock = new TopCommentsView();
 
-	$('table#info').before(TopCommentsBlock.render().el);
+	$(CodeComments.selectorToInsertBefore).before(TopCommentsBlock.render().el);
 });

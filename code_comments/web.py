@@ -74,17 +74,17 @@ class JSDataForRequests(CodeComments):
         add_script_data(req, {'CodeComments': js_data})
         return return_value
 
-    def changeset_js_data(self, req, data):
-        pass
+    def changeset_js_data(self, data):
+        return {'page': 'changeset', 'revision': data['new_rev'], 'path': '', 'selectorToInsertBefore': 'div.diff:first'}
+
+    def browser_js_data(self, data):
+        return {'page': 'browser', 'revision': data['rev'], 'path': data['path'], 'selectorToInsertBefore': 'table#info'}
 
     def template_js_data(self, name):
         file_name = name + '.html'
         name = name.replace('-', '_')
         return {name: open(self.get_template_dir() + '/js/' + file_name).read()}
 
-
-    def browser_js_data(self, data):
-        return {'page': 'browser', 'revision': data['rev'], 'path': data['path']}
 
 
 class ListComments(CodeComments):
