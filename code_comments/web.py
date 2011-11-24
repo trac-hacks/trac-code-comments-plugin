@@ -1,10 +1,14 @@
-import json
 from trac.core import *
 from trac.web.chrome import INavigationContributor, ITemplateProvider, add_script, add_script_data, add_stylesheet, add_notice
 from trac.web.main import IRequestHandler, IRequestFilter
 from trac.util import Markup
 from trac.versioncontrol.api import RepositoryManager
 from code_comments.comments import Comments, CommentJSONEncoder
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 class CodeComments(Component):
     implements(INavigationContributor, ITemplateProvider, IRequestFilter)
