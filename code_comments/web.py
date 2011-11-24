@@ -108,7 +108,10 @@ class DeleteCommentForm(CodeComments):
         return req.path_info == '/' + self.href + '/delete'
 
     def process_request(self, req):
-        return self.form(req) if req.method == 'GET' else self.delete(req)
+        if 'GET' == req.method:
+            return self.form(req)
+        else:
+            return self.delete(req)
 
     def form(self, req):
         data = {}

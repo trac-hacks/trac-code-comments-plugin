@@ -24,7 +24,10 @@ class Comment:
             return self.req.href.changeset(self.revision, codecomment=self.id)
 
     def path_revision_line(self):
-        return '%s@%s%s' % (self.path, self.revision, '#L'+str(self.line) if self.line else '')
+        line_suffix = ''
+        if self.line:
+            line_suffix = '#L'+str(self.line)
+        return '%s@%s%s' % (self.path, self.revision, line_suffix) 
 
     def trac_link(self):
         return 'source:' + self.path_revision_line()
@@ -76,5 +79,7 @@ class Comments:
 
     def search(self, args):
         conditions = ' AND '.join(['%s=%%s' % name for name in args.keys()])
-        where = 'WHERE '+conditions if conditions else ''
+        where = ''
+        if conditions:
+            where = 'WHERE '+conditions
         return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY time DESC', args.values())
