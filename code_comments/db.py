@@ -1,6 +1,7 @@
 from trac.core import *
 from trac.db.schema import Table, Column, Index
 from trac.env import IEnvironmentSetupParticipant
+from trac.db.api import DatabaseManager
 
 # Database version identifier for upgrades.
 db_version = 1
@@ -23,7 +24,6 @@ schema = {
 
 def to_sql(env, table):
     """ Convenience function to get the to_sql for the active connector."""
-    from trac.db.api import DatabaseManager
     dc = DatabaseManager(env)._get_connector()[0]
     return dc.to_sql(table)
 
