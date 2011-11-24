@@ -2,6 +2,7 @@ from trac.core import *
 from trac.web.chrome import INavigationContributor, ITemplateProvider, add_script, add_script_data, add_stylesheet, add_notice
 from trac.web.main import IRequestHandler, IRequestFilter
 from trac.util import Markup
+from trac.util.text import to_unicode
 from trac.versioncontrol.api import RepositoryManager
 from code_comments.comments import Comments, CommentJSONEncoder
 
@@ -90,7 +91,7 @@ class JSDataForRequests(CodeComments):
     def template_js_data(self, name):
         file_name = name + '.html'
         name = name.replace('-', '_')
-        return {name: open(self.get_template_dir() + '/js/' + file_name).read()}
+        return {name: to_unicode(open(self.get_template_dir() + '/js/' + file_name).read())}
 
 
 
