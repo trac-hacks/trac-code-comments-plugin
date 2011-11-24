@@ -55,6 +55,9 @@ class JSDataForRequests(CodeComments):
         return handler
 
     def post_process_request(self, req, template, data, content_type):
+        if data is None:
+            return
+        
         js_data = {}
         js_data['templates'] = {}
 
