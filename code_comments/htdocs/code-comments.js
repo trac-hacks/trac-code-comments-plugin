@@ -89,9 +89,7 @@ jQuery(function($) {
 			this.$el.dialog('close');
 		},
 		createComment: function(e) {
-			var text = this.$('textarea').val();
-			if (!text) return;
-			TopComments.create({text: text, author: 'nb', path: CodeComments.path, revision: CodeComments.revision, line: 0});
+			alert('Not Implemented');
 		},
 	});
 
