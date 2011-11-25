@@ -1,4 +1,13 @@
 jQuery(function($) {
+	$(document).ajaxError( function(e, xhr, options){
+		var errorText = xhr.statusText;
+		if (-1 == xhr.responseText.indexOf('<html')) {
+			errorText += ': ' + xhr.responseText;
+		}
+		alert(errorText);
+	});
+
+
 	window.Comment = Backbone.Model.extend({
 	});
 
