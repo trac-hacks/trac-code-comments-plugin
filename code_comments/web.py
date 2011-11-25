@@ -164,15 +164,13 @@ class CommentsREST(CodeComments):
         return req.path_info.startswith('/' + self.href + '/comments')
 
     def return_json(self, req, data, code=200):
-        content = json.dumps(data, cls=CommentJSONEncoder)
-        req.send_response(code)
-        req.send_header('Content-Type', 'application/json')
-        req.send_header('Content-Length', len(content))
-        req.end_headers()
-        req.write(content)
+        req.send(json.dumps(data, cls=CommentJSONEncoder), 'application/json')
 
     def process_request(self, req):
         #TODO: catch errors
         if '/' + self.href + '/comments' == req.path_info:
             if 'GET' == req.method:
                 self.return_json(req, Comments(req, self.env).search(req.args))
+            if 'POST' == req.method:
+                Comments(req, self.env).create(json.loads(req.read()))
+                req.send('OK')
