@@ -62,14 +62,14 @@ class JSDataForRequests(CodeComments):
         js_data = {}
         js_data['templates'] = {}
 
-        return_value = template, data, content_type
+        original_return_value = template, data, content_type
 
         if req.path_info.startswith('/changeset/'):
             js_data.update(self.changeset_js_data(data))
         elif req.path_info.startswith('/browser'):
             js_data.update(self.browser_js_data(data))
         else:
-            return return_value
+            return original_return_value
 
         js_data['templates'].update(self.template_js_data('top-comments-block'))
         js_data['templates'].update(self.template_js_data('top-comment'))
@@ -84,7 +84,7 @@ class JSDataForRequests(CodeComments):
         add_stylesheet(req, 'code-comments/jquery-ui/trac-theme.css')
         add_script(req, 'code-comments/code-comments.js')
         add_script_data(req, {'CodeComments': js_data})
-        return return_value
+        return original_return_value
 
     def changeset_js_data(self, data):
         return {'page': 'changeset', 'revision': data['new_rev'], 'path': '', 'selectorToInsertBefore': 'div.diff:first'}
