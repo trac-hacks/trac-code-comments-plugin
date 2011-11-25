@@ -1,3 +1,18 @@
 table.code-comments td.check {
 	width: 2em;
 }
+#add-comment-dialog textarea {
+	width: 400px;
+	height: 250px;
+	padding: 6px;
+}
+#add-comment-dialog button {
+	float: left;
+}
+#add-comment-dialog a {
+	float: right;
+}
+
+.ui-dialog {
+	width: auto !important;
+}

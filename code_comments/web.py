@@ -47,9 +47,7 @@ class CodeComments(Component):
 class JSDataForRequests(CodeComments):
     implements(IRequestFilter)
 
-    def __init__(self):
-        self.js_data = {}
-        self.js_data['templates'] = {};
+    js_templates = ['top-comments-block', 'top-comment', 'side-comment', 'add-comment-dialog']
 
     # IRequestFilter methods
     def pre_process_request(self, req, handler):
@@ -59,8 +57,10 @@ class JSDataForRequests(CodeComments):
         if data is None:
             return
 
-        js_data = {}
-        js_data['templates'] = {}
+        js_data = {
+            'formatting_help_url': req.href.wiki('WikiFormatting'),
+            'templates': self.templates_js_data(),
+        }
 
         original_return_value = template, data, content_type
 
@@ -70,11 +70,6 @@ class JSDataForRequests(CodeComments):
             js_data.update(self.browser_js_data(data))
         else:
             return original_return_value
-
-        js_data['templates'].update(self.template_js_data('top-comments-block'))
-        js_data['templates'].update(self.template_js_data('top-comment'))
-        js_data['templates'].update(self.template_js_data('side-comment'))
-        js_data['templates'].update(self.template_js_data('add-comment-dialog'))
 
         add_script(req, 'code-comments/json2.js')
         add_script(req, 'code-comments/underscore-min.js')
@@ -86,6 +81,13 @@ class JSDataForRequests(CodeComments):
         add_script_data(req, {'CodeComments': js_data})
         return original_return_value
 
+    def templates_js_data(self):
+        data = {}
+        for name in self.js_templates:
+            # we want to use the name as JS identifier and we can't have dashes there
+            data[name.replace('-', '_')] = self.template_js_data(name)
+        return data
+
     def changeset_js_data(self, data):
         return {'page': 'changeset', 'revision': data['new_rev'], 'path': '', 'selectorToInsertBefore': 'div.diff:first'}
 
@@ -94,8 +96,7 @@ class JSDataForRequests(CodeComments):
 
     def template_js_data(self, name):
         file_name = name + '.html'
-        name = name.replace('-', '_')
-        return {name: to_unicode(open(self.get_template_dir() + '/js/' + file_name).read())}
+        return to_unicode(open(self.get_template_dir() + '/js/' + file_name).read())
 
 
 

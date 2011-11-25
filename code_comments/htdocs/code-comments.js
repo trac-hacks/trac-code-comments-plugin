@@ -80,6 +80,7 @@ jQuery(function($) {
 	});
 
 	window.AddCommentDialogView = Backbone.View.extend({
+		id: 'add-comment-dialog',
 		template:  _.template(CodeComments.templates.add_comment_dialog),
 		events: {
 			'click .add-comment': 'createComment'
@@ -88,7 +89,9 @@ jQuery(function($) {
 			this.$el = $(this.el);
 		},
 		render: function() {
-			this.$el.html(this.template()).dialog({autoOpen: false, title: 'Add Comment'});
+			this.$el.html(this.template({formatting_help_url: CodeComments.formatting_help_url}))
+				.dialog({autoOpen: false, title: 'Add Comment'});
+			this.$('.add-comment').button();
 			return this;
 		},
 		open: function() {
