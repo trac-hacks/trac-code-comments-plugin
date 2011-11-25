@@ -111,8 +111,11 @@ class Comments:
         comment.validate()
         comment.time = int(time())
         values = [getattr(comment, column_name) for column_name in comment.columns if column_name != 'id']
+        comment_id = [None]        
         @self.env.with_transaction()
         def insert_comment(db):
             cursor = db.cursor()
             sql = "INSERT INTO code_comments values(NULL, %s)" % ', '.join(['%s'] * len(values))
             cursor.execute(sql, values)
+            comment_id[0] = db.get_last_id(cursor, 'code_comments')
+        return comment_id[0]

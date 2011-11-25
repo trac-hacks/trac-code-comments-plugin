@@ -172,5 +172,6 @@ class CommentsREST(CodeComments):
             if 'GET' == req.method:
                 self.return_json(req, Comments(req, self.env).search(req.args))
             if 'POST' == req.method:
-                Comments(req, self.env).create(json.loads(req.read()))
-                req.send('OK')
+                comments = Comments(req, self.env)
+                id = comments.create(json.loads(req.read()))
+                self.return_json(req, comments.by_id(id))
