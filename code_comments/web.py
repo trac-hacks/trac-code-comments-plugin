@@ -74,13 +74,14 @@ class JSDataForRequests(CodeComments):
         js_data['templates'].update(self.template_js_data('top-comments-block'))
         js_data['templates'].update(self.template_js_data('top-comment'))
         js_data['templates'].update(self.template_js_data('side-comment'))
+        js_data['templates'].update(self.template_js_data('add-comment-dialog'))
 
         add_script(req, 'code-comments/json2.js')
         add_script(req, 'code-comments/underscore-min.js')
         add_script(req, 'code-comments/backbone-min.js')
-        # jQuery UI includes: UI Core, Interactions, Button & Dialog Widgets, Core Effects, custom theme: http://bit.ly/tHXmkS
-        add_script(req, 'code-comments/jquery-ui.js')
-        add_stylesheet(req, 'code-comments/ui-trac-theme.css')
+        # jQuery UI includes: UI Core, Interactions, Button & Dialog Widgets, Core Effects, custom theme
+        add_script(req, 'code-comments/jquery-ui/jquery-ui.js')
+        add_stylesheet(req, 'code-comments/jquery-ui/trac-theme.css')
         add_script(req, 'code-comments/code-comments.js')
         add_script_data(req, {'CodeComments': js_data})
         return return_value
