@@ -38,7 +38,7 @@ jQuery(function($) {
 
 		template:  _.template(CodeComments.templates.top_comments_block),
 		events: {
-			'click #add-comment': 'createOnAddButton'
+			'click #add-comment': 'showAddCommentDialog'
 		},
 
 		initialize: function() {
@@ -63,15 +63,39 @@ jQuery(function($) {
 				view.addOne.call(view, comment);
 			});
 		},
-		createOnAddButton: function(e) {
-			var text = this.textarea.val();
-			var author = 'nb';
-			if (!text) return;
-			TopComments.create({text: text, html: text, author: 'nb', permalink: 'http://dir.bg/',formatted_date: 'Nov 23rd, 2011', time: 5});
+		showAddCommentDialog: function(e) {
+			AddCommentDialog.open();
 		}
+
 	});
+	
+	window.AddCommentDialogView = Backbone.View.extend({
+		template:  _.template(CodeComments.templates.add_comment_dialog),
+		events: {
+			'click .add-comment': 'createComment'
+		},
+		initialize: function() {
+			this.$el = $(this.el);
+		},
+		render: function() {
+			this.$el.html(this.template()).dialog({autoOpen: false, title: 'Add Comment'});
+			return this;
+		},
+		open: function() {
+			this.$el.dialog('open');
+		},
+		close: function() {
+			this.$el.dialog('close');
+		},
+		createComment: function(e) {
+			alert('Not Implemented');
+		},
+	});
+	
 
 	window.TopCommentsBlock = new TopCommentsView();
+	window.AddCommentDialog = new AddCommentDialogView;
 
 	$(CodeComments.selectorToInsertBefore).before(TopCommentsBlock.render().el);
+	AddCommentDialog.render();
 });
