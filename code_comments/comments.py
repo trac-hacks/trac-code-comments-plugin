@@ -1,3 +1,4 @@
+from time import time
 from trac.wiki.formatter import format_to_html
 from trac.mimeview.api import Context
 from trac.util.datefmt import format_datetime
@@ -10,15 +11,32 @@ try:
 except ImportError:
     import simplejson as json
 
+VERSION = 1
+
 class Comment:
     columns = [column.name for column in db.schema['code_comments'].columns]
-
-    def __init__(self, req, env, row):
-        self.__dict__ = dict(zip(self.columns, row))
+    
+    required = 'text', 'path', 'author'
+    
+    def __init__(self, req, env, data):
+        if isinstance(data, dict):
+            self.__dict__ = data
+        else:
+            self.__dict__ = dict(zip(self.columns, data))
         self.env = env
         self.req = req
+        if self._empty('version'):
+            self.version = VERSION
         context = Context.from_request(self.req, 'wiki')
         self.html = format_to_html(self.env, context, self.text)
+    
+    def _empty(self, column_name):
+        return not hasattr(self, column_name) or not getattr(self, column_name)
+    
+    def validate(self):
+        missing = [column_name for column_name in self.required if self._empty(column_name)]
+        if missing:
+            raise ValueError("Comment column(s) missing: %s" % ', '.join(missing))
 
     def href(self):
         #TODO: if the user doesn't have permissions, don't add the codecomment argument
@@ -87,3 +105,14 @@ class Comments:
         if conditions:
             where = 'WHERE '+conditions
         return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY time DESC', args.values())
+
+    def create(self, args):
+        comment = Comment(self.req, self.env, args)
+        comment.validate()
+        comment.time = int(time())
+        values = [getattr(comment, column_name) for column_name in comment.columns if column_name != 'id']
+        @self.env.with_transaction()
+        def insert_comment(db):
+            cursor = db.cursor()
+            sql = "INSERT INTO code_comments values(NULL, %s)" % ', '.join(['%s'] * len(values))
+            cursor.execute(sql, values)
