@@ -98,9 +98,16 @@ jQuery(function($) {
 			this.$el.dialog('close');
 		},
 		createComment: function(e) {
+			var self = this;
 			var text = this.$('textarea').val();
 			if (!text) return;
-			TopComments.create({text: text, author: 'nb', path: CodeComments.path, revision: CodeComments.revision, line: 0});
+			var options = {
+				success: function() {
+					self.$('textarea').val('');
+					self.$el.dialog('close');
+				}
+			}
+			TopComments.create({text: text, author: 'nb', path: CodeComments.path, revision: CodeComments.revision, line: 0}, options);
 		},
 	});
 
