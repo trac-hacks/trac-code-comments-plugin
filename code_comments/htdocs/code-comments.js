@@ -49,6 +49,7 @@ jQuery(function($) {
 
 		render: function() {
 			$(this.el).html(this.template());
+			this.$('#add-comment').button();
 			TopComments.fetch({data: {path: CodeComments.path, revision: CodeComments.revision, line: 0}});
 			return this;
 		},
@@ -68,7 +69,7 @@ jQuery(function($) {
 		}
 
 	});
-	
+
 	window.AddCommentDialogView = Backbone.View.extend({
 		template:  _.template(CodeComments.templates.add_comment_dialog),
 		events: {
@@ -91,7 +92,7 @@ jQuery(function($) {
 			alert('Not Implemented');
 		},
 	});
-	
+
 
 	window.TopCommentsBlock = new TopCommentsView();
 	window.AddCommentDialog = new AddCommentDialogView;
