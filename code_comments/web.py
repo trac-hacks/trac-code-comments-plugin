@@ -61,6 +61,7 @@ class JSDataForRequests(CodeComments):
             'formatting_help_url': req.href.wiki('WikiFormatting'),
             'delete_url': req.href('code-comments', 'delete'),
             'templates': self.templates_js_data(),
+            'active_comment_id': req.args.get('codecomment'),
         }
 
         original_return_value = template, data, content_type

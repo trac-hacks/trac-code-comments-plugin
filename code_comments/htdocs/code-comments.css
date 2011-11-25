@@ -16,3 +16,6 @@ table.code-comments td.check {
 .ui-dialog {
 	width: auto !important;
 }
+#top-comments .active {
+	background-color: #FFFFCD;
+}
