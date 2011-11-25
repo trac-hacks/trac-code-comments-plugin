@@ -1,23 +1,4 @@
 jQuery(function($) {
-	_.extend(Backbone.Collection.prototype, {
-		createAndFetch : function(model, options) {
-			var coll = this;
-			options || (options = {});
-			model = this._prepareModel(model, options);
-			if (!model) return false;
-			var success = options.success;
-			options.success = function(nextModel, resp, xhr) {
-				nextModel = coll._prepareModel(nextModel, options);
-				nextModel.fetch();
-				console.log(nextModel);
-				coll.add(nextModel, options);
-				if (success) success(nextModel, resp, xhr);
-			};
-			model.save(null, options);
-			return model;
-		}
-	});
-
 	window.CommentsList = Backbone.Collection.extend({
 		model: Comment,
 		url: '/code-comments/comments',
@@ -107,7 +88,7 @@ jQuery(function($) {
 		createComment: function(e) {
 			var text = this.$('textarea').val();
 			if (!text) return;
-			TopComments.createAndFetch({text: text, author: 'nb', path: CodeComments.path, revision: CodeComments.revision, line: 0});
+			TopComments.create({text: text, author: 'nb', path: CodeComments.path, revision: CodeComments.revision, line: 0});
 		},
 	});
 
