@@ -31,7 +31,7 @@ jQuery(function($) {
 		   this.model.bind('destroy', this.remove, this);
 		},
 		render: function() {
-		   $(this.el).html(this.template(this.model.toJSON()));
+		   $(this.el).html(this.template(_.extend(this.model.toJSON(), {delete_url: CodeComments.delete_url})));
 		   return this;
 		},
 		remove: function() {
