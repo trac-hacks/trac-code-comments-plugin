@@ -16,7 +16,7 @@ VERSION = 1
 class Comment:
     columns = [column.name for column in db.schema['code_comments'].columns]
     
-    required = 'text', 'path', 'author'
+    required = 'text', 'author'
     
     def __init__(self, req, env, data):
         if isinstance(data, dict):
