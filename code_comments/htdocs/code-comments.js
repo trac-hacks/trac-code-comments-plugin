@@ -113,7 +113,6 @@ jQuery(function($) {
 					self.$el.dialog('close');
 				}
 			}
-			TopComments.create({text: text, author: 'nb', path: CodeComments.path, revision: CodeComments.revision, line: 0}, options);
 			TopComments.create({text: text, author: CodeComments.username, path: CodeComments.path, revision: CodeComments.revision, line: 0}, options);
 		},
 	});
