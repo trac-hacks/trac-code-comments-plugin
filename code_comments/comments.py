@@ -39,7 +39,6 @@ class Comment:
             raise ValueError("Comment column(s) missing: %s" % ', '.join(missing))
 
     def href(self):
-        #TODO: if the user doesn't have permissions, don't add the codecomment argument
         if self.path:
             return self.req.href.browser(None, self.path, rev=self.revision, codecomment=self.id) + '#L' + str(self.line)
         else:
