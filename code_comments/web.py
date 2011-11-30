@@ -63,6 +63,7 @@ class JSDataForRequests(CodeComments):
             'templates': self.templates_js_data(),
             'active_comment_id': req.args.get('codecomment'),
             'username': req.authname,
+            'is_admin': 'TRAC_ADMIN' in req.perm,
         }
 
         original_return_value = template, data, content_type

@@ -49,7 +49,7 @@
                     <td>${comment.path_link_tag()}</td>
                     <td>$comment.html</td>
                     <td>
-                        <form action="${href('code-comments', 'delete')}" method="GET">
+                        <form py:if="can_delete" action="${href('code-comments', 'delete')}" method="GET">
                             <input type="hidden" name="id" value="$comment.id" />
                             <input type="submit" name="delete" value="Delete" />
                         </form>

@@ -33,7 +33,8 @@ jQuery(function($) {
 		render: function() {
 		   $(this.el).html(this.template(_.extend(this.model.toJSON(), {
 				delete_url: CodeComments.delete_url,
-				active: this.model.id == CodeComments.active_comment_id
+				active: this.model.id == CodeComments.active_comment_id,
+				can_delete: CodeComments.is_admin,
 			})));
 		   return this;
 		},
