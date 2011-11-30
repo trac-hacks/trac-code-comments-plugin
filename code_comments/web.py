@@ -160,7 +160,7 @@ class BundleCommentsRedirect(CodeComments):
 [%(link)s %(path)s]
 %(text)s
 
-""".lstrip() % {'link': comment.trac_link(), 'path': comment.path_revision_line(), 'text': comment.text}
+""".lstrip() % {'link': comment.href(), 'path': comment.path_revision_line(), 'text': comment.text}
         req.redirect(req.href.newticket(description=text))
 
 class CommentsREST(CodeComments):
