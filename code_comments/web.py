@@ -114,6 +114,7 @@ class ListComments(CodeComments):
         data = {}
         data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
         data['comments'] = Comments(req, self.env).all()
+        data['can_delete'] = 'TRAC_ADMIN' in req.perm
         return 'comments.html', data, None
 
 class DeleteCommentForm(CodeComments):
@@ -124,6 +125,7 @@ class DeleteCommentForm(CodeComments):
         return req.path_info == '/' + self.href + '/delete'
 
     def process_request(self, req):
+        req.perm.require('TRAC_ADMIN')
         if 'GET' == req.method:
             return self.form(req)
         else:
