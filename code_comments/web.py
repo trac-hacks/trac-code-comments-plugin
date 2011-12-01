@@ -21,8 +21,9 @@ class CodeComments(Component):
         return self.href
 
     def get_navigation_items(self, req):
-        yield 'mainnav', 'code-comments', Markup('<a href="%s">Code Comments</a>' % (
-                 req.href('code-comments') ) )
+        if 'TRAC_ADMIN' in req.perm:
+            yield 'mainnav', 'code-comments', Markup('<a href="%s">Code Comments</a>' % (
+                     req.href('code-comments') ) )
 
     # ITemplateProvider methods
     def get_templates_dirs(self):
@@ -112,6 +113,7 @@ class ListComments(CodeComments):
         return req.path_info == '/' + self.href
 
     def process_request(self, req):
+        req.perm.require('TRAC_ADMIN')
         data = {}
         data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
         data['comments'] = Comments(req, self.env).all()
