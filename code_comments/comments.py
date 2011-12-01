@@ -99,11 +99,23 @@ class Comments:
         return self.select("SELECT * FROM code_comments WHERE id=%s", [id])[0]
 
     def search(self, args):
-        conditions = ' AND '.join(['%s=%%s' % name for name in args.keys()])
+        conditions = []
+        values = []
+        for name in args:
+            values.append(args[name])
+            if name.endswith('__gt'):
+                name = name.replace('__gt', '')
+                conditions.append(name + ' > %s')
+            elif name.endswith('__lt'):
+                name = name.replace('__lt', '')
+                conditions.append(name + ' < %s')                
+            else:
+                conditions.append(name + ' = %s')
+        conditions_str = ' AND '.join(conditions)
         where = ''
-        if conditions:
-            where = 'WHERE '+conditions
-        return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY time DESC', args.values())
+        if conditions_str:
+            where = 'WHERE '+conditions_str
+        return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY time ASC', values)
 
     def create(self, args):
         comment = Comment(self.req, self.env, args)
