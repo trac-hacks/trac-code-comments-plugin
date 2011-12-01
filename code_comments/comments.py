@@ -93,7 +93,7 @@ class Comments:
         return [self.comment_from_row(row) for row in result['comments']]
 
     def all(self):
-        return self.select("SELECT * FROM code_comments ORDER BY time DESC")
+        return self.search({})
 
     def by_id(self, id):
         return self.select("SELECT * FROM code_comments WHERE id=%s ORDER BY time DESC", [id])[0]
