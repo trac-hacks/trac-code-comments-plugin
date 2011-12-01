@@ -18,11 +18,8 @@ jQuery(function($) {
 			return comment.get('time');
 		}
 	});
-	window.TopComments = new CommentsList;
 
-	window.TopCommentView = Backbone.View.extend({
-		tagName: 'li',
-		template:  _.template(CodeComments.templates.top_comment),
+	window.CommentView = Backbone.View.extend({
 		events: {
 		   'click .delete': 'del',
 		},
@@ -44,6 +41,11 @@ jQuery(function($) {
 		 del: function() {
 			this.model.destroy();
 		 }
+	});
+
+	window.TopCommentView = CommentView.extend({
+		tagName: 'li',
+		template:  _.template(CodeComments.templates.top_comment),
 	});
 
 	window.TopCommentsView = Backbone.View.extend({
@@ -83,6 +85,46 @@ jQuery(function($) {
 
 	});
 
+	window.LineCommentView = CommentView.extend({
+		tagName: 'tr',
+		className: 'line-comment',
+		template:  _.template(CodeComments.templates.line_comment),
+		render: function() {
+			$(this.el).attr('data-line', this.model.get('line'));
+			return CommentView.prototype.render.call(this);
+		}
+	});
+
+
+	window.LineCommentsView = Backbone.View.extend({
+		id: 'preview',
+		initialize: function() {
+			this.textarea = this.$('#comment-text');
+			LineComments.bind('add',	  this.addOne, this);
+			LineComments.bind('reset', this.addAll, this);
+		},
+		render: function() {
+			LineComments.fetch({data: {path: CodeComments.path, revision: CodeComments.revision, line__gt: 0}});
+			//TODO: + links
+		},
+		addOne: function(comment) {
+			var view = new LineCommentView({model: comment});
+			var rendered = view.render().el;
+			var $tr = $("#L"+comment.get('line')).parent();
+			var $last_line_comment = $tr.siblings('tr.line-comment[data-line="'+comment.get('line')+'"]:last');
+			if ($last_line_comment.length)
+				$last_line_comment.after(rendered);
+			else
+				$tr.after(rendered);
+		},
+		addAll: function() {
+			var view = this;
+			LineComments.each(function(comment) {
+				view.addOne.call(view, comment);
+			});
+		},
+	});
+
 	window.AddCommentDialogView = Backbone.View.extend({
 		id: 'add-comment-dialog',
 		template:  _.template(CodeComments.templates.add_comment_dialog),
@@ -118,10 +160,13 @@ jQuery(function($) {
 		},
 	});
 
-
-	window.TopCommentsBlock = new TopCommentsView();
+	window.TopComments = new CommentsList;
+	window.LineComments = new CommentsList;
+	window.TopCommentsBlock = new TopCommentsView;
+	window.LineCommentsBlock = new LineCommentsView;
 	window.AddCommentDialog = new AddCommentDialogView;
 
 	$(CodeComments.selectorToInsertBefore).before(TopCommentsBlock.render().el);
+	LineCommentsBlock.render();
 	AddCommentDialog.render();
 });
