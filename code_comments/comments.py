@@ -96,7 +96,7 @@ class Comments:
         return self.search({})
 
     def by_id(self, id):
-        return self.select("SELECT * FROM code_comments WHERE id=%s ORDER BY time DESC", [id])[0]
+        return self.select("SELECT * FROM code_comments WHERE id=%s", [id])[0]
 
     def search(self, args):
         conditions = ' AND '.join(['%s=%%s' % name for name in args.keys()])
