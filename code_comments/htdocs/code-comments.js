@@ -20,6 +20,8 @@ jQuery(function($) {
 	});
 
 	window.CommentView = Backbone.View.extend({
+		tagName: 'li',
+		template:  _.template(CodeComments.templates.comment),
 		events: {
 		   'click .delete': 'del',
 		},
@@ -41,11 +43,6 @@ jQuery(function($) {
 		 del: function() {
 			this.model.destroy();
 		 }
-	});
-
-	window.TopCommentView = CommentView.extend({
-		tagName: 'li',
-		template:  _.template(CodeComments.templates.top_comment),
 	});
 
 	window.TopCommentsView = Backbone.View.extend({
@@ -70,7 +67,7 @@ jQuery(function($) {
 		},
 
 		addOne: function(comment) {
-			var view = new TopCommentView({model: comment});
+			var view = new CommentView({model: comment});
 			this.$("ul.comments").append(view.render().el);
 		},
 		addAll: function() {
@@ -85,17 +82,6 @@ jQuery(function($) {
 
 	});
 
-	window.LineCommentView = CommentView.extend({
-		tagName: 'tr',
-		className: 'line-comment',
-		template:  _.template(CodeComments.templates.line_comment),
-		render: function() {
-			$(this.el).attr('data-line', this.model.get('line'));
-			return CommentView.prototype.render.call(this);
-		}
-	});
-
-
 	window.LineCommentsView = Backbone.View.extend({
 		id: 'preview',
 		initialize: function() {
@@ -108,7 +94,7 @@ jQuery(function($) {
 			//TODO: + links
 		},
 		addOne: function(comment) {
-			var view = new TopCommentView({model: comment});
+			var view = new CommentView({model: comment});
 			var rendered = view.render().el;
 			var $line_tr = $("#L"+comment.get('line')).parent();
 			var $line_comment_tr = $line_tr.siblings('tr[data-line="'+comment.get('line')+'"]');

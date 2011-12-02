@@ -48,7 +48,7 @@ class CodeComments(Component):
 class JSDataForRequests(CodeComments):
     implements(IRequestFilter)
 
-    js_templates = ['top-comments-block', 'top-comment', 'add-comment-dialog', 'line-comment', ]
+    js_templates = ['top-comments-block', 'comment', 'add-comment-dialog', 'line-comment', ]
 
     # IRequestFilter methods
     def pre_process_request(self, req, handler):
