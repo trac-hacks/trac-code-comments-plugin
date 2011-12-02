@@ -196,7 +196,4 @@ jQuery(function($) {
 	LineCommentsBlock.render();
 	AddCommentDialog.render();
 	LineCommentBubbles.render();
-	
-	
-
 });
