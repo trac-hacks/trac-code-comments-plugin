@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name='TracCodeComments', version='0.3.0',
+    name='TracCodeComments', version='0.3.1',
     packages=find_packages(exclude=['*.tests*']),
     entry_points = {
         'trac.plugins': [
