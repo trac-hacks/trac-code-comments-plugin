@@ -21,7 +21,7 @@ ul.comments .active {
 }
 ul.comments {
 	margin: 0;
-	padding-left: 0;
+	padding: 2px 4px 0 0;
 	font-size: 11px;
 	font-family: Verdana, sans-serif;
 }
@@ -55,4 +55,11 @@ ul.comments li .text {
 }
 #top-comments button {
 	margin-bottom: 16px;
+}
+tr.with-comments {
+	background-color: #FFFFE2;
+	border-bottom: 1px solid #998;
+}
+tr.comments {
+	border-bottom: 1px solid #998;
 }
