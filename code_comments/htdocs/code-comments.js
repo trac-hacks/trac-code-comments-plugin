@@ -108,14 +108,15 @@ jQuery(function($) {
 			//TODO: + links
 		},
 		addOne: function(comment) {
-			var view = new LineCommentView({model: comment});
+			var view = new TopCommentView({model: comment});
 			var rendered = view.render().el;
-			var $tr = $("#L"+comment.get('line')).parent();
-			var $last_line_comment = $tr.siblings('tr.line-comment[data-line="'+comment.get('line')+'"]:last');
-			if ($last_line_comment.length)
-				$last_line_comment.after(rendered);
-			else
-				$tr.after(rendered);
+			var $line_tr = $("#L"+comment.get('line')).parent();
+			var $line_comment_tr = $line_tr.siblings('tr[data-line="'+comment.get('line')+'"]');
+			if (!$line_comment_tr.length) {
+				$line_tr.after('<tr data-line="'+comment.get('line')+'"><td>&nbsp;</td><td><ul class="comments"></ul></td></tr>');
+				$line_comment_tr = $line_tr.siblings('tr[data-line="'+comment.get('line')+'"]');
+			}
+			$('ul.comments', $line_comment_tr).append(rendered);
 		},
 		addAll: function() {
 			var view = this;
