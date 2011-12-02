@@ -159,14 +159,44 @@ jQuery(function($) {
 			this.collection.create({text: text, author: CodeComments.username, path: CodeComments.path, revision: CodeComments.revision, line: line}, options);
 		},
 	});
-
+	
+	
+	window.LineCommentBubblesView = Backbone.View.extend({
+		render: function() {
+			this.$('tr').not('.comments').hover(
+				function() {
+					var $th = $('th', this);
+					var line = $('a', $th).attr('href').replace('#L', '');
+					$('a', $th).css('display', 'none');
+					$th.prepend('<a style="" href="#" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
+					$('a.bubble').click(function(e) {
+							e.preventDefault();
+							AddCommentDialog.open(LineComments, line);
+						})
+						.css({width: $th.width(), height: $th.height(), 'text-align': 'center'})
+						.find('span').css('margin-left', ($th.width() - 16) / 2);
+				},
+				function() {
+					var $th = $('th', this);
+					$('a.bubble', $th).remove();
+					$('a', $th).show();
+				}
+			);
+		}
+	});
+	
 	window.TopComments = new CommentsList;
 	window.LineComments = new CommentsList;
 	window.TopCommentsBlock = new TopCommentsView;
 	window.LineCommentsBlock = new LineCommentsView;
 	window.AddCommentDialog = new AddCommentDialogView;
+	window.LineCommentBubbles = new LineCommentBubblesView({el: $('table.code')});
 
 	$(CodeComments.selectorToInsertBefore).before(TopCommentsBlock.render().el);
 	LineCommentsBlock.render();
 	AddCommentDialog.render();
+	LineCommentBubbles.render();
+	
+	
+
 });

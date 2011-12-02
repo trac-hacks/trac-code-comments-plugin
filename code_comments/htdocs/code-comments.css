@@ -46,9 +46,6 @@ ul.comments li .meta img.gravatar {
 ul.comments li .meta .author {
 	font-weight: bold;
 }
-ul.comments li .meta a {
-	font-size: 12px;
-}
 ul.comments li .meta .delete {
 	float: right;
 	margin-right: 1em;
@@ -68,4 +65,10 @@ tr.with-comments {
 }
 tr.comments {
 	border-bottom: 1px solid #998;
+}
+table.code tr {
+	height: 17px;
+}
+table.code tr:hover {
+	background-color: #FFFFCA;
 }
