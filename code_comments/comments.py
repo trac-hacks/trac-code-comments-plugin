@@ -10,6 +10,14 @@ try:
     import json
 except ImportError:
     import simplejson as json
+    
+try:
+    import hashlib
+    md5_hexdigest = lambda s: hashlib.md5(s).hexdigest()
+except ImportError:
+    import md5
+    md5_hexdigest = lambda s: md5.hexdigest(s)
+
 
 VERSION = 1
 
@@ -17,6 +25,8 @@ class Comment:
     columns = [column.name for column in db.schema['code_comments'].columns]
     
     required = 'text', 'author'
+    
+    _email_map = None
     
     def __init__(self, req, env, data):
         if isinstance(data, dict):
@@ -29,9 +39,19 @@ class Comment:
             self.version = VERSION
         context = Context.from_request(self.req, 'wiki')
         self.html = format_to_html(self.env, context, self.text)
+        email = self.email_map().get(self.author, 'baba@baba.net')
+        self.email_md5 = md5_hexdigest(email)
     
     def _empty(self, column_name):
         return not hasattr(self, column_name) or not getattr(self, column_name)
+        
+    def email_map(self):
+        if self._email_map is None:
+            self._email_map = {}
+            for username, name, email in self.env.get_known_users():
+                if email:
+                    self._email_map[username] = email
+        return self._email_map
     
     def validate(self):
         missing = [column_name for column_name in self.required if self._empty(column_name)]
