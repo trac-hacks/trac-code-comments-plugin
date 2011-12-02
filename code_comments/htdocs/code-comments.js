@@ -22,12 +22,8 @@ jQuery(function($) {
 	window.CommentView = Backbone.View.extend({
 		tagName: 'li',
 		template:  _.template(CodeComments.templates.comment),
-		events: {
-		   'click .delete': 'del',
-		},
 		initialize: function() {
 		   this.model.bind('change', this.render, this);
-		   this.model.bind('destroy', this.remove, this);
 		},
 		render: function() {
 		   $(this.el).html(this.template(_.extend(this.model.toJSON(), {
@@ -36,13 +32,7 @@ jQuery(function($) {
 				can_delete: CodeComments.is_admin,
 			})));
 		   return this;
-		},
-		remove: function() {
-		   $(this.el).remove();
-		 },
-		 del: function() {
-			this.model.destroy();
-		 }
+		}
 	});
 
 	window.TopCommentsView = Backbone.View.extend({
