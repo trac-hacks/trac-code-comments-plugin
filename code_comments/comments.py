@@ -56,8 +56,8 @@ class Comment:
     def path_link_tag(self):
         return Markup('<a href="%s">%s</a>' % (self.href(), self.path_revision_line()))
 
-    def formatted_time(self):
-        return strftime('%b, %d %Y %H:%M:%S', gmtime(self.time))
+    def formatted_date(self):
+        return strftime('%d %b %Y %H:%M:%S', gmtime(self.time))
 
     def delete(self):
         @self.env.with_transaction()
