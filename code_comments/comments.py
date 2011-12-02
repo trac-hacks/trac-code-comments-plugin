@@ -77,7 +77,7 @@ class Comment:
         return Markup('<a href="%s">%s</a>' % (self.href(), self.path_revision_line()))
 
     def formatted_date(self):
-        return strftime('%d %b %Y %H:%M:%S', gmtime(self.time))
+        return strftime('%d %b %Y, %H:%M', gmtime(self.time))
 
     def delete(self):
         @self.env.with_transaction()
