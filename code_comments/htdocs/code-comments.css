@@ -35,6 +35,9 @@ ul.comments li .meta {
 	padding: 6px;
 	background-color: #dfdfdf;
 }
+ul.comments li .time {
+	font-size: 10px;
+}
 ul.comments li .meta img.gravatar {
 	vertical-align: middle;
 	padding: 1px;
@@ -42,6 +45,9 @@ ul.comments li .meta img.gravatar {
 }
 ul.comments li .meta .author {
 	font-weight: bold;
+}
+ul.comments li .meta a {
+	font-size: 12px;
 }
 ul.comments li .meta .delete {
 	float: right;
