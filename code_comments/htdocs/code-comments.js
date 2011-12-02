@@ -44,7 +44,6 @@ jQuery(function($) {
 		},
 
 		initialize: function() {
-			this.textarea = this.$('#comment-text');
 			TopComments.bind('add',	  this.addOne, this);
 			TopComments.bind('reset', this.addAll, this);
 		},
@@ -87,7 +86,8 @@ jQuery(function($) {
 			var line = comment.get('line');
 			if (!this.viewPerLine[line]) {
 				this.viewPerLine[line] = new CommentsForALineView();
-				$("th#L"+line).parent().after(this.viewPerLine[line].render().el);
+				var $tr = $("th#L"+line).parent();
+				$tr.after(this.viewPerLine[line].render().el).addClass('with-comments');
 			}
 			this.viewPerLine[line].addOne(comment);
 		},
@@ -101,6 +101,7 @@ jQuery(function($) {
 
 	window.CommentsForALineView = Backbone.View.extend({
 		tagName: 'tr',
+		className: 'comments',
 		template: _.template(CodeComments.templates.comments_for_a_line),
 		events: {
 			'click button': 'showAddCommentDialog'
