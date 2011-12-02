@@ -50,7 +50,7 @@ jQuery(function($) {
 
 		template:  _.template(CodeComments.templates.top_comments_block),
 		events: {
-			'click #add-comment': 'showAddCommentDialog'
+			'click button': 'showAddCommentDialog'
 		},
 
 		initialize: function() {
@@ -61,7 +61,7 @@ jQuery(function($) {
 
 		render: function() {
 			$(this.el).html(this.template());
-			this.$('#add-comment').button();
+			this.$('button').button();
 			TopComments.fetch({data: {path: CodeComments.path, revision: CodeComments.revision, line: 0}});
 			return this;
 		},
@@ -85,24 +85,21 @@ jQuery(function($) {
 	window.LineCommentsView = Backbone.View.extend({
 		id: 'preview',
 		initialize: function() {
-			this.textarea = this.$('#comment-text');
 			LineComments.bind('add',	  this.addOne, this);
 			LineComments.bind('reset', this.addAll, this);
+			this.viewPerLine = {};
 		},
 		render: function() {
 			LineComments.fetch({data: {path: CodeComments.path, revision: CodeComments.revision, line__gt: 0}});
 			//TODO: + links
 		},
 		addOne: function(comment) {
-			var view = new CommentView({model: comment});
-			var rendered = view.render().el;
-			var $line_tr = $("#L"+comment.get('line')).parent();
-			var $line_comment_tr = $line_tr.siblings('tr[data-line="'+comment.get('line')+'"]');
-			if (!$line_comment_tr.length) {
-				$line_tr.after('<tr data-line="'+comment.get('line')+'"><td>&nbsp;</td><td><ul class="comments"></ul></td></tr>');
-				$line_comment_tr = $line_tr.siblings('tr[data-line="'+comment.get('line')+'"]');
+			var line = comment.get('line');
+			if (!this.viewPerLine[line]) {
+				this.viewPerLine[line] = new CommentsForALineView();
+				$("th#L"+line).parent().after(this.viewPerLine[line].render().el);
 			}
-			$('ul.comments', $line_comment_tr).append(rendered);
+			this.viewPerLine[line].addOne(comment);
 		},
 		addAll: function() {
 			var view = this;
@@ -110,6 +107,27 @@ jQuery(function($) {
 				view.addOne.call(view, comment);
 			});
 		},
+	});
+
+	window.CommentsForALineView = Backbone.View.extend({
+		tagName: 'tr',
+		template: _.template(CodeComments.templates.comments_for_a_line),
+		events: {
+			'click button': 'showAddCommentDialog'
+		},
+		render: function() {
+			$(this.el).html(this.template());
+			this.$('button').button();
+			return this;
+		},
+		addOne: function(comment) {
+			var view = new CommentView({model: comment});
+			this.line = comment.get('line');
+			this.$("ul.comments").append(view.render().el);
+		},
+		showAddCommentDialog: function() {
+			AddLineCommentDialog.open(this.line);
+		}
 	});
 
 	window.AddCommentDialogView = Backbone.View.extend({
@@ -128,7 +146,8 @@ jQuery(function($) {
 			this.$('.add-comment').button();
 			return this;
 		},
-		open: function() {
+		open: function(line) {
+			this.line = line;
 			this.$el.dialog('open');
 		},
 		close: function() {
@@ -137,6 +156,7 @@ jQuery(function($) {
 		createComment: function(e) {
 			var self = this;
 			var text = this.$('textarea').val();
+			var line = this.line? this.line : 0;
 			if (!text) return;
 			var options = {
 				success: function() {
@@ -144,7 +164,7 @@ jQuery(function($) {
 					self.$el.dialog('close');
 				}
 			}
-			this.collection.create({text: text, author: CodeComments.username, path: CodeComments.path, revision: CodeComments.revision, line: 0}, options);
+			this.collection.create({text: text, author: CodeComments.username, path: CodeComments.path, revision: CodeComments.revision, line: line}, options);
 		},
 	});
 
