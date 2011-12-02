@@ -77,7 +77,7 @@ jQuery(function($) {
 			});
 		},
 		showAddCommentDialog: function(e) {
-			AddCommentDialog.open();
+			AddTopCommentDialog.open();
 		}
 
 	});
@@ -118,8 +118,9 @@ jQuery(function($) {
 		events: {
 			'click .add-comment': 'createComment'
 		},
-		initialize: function() {
+		initialize: function(options) {
 			this.$el = $(this.el);
+			this.collection = options.collection;
 		},
 		render: function() {
 			this.$el.html(this.template({formatting_help_url: CodeComments.formatting_help_url}))
@@ -143,7 +144,7 @@ jQuery(function($) {
 					self.$el.dialog('close');
 				}
 			}
-			TopComments.create({text: text, author: CodeComments.username, path: CodeComments.path, revision: CodeComments.revision, line: 0}, options);
+			this.collection.create({text: text, author: CodeComments.username, path: CodeComments.path, revision: CodeComments.revision, line: 0}, options);
 		},
 	});
 
@@ -151,9 +152,11 @@ jQuery(function($) {
 	window.LineComments = new CommentsList;
 	window.TopCommentsBlock = new TopCommentsView;
 	window.LineCommentsBlock = new LineCommentsView;
-	window.AddCommentDialog = new AddCommentDialogView;
+	window.AddTopCommentDialog = new AddCommentDialogView({collection: TopComments});
+	window.AddLineCommentDialog = new AddCommentDialogView({collection: LineComments});
 
 	$(CodeComments.selectorToInsertBefore).before(TopCommentsBlock.render().el);
 	LineCommentsBlock.render();
-	AddCommentDialog.render();
+	AddTopCommentDialog.render();
+	AddLineCommentDialog.render();
 });
