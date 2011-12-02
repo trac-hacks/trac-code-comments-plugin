@@ -25,33 +25,33 @@ ul.comments {
 	font-size: 11px;
 	font-family: Verdana, sans-serif;
 }
-ul.comments li {
+ul.comments>li {
 	border-radius: 4px;
 	border: 1px solid #dfdfdf;
 	margin-bottom: 4px;
 	list-style-type: none;
 }
-ul.comments li .meta {
+ul.comments>li .meta {
 	padding: 6px;
 	background-color: #dfdfdf;
 }
-ul.comments li .time {
+ul.comments>li .time {
 	font-size: 10px;
 }
-ul.comments li .meta img.gravatar {
+ul.comments>li .meta img.gravatar {
 	vertical-align: middle;
 	padding: 1px;
 	border: 1px solid #888;
 }
-ul.comments li .meta .author {
+ul.comments>li .meta .author {
 	font-weight: bold;
 }
-ul.comments li .meta .delete {
+ul.comments>li .meta .delete {
 	float: right;
 	margin-right: 1em;
 }
 
-ul.comments li .text {
+ul.comments>li .text {
 	padding: 1px 8px;
 	border: 0;
 	margin: 0;
