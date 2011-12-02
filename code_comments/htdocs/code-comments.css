@@ -23,6 +23,7 @@ ul.comments {
 	margin-left: 0;
 	padding-left: 0;
 	font-size: 11px;
+	font-family: Verdana, sans-serif;
 }
 ul.comments li {
 	border-radius: 4px;
