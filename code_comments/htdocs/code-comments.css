@@ -28,7 +28,7 @@ ul.comments {
 ul.comments li {
 	border-radius: 4px;
 	border: 1px solid #dfdfdf;
-	margin-bottom: 8px;
+	margin-bottom: 4px;
 	list-style-type: none;
 }
 ul.comments li .meta {
@@ -45,6 +45,7 @@ ul.comments li .meta .author {
 }
 ul.comments li .meta .delete {
 	float: right;
+	margin-right: 1em;
 }
 
 ul.comments li .text {
