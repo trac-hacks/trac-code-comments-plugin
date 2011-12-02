@@ -16,7 +16,7 @@ try:
     md5_hexdigest = lambda s: hashlib.md5(s).hexdigest()
 except ImportError:
     import md5
-    md5_hexdigest = lambda s: md5.hexdigest(s)
+    md5_hexdigest = lambda s: md5.new(s).hexdigest()
 
 
 VERSION = 1
