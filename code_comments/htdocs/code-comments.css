@@ -69,6 +69,6 @@ tr.comments {
 table.code tr {
 	height: 17px;
 }
-table.code tr:hover {
+table.code tr:hover td {
 	background-color: #FFFFCA;
 }
