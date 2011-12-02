@@ -68,10 +68,9 @@ class Comment:
 class CommentJSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, Comment):
-            for_json = dict(((column, getattr(o, column)) for column in o.columns))
-            for_json['formatted_date'] = o.formatted_time()
+            for_json = dict([(name, getattr(o, name)) for name in o.__dict__ if isinstance(getattr(o, name), (basestring, int, list, dict))])
+            for_json['formatted_date'] = o.formatted_date()
             for_json['permalink'] = o.href()
-            for_json['html'] = o.html
             return for_json
         else:
             return json.JSONEncoder.default(self, o)
