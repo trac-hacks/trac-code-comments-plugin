@@ -67,7 +67,7 @@ jQuery(function($) {
 			});
 		},
 		showAddCommentDialog: function(e) {
-			AddTopCommentDialog.open();
+			AddCommentDialog.open(TopComments);
 		}
 
 	});
@@ -116,7 +116,7 @@ jQuery(function($) {
 			this.$("ul.comments").append(view.render().el);
 		},
 		showAddCommentDialog: function() {
-			AddLineCommentDialog.open(this.line);
+			AddCommentDialog.open(LineComments, this.line);
 		}
 	});
 
@@ -128,7 +128,6 @@ jQuery(function($) {
 		},
 		initialize: function(options) {
 			this.$el = $(this.el);
-			this.collection = options.collection;
 		},
 		render: function() {
 			this.$el.html(this.template({formatting_help_url: CodeComments.formatting_help_url}))
@@ -136,9 +135,11 @@ jQuery(function($) {
 			this.$('.add-comment').button();
 			return this;
 		},
-		open: function(line) {
+		open: function(collection, line) {
 			this.line = line;
-			this.$el.dialog('open');
+			this.collection = collection;
+			var title = 'Add comment for ' + (this.line? 'line '+this.line + ' of ' : '') + CodeComments.path + '@' + CodeComments.revision;
+			this.$el.dialog('open').dialog({title: title});
 		},
 		close: function() {
 			this.$el.dialog('close');
@@ -162,11 +163,9 @@ jQuery(function($) {
 	window.LineComments = new CommentsList;
 	window.TopCommentsBlock = new TopCommentsView;
 	window.LineCommentsBlock = new LineCommentsView;
-	window.AddTopCommentDialog = new AddCommentDialogView({collection: TopComments});
-	window.AddLineCommentDialog = new AddCommentDialogView({collection: LineComments});
+	window.AddCommentDialog = new AddCommentDialogView;
 
 	$(CodeComments.selectorToInsertBefore).before(TopCommentsBlock.render().el);
 	LineCommentsBlock.render();
-	AddTopCommentDialog.render();
-	AddLineCommentDialog.render();
+	AddCommentDialog.render();
 });
