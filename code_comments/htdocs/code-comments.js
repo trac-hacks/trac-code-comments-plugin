@@ -168,7 +168,7 @@ jQuery(function($) {
 					var $th = $('th', this);
 					var line = $('a', $th).attr('href').replace('#L', '');
 					$('a', $th).css('display', 'none');
-					$th.prepend('<a style="" href="#" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
+					$th.prepend('<a style="" href="#L'+line+'" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
 					$('a.bubble').click(function(e) {
 							e.preventDefault();
 							AddCommentDialog.open(LineComments, line);
