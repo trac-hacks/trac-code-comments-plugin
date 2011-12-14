@@ -3,6 +3,9 @@ jQuery(function($) {
 		var errorText = xhr.statusText;
 		if (-1 == xhr.responseText.indexOf('<html')) {
 			errorText += ': ' + xhr.responseText;
+		} else {
+			errorText += '\n\nSee more in the console log.';
+			console.log($('#traceback pre', xhr.responseText).text());
 		}
 		alert(errorText);
 	});
