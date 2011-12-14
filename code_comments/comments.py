@@ -37,7 +37,7 @@ class Comment:
         self.req = req
         if self._empty('version'):
             self.version = VERSION
-        context = Context.from_request(self.req, 'wiki')
+        context = Context.from_request(self.req)
         self.html = format_to_html(self.env, context, self.text)
         email = self.email_map().get(self.author, 'baba@baba.net')
         self.email_md5 = md5_hexdigest(email)
