@@ -159,8 +159,8 @@ jQuery(function($) {
 			this.collection.create({text: text, author: CodeComments.username, path: CodeComments.path, revision: CodeComments.revision, line: line}, options);
 		},
 	});
-	
-	
+
+
 	window.LineCommentBubblesView = Backbone.View.extend({
 		render: function() {
 			this.$('tr').not('.comments').hover(
@@ -184,7 +184,7 @@ jQuery(function($) {
 			);
 		}
 	});
-	
+
 	window.TopComments = new CommentsList;
 	window.LineComments = new CommentsList;
 	window.TopCommentsBlock = new TopCommentsView;
