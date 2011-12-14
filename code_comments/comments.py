@@ -112,12 +112,12 @@ class Comments:
         return [self.comment_from_row(row) for row in result['comments']]
 
     def all(self):
-        return self.search({})
+        return self.search({}, order='DESC')
 
     def by_id(self, id):
         return self.select("SELECT * FROM code_comments WHERE id=%s", [id])[0]
 
-    def search(self, args):
+    def search(self, args, order = 'ASC'):
         conditions = []
         values = []
         for name in args:
@@ -134,7 +134,9 @@ class Comments:
         where = ''
         if conditions_str:
             where = 'WHERE '+conditions_str
-        return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY time ASC', values)
+        if order != 'ASC':
+            order = 'DESC'
+        return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY time '+order, values)
 
     def create(self, args):
         comment = Comment(self.req, self.env, args)
