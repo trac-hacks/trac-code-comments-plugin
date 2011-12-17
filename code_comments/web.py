@@ -4,7 +4,7 @@ from trac.web.main import IRequestHandler, IRequestFilter
 from trac.util import Markup
 from trac.util.text import to_unicode
 from trac.versioncontrol.api import RepositoryManager
-from code_comments.comments import Comments, CommentJSONEncoder
+from code_comments.comments import Comments, CommentJSONEncoder, format_to_html
 
 try:
     import json
@@ -184,3 +184,13 @@ class CommentsREST(CodeComments):
                 comments = Comments(req, self.env)
                 id = comments.create(json.loads(req.read()))
                 self.return_json(req, comments.by_id(id))
+
+class WikiPreview(CodeComments):
+    implements(IRequestHandler)
+    
+    # IRequestHandler methods
+    def match_request(self, req):
+        return req.path_info.startswith('/' + self.href + '/preview')
+
+    def process_request(self, req):
+        req.send(format_to_html(req, self.env, req.args.get('text', '')).encode('utf-8'))
