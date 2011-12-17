@@ -4,8 +4,11 @@ jQuery(function($) {
 		if (-1 == xhr.responseText.indexOf('<html')) {
 			errorText += ': ' + xhr.responseText;
 		} else {
-			errorText += '\n\nSee more in the console log.';
-			console.log($('#traceback pre', xhr.responseText).text());
+			var traceback = $('#traceback pre', xhr.responseText).text();
+			if (traceback) {
+				errorText += '\n\nSee more in the console log.';
+				console.log(traceback);
+			}
 		}
 		alert(errorText);
 	});
