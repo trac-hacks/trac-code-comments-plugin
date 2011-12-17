@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name='TracCodeComments', version='0.3.6',
+    name='TracCodeComments', version='0.3.7',
     author='Nikolay Bachiyski',
     author_email='nikolay@automattic.com',
     description='Tool for leaving inline code comments',
