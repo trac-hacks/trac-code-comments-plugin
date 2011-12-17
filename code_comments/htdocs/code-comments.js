@@ -128,7 +128,8 @@ jQuery(function($) {
 		id: 'add-comment-dialog',
 		template:  _.template(CodeComments.templates.add_comment_dialog),
 		events: {
-			'click .add-comment': 'createComment'
+			'click button.add-comment': 'createComment',
+			'keyup textarea': 'previewThrottled'
 		},
 		initialize: function(options) {
 			this.$el = $(this.el);
@@ -136,7 +137,7 @@ jQuery(function($) {
 		render: function() {
 			this.$el.html(this.template({formatting_help_url: CodeComments.formatting_help_url}))
 				.dialog({autoOpen: false, title: 'Add Comment'});
-			this.$('.add-comment').button();
+			this.$('button.add-comment').button();
 			return this;
 		},
 		open: function(collection, line) {
@@ -161,6 +162,14 @@ jQuery(function($) {
 			}
 			this.collection.create({text: text, author: CodeComments.username, path: CodeComments.path, revision: CodeComments.revision, line: line}, options);
 		},
+		previewThrottled: $.throttle(1500, function(e) { return this.preview(e); }),
+		preview: function(e) {
+			var view = this;
+			$.get('/code-comments/preview', {text: this.$('textarea').val()}, function(data) {
+				view.$('div.preview').html(data);
+				view.$('h3').toggle(data != '');
+			});
+		}
 	});
 
 

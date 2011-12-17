@@ -3,14 +3,20 @@ table.code-comments td.check {
 }
 #add-comment-dialog textarea {
 	width: 400px;
-	height: 250px;
+	height: 180px;
 	padding: 6px;
 }
 #add-comment-dialog button {
 	float: left;
 }
-#add-comment-dialog a {
+#add-comment-dialog a.formatting {
 	float: right;
+}
+#add-comment-dialog h3 {
+	display: none;
+}
+#add-comment-dialog div.preview {
+	margin-bottom: 12px;
 }
 
 .ui-dialog {

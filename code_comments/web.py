@@ -82,6 +82,7 @@ class JSDataForRequests(CodeComments):
         # jQuery UI includes: UI Core, Interactions, Button & Dialog Widgets, Core Effects, custom theme
         add_script(req, 'code-comments/jquery-ui/jquery-ui.js')
         add_stylesheet(req, 'code-comments/jquery-ui/trac-theme.css')
+        add_script(req, 'code-comments/jquery.ba-throttle-debounce.min.js')
         add_script(req, 'code-comments/code-comments.js')
         add_script_data(req, {'CodeComments': js_data})
         return original_return_value
