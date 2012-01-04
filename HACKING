@@ -21,7 +21,7 @@ current directory.
 
 3. Checkout the repo and add a dummy file:
 
- $ svn co file://<full-path-to-svn-repo>
+ $ svn co file://<full-path-to-svn-repo> # including leading slash, e.g. file:///home/username/svn-repo/
 
 4. Add the repo in the trac.ini:
 
