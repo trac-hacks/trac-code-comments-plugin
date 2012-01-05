@@ -119,6 +119,10 @@ class ListComments(CodeComments):
         data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
         data['comments'] = Comments(req, self.env).all()
         data['can_delete'] = 'TRAC_ADMIN' in req.perm
+        # DataTables lets us filter and sort comments table
+        add_script(req, 'code-comments/DataTables/js/jquery.dataTables.min.js')
+        add_stylesheet(req, 'code-comments/DataTables/css/demo_page.css')
+        add_stylesheet(req, 'code-comments/DataTables/css/demo_table.css')
         return 'comments.html', data, None
 
 class DeleteCommentForm(CodeComments):

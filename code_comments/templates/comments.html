@@ -6,7 +6,8 @@
       xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="layout.html" />
   <head>
-    <title>Helloworld</title>
+    <title>Code Comments</title>
+    
     <script type="text/javascript" charset="utf-8">/*<![CDATA[*/
         jQuery(function($) {
         	$('#send-to-ticket').click(function(e) {
@@ -18,6 +19,13 @@
                 }
                 window.location = '${href('code-comments', 'bundle')}?ids=' + ids.join(',');
         	});
+            
+            $('table.code-comments').dataTable({
+                bPaginate: false,
+                bInfo: false,
+                bAutoWidth: false,
+				bStateSave: true,
+            });
         });
     /*]]>*/</script>
     
