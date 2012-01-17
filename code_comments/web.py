@@ -170,10 +170,7 @@ class BundleCommentsRedirect(CodeComments):
     def process_request(self, req):
         text = ''
         for id in req.args['ids'].split(','):
-            text += """
-{{{#!CodeComments description=""
-%(id)s
-}}}
+            text += """[[CodeComments(%(id)s,true)]]
 """.lstrip() % {'id': id}
         req.redirect(req.href.newticket(description=text))
 
