@@ -122,11 +122,9 @@ class ListComments(CodeComments):
             args['path__lk'] = req.args['filter-by-path']
         if (req.args) and (req.args['filter-by-author']):
             args['author'] = req.args['filter-by-author']
-        if args:
-            data['comments'] = Comments(req, self.env).search(args)
-        else:
-            data['comments'] = Comments(req, self.env).all()
-        data['paths'] = Comments(req, self.env).paths
+        
+        data['comments'] = Comments(req, self.env).search(args)
+        data['paths'] = Comments(req, self.env).build_paths()
         data['authors'] = Comments(req, self.env).authors
         data['can_delete'] = 'TRAC_ADMIN' in req.perm
         # DataTables lets us filter and sort comments table
