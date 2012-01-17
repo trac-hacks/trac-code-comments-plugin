@@ -99,7 +99,6 @@ class CommentJSONEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, o)
 
 class Comments:
-    authors = []
     def __init__(self, req, env):
         self.req, self.env = req, env
 
@@ -111,8 +110,7 @@ class Comments:
         comments = self.all()
         if not comments:
             return paths
-        for row in comments:
-            comment = self.comment_from_row(row)
+        for comment in comments:
             path = comment.path_plain()
             if not path in paths:
                 dirpath_split = path.split( "/" )
@@ -126,14 +124,17 @@ class Comments:
         paths.sort()
         return paths
          
-    def build_authors( self, row ):
-        comment = self.comment_from_row(row)
-        author = comment.author
-        if author in self.authors:
-            return author
-        
-        self.authors.append( author )
-        return author
+    def build_authors( self ):
+        authors = []
+        comments = self.all()
+        if not comments:
+            return authors
+        for comment in comments:
+            author = comment.author
+            if not author in authors:
+                authors.append( author )
+        authors.sort()
+        return authors
         
     def select(self, *query):
         result = {}
@@ -142,9 +143,6 @@ class Comments:
             cursor = db.cursor()
             cursor.execute(*query)
             result['comments'] = cursor.fetchall()
-        
-        [self.build_authors(row) for row in result['comments']]
-        self.authors.sort()
         return [self.comment_from_row(row) for row in result['comments']]
 
     def all(self):
