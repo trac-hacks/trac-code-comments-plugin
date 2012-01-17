@@ -6,7 +6,6 @@ from time import gmtime, strftime
 from code_comments import db
 from trac.util import Markup
 
-
 try:
     import json
 except ImportError:
