@@ -35,6 +35,22 @@
     <div id="content">
         <h1>Code Comments</h1>
         <button id="send-to-ticket" type="submit">Send selected to ticket</button>
+        &nbsp;|&nbsp;Filter comments: 
+        <form action="${href('code-comments')}" method="GET" style="display: inline;">
+            <select id="filter-by-path" name="filter-by-path">
+                <option value='' selected="selected">-- Select Path --</option>
+                <py:for each="path in paths">
+                    <option value="$path">$path</option>
+                </py:for>
+            </select>
+            <select id="filter-by-author" name="filter-by-author">
+                <option value='' selected="selected">-- Select Author --</option>
+                <py:for each="author in authors">
+                    <option value="$author">$author</option>
+                </py:for>
+            </select>
+            <button id="filter" type="submit" name="filter">Filter comments</button>
+        </form>
         <table class="listing code-comments">
             <thead>
                 <tr class="tarc-columns">

@@ -75,6 +75,9 @@ class Comment:
 
     def path_link_tag(self):
         return Markup('<a href="%s">%s</a>' % (self.href(), self.path_revision_line()))
+        
+    def path_plain(self):
+        return self.path;
 
     def formatted_date(self):
         return strftime('%d %b %Y, %H:%M', gmtime(self.time))
@@ -96,12 +99,39 @@ class CommentJSONEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, o)
 
 class Comments:
+    paths = []
+    authors = []
     def __init__(self, req, env):
         self.req, self.env = req, env
 
     def comment_from_row(self, row):
         return Comment(self.req, self.env, row)
 
+    def build_paths( self, row ):
+        comment = self.comment_from_row(row)
+        path = comment.path_plain()
+        if path in self.paths:
+            return path
+        
+        dirpath_split = path.split( "/" )
+        if dirpath_split:
+            for dirpath in dirpath_split:
+                del dirpath_split[-1]
+                fullpath = "/".join(dirpath_split) + '/%'
+                if (not fullpath in self.paths) and (not fullpath == '/%'):
+                   self.paths.append( fullpath )
+        self.paths.append( path )
+        return path
+    
+    def build_authors( self, row ):
+        comment = self.comment_from_row(row)
+        author = comment.author
+        if author in self.authors:
+            return author
+        
+        self.authors.append( author )
+        return author
+        
     def select(self, *query):
         result = {}
         @self.env.with_transaction()
@@ -109,6 +139,11 @@ class Comments:
             cursor = db.cursor()
             cursor.execute(*query)
             result['comments'] = cursor.fetchall()
+        [self.build_paths(row) for row in result['comments']]
+        [self.build_authors(row) for row in result['comments']]
+        self.paths.sort()
+        self.authors.sort()
+        print self.authors
         return [self.comment_from_row(row) for row in result['comments']]
 
     def all(self):
@@ -128,6 +163,9 @@ class Comments:
             elif name.endswith('__lt'):
                 name = name.replace('__lt', '')
                 conditions.append(name + ' < %s')
+            elif name.endswith('__lk'):
+                name = name.replace('__lk', '')
+                conditions.append(name + ' LIKE %s')
             else:
                 conditions.append(name + ' = %s')
         conditions_str = ' AND '.join(conditions)

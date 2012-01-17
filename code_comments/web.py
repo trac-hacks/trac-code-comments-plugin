@@ -116,8 +116,18 @@ class ListComments(CodeComments):
     def process_request(self, req):
         req.perm.require('TRAC_ADMIN')
         data = {}
+        args = {}
         data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
-        data['comments'] = Comments(req, self.env).all()
+        if (req.args) and (req.args['filter-by-path']):
+            args['path__lk'] = req.args['filter-by-path']
+        if (req.args) and (req.args['filter-by-author']):
+            args['author'] = req.args['filter-by-author']
+        if args:
+            data['comments'] = Comments(req, self.env).search(args)
+        else:
+            data['comments'] = Comments(req, self.env).all()
+        data['paths'] = Comments(req, self.env).paths
+        data['authors'] = Comments(req, self.env).authors
         data['can_delete'] = 'TRAC_ADMIN' in req.perm
         # DataTables lets us filter and sort comments table
         add_script(req, 'code-comments/DataTables/js/jquery.dataTables.min.js')
