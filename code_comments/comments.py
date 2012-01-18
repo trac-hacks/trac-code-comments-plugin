@@ -82,27 +82,25 @@ class Comment:
         return strftime('%d %b %Y, %H:%M', gmtime(self.time))
         
     def get_ticket_relations(self):
-        relations = {}
+        relations = set()
         db = self.env.get_db_cnx()
         cursor = db.cursor()
         query = """SELECT ticket FROM ticket_custom WHERE name = 'code_comment_relation' AND 
                         (value LIKE '%(comment_id)s' OR
                          value LIKE '%(comment_id)s,%%' OR
                          value LIKE '%%,%(comment_id)s' OR value LIKE '%%,%(comment_id)s,%%')""" % {'comment_id': self.id}
-        cursor.execute(query);
-        result = cursor.fetchall()
-        if result:
-            for row in result:
-                relations[int(row[0])] = int(row[0])
-        return relations
+        result = {}
+        @self.env.with_transaction()
+        def get_ticket_ids(db):
+            cursor = db.cursor()
+            cursor.execute(query)
+            result['tickets'] = cursor.fetchall()
+        return set([int(row[0]) for row in result['tickets']])
         
     def get_ticket_links(self):
         relations = self.get_ticket_relations()
-        links = []
-        for relation in relations:
-            links.append( '[[ticket:%s]]' % (relation) )
-        link_string = ", ".join(links)
-        return format_to_html(self.req, self.env, link_string)
+        links = ['[[ticket:%s]]' % relation for relation in relations]
+        return format_to_html(self.req, self.env, ', '.join(links))
 
     def delete(self):
         @self.env.with_transaction()
