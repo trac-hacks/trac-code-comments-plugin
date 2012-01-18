@@ -87,9 +87,9 @@ class Comment:
         db = self.env.get_db_cnx()
         cursor = db.cursor()
         query = """SELECT ticket FROM ticket_custom WHERE name = 'code_comment_relation' AND 
-                        (value LIKE '%(comment_id)s' OR
-                         value LIKE '%(comment_id)s,%%' OR
-                         value LIKE '%%,%(comment_id)s' OR value LIKE '%%,%(comment_id)s,%%')""" % {'comment_id': self.id}
+                        (value LIKE '%(comment_id)d' OR
+                         value LIKE '%(comment_id)d,%%' OR
+                         value LIKE '%%,%(comment_id)d' OR value LIKE '%%,%(comment_id)d,%%')""" % {'comment_id': self.id}
         result = {}
         @self.env.with_transaction()
         def get_ticket_ids(db):
