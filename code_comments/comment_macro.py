@@ -1,6 +1,6 @@
+from code_comments.comments import Comments, CommentJSONEncoder, format_to_html
 from genshi.core import Markup
 from trac.wiki.macros import WikiMacroBase
-from code_comments.comments import Comments, CommentJSONEncoder, format_to_html
 from trac.wiki import Formatter
 import StringIO
 
@@ -31,7 +31,11 @@ class CodeCommentsMacro(WikiMacroBase):
         except IndexError:
             show_description = False
             
-        comment = Comments(self.req, self.env).by_id(id)
+        try:
+            comment = Comments(self.req, self.env).by_id(id)
+        except:
+            return ''
+            
         if not show_description:
             description += """[%(link)s %(path)s]""".lstrip() % {'link': comment.href(), 'path': comment.path_revision_line()}
         else:

@@ -80,6 +80,26 @@ class Comment:
 
     def formatted_date(self):
         return strftime('%d %b %Y, %H:%M', gmtime(self.time))
+        
+    def get_ticket_relations(self):
+        relations = {}
+        db = self.env.get_db_cnx()
+        cursor = db.cursor()
+        query = """SELECT ticket FROM ticket_custom WHERE name = 'code_comment_relation' AND ( value LIKE '%(comment_id)s' OR value LIKE '%(comment_id)s,%%' OR value LIKE '%%,%(comment_id)s' OR value LIKE '%%,%(comment_id)s,%%' )""".lstrip() % {'comment_id': str(self.id),'comment_id': str(self.id),'comment_id': str(self.id),'comment_id': str(self.id)}
+        cursor.execute(query);
+        result = cursor.fetchall()
+        if result:
+            for row in result:
+                relations[int(row[0])] = int(row[0])
+        return relations
+        
+    def get_ticket_links(self):
+        relations = self.get_ticket_relations()
+        links = []
+        for relation in relations:
+            links.append( '[[ticket:%s]]' % (relation) )
+        link_string = ", ".join(links)
+        return format_to_html(self.req, self.env, link_string)
 
     def delete(self):
         @self.env.with_transaction()

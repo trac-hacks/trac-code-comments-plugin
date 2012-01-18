@@ -56,4 +56,4 @@ You should now have a working vanilla Trac at http://localhost:8000/, where you 
 
  $ python setup.py develop -mxd <path-to-trac>/plugins
 
-9. Go to the Admin section in Trac, then Plugins and enable all the components of the TracCodeComments plugin
+9. Go to the Admin section in Trac, then Plugins and enable all the components of the TracCodeComments plugin and also the CodeComments macro
