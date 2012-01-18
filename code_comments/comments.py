@@ -85,7 +85,10 @@ class Comment:
         relations = {}
         db = self.env.get_db_cnx()
         cursor = db.cursor()
-        query = """SELECT ticket FROM ticket_custom WHERE name = 'code_comment_relation' AND ( value LIKE '%(comment_id)s' OR value LIKE '%(comment_id)s,%%' OR value LIKE '%%,%(comment_id)s' OR value LIKE '%%,%(comment_id)s,%%' )""".lstrip() % {'comment_id': str(self.id),'comment_id': str(self.id),'comment_id': str(self.id),'comment_id': str(self.id)}
+        query = """SELECT ticket FROM ticket_custom WHERE name = 'code_comment_relation' AND 
+                        (value LIKE '%(comment_id)s' OR
+                         value LIKE '%(comment_id)s,%%' OR
+                         value LIKE '%%,%(comment_id)s' OR value LIKE '%%,%(comment_id)s,%%')""" % {'comment_id': self.id}
         cursor.execute(query);
         result = cursor.fetchall()
         if result:
