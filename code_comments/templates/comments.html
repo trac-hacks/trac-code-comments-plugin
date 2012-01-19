@@ -49,6 +49,12 @@
                     <option value="$author">$author</option>
                 </py:for>
             </select>
+            <select id="filter-by-ticket" name="filter-by-ticket">
+                <option value='' selected="selected">-- Select Ticket --</option>
+                <py:for each="ticket_id, ticket in tickets.items()">
+                    <option value="${ticket['code_comments_like']}">${ticket['ticket_id']} - ${ticket['title']}</option>
+                </py:for>
+            </select>
             <button id="filter" type="submit" name="filter">Filter comments</button>
         </form>
         <table class="listing code-comments">

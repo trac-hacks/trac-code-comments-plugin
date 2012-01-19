@@ -122,10 +122,14 @@ class ListComments(CodeComments):
             args['path__lk'] = req.args['filter-by-path']
         if (req.args) and (req.args['filter-by-author']):
             args['author'] = req.args['filter-by-author']
+        if (req.args) and (req.args['filter-by-ticket']):
+            args['id__in'] = req.args['filter-by-ticket']
         
         data['comments'] = Comments(req, self.env).search(args)
         data['paths'] = Comments(req, self.env).build_paths()
         data['authors'] = Comments(req, self.env).build_authors()
+        data['tickets'] = Comments(req, self.env).build_tickets()
+        
         data['can_delete'] = 'TRAC_ADMIN' in req.perm
         # DataTables lets us filter and sort comments table
         add_script(req, 'code-comments/DataTables/js/jquery.dataTables.min.js')

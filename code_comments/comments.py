@@ -5,6 +5,7 @@ from trac.util.datefmt import format_datetime
 from time import gmtime, strftime
 from code_comments import db
 from trac.util import Markup
+import re
 
 try:
     import json
@@ -102,6 +103,19 @@ class Comment:
         links = ['[[ticket:%s]]' % relation for relation in relations]
         return format_to_html(self.req, self.env, ', '.join(links))
 
+    def get_tickets_for_dropdown(self):
+        relations = self.get_ticket_relations()
+        links = ['[[ticket:%s]]' % relation for relation in relations]
+        res = {}
+        for link in links:
+            link_html = format_to_html(self.req, self.env, link)
+            if link_html:
+                # <a class="new ticket" href="/ticket/9" title="defect: just testing (new)">9</a>
+                pattern = "<a.+href=\"(.+)\" title=\"(.+)\">(.+)</a>"
+                for match in re.finditer(pattern, link_html, re.I):
+                    res[int(match.group(3))] = {'title': match.group(2), 'link': match.group(1), 'ticket_id': int(match.group(3)), 'code_comments': [str(self.id)]}
+        return res
+        
     def delete(self):
         @self.env.with_transaction()
         def delete_comment(db):
@@ -156,6 +170,29 @@ class Comments:
         authors.sort()
         return authors
         
+    def build_tickets( self ):
+        tickets = {}
+        comments = self.all()
+        if not comments:
+            return authors
+        for comment in comments:
+            comments_join = []
+            ticket_links =  comment.get_tickets_for_dropdown()
+            if ticket_links:
+                for ticket_id, ticket in ticket_links.items():
+                    if ticket_id not in tickets:
+                        tickets[ticket_id] = ticket
+                    else:
+                        for code_comment in ticket['code_comments']:
+                            if code_comment not in tickets[ticket_id]['code_comments']:
+                                tickets[ticket_id]['code_comments'].append(code_comment)
+
+        if tickets:
+            for ticket_id, ticket in tickets.items():
+                tickets[ticket_id]['code_comments_like'] = ",".join(tickets[ticket_id]['code_comments'])
+        return tickets
+        
+        
     def select(self, *query):
         result = {}
         @self.env.with_transaction()
@@ -175,7 +212,8 @@ class Comments:
         conditions = []
         values = []
         for name in args:
-            values.append(args[name])
+            if not name.endswith('__in'):
+                values.append(args[name])
             if name.endswith('__gt'):
                 name = name.replace('__gt', '')
                 conditions.append(name + ' > %s')
@@ -185,6 +223,10 @@ class Comments:
             elif name.endswith('__lk'):
                 name = name.replace('__lk', '')
                 conditions.append(name + ' LIKE %s')
+            elif name.endswith('__in'):
+                value = args[name]
+                name = name.replace('__in', '')
+                conditions.append(name + ' IN( ' + value + ' )')
             else:
                 conditions.append(name + ' = %s')
         conditions_str = ' AND '.join(conditions)
