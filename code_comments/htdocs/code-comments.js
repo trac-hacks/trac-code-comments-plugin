@@ -176,11 +176,11 @@ jQuery(function($) {
 	});
 
 
-	window.LineCommentBubblesView = Backbone.View.extend({
+	window.LineCommentBubblesViewCode = Backbone.View.extend({
 		render: function() {
 			this.$('tr').not('.comments').hover(
 				function() {
-					var $th = $('th', this);
+					var $th = $('th[id*="L"]', this);
 					var line = $('a', $th).attr('href').replace('#L', '');
 					$('a', $th).css('display', 'none');
 					$th.prepend('<a style="" href="#L'+line+'" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
@@ -199,14 +199,50 @@ jQuery(function($) {
 			);
 		}
 	});
+	
+	window.LineCommentBubblesViewDiff = Backbone.View.extend({
+		render: function() {
+			this.$('tr').not('.comments').hover(
+				function() {
+				 	$table = $(this).parent().parent().parent();
+				 	CodeComments.path = $('h2 > a:first', $table).html();
+				 	if ( $('td.l', this).length > 0 )
+						var $th = $('td.l', this).prev('th');
+					if ( $('td.r', this).length > 0 )
+						var $th = $('td.r', this).prev('th');
+					var line = $th.html();
+					$th.html('<a style="" href="#L'+line+'" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
+					$('a.bubble').click(function(e) {
+							e.preventDefault();
+							AddCommentDialog.open(LineComments, line);
+						})
+						.css({width: $th.width(), height: $th.height(), 'text-align': 'center'})
+						.find('span').css('margin-left', ($th.width() - 16) / 2);
+				},
+				function() {
+					if ( $('td.l', this).length > 0 )
+						var $th = $('td.l', this).prev('th');
+					if ( $('td.r', this).length > 0 )
+						var $th = $('td.r', this).prev('th');
+					var line = $('a', $th).attr('href').replace('#L', '');
+					$th.html(line);
+				}
+			);
+		}
+	});
+
 
 	window.TopComments = new CommentsList;
 	window.LineComments = new CommentsList;
 	window.TopCommentsBlock = new TopCommentsView;
 	window.LineCommentsBlock = new LineCommentsView;
 	window.AddCommentDialog = new AddCommentDialogView;
-	window.LineCommentBubbles = new LineCommentBubblesView({el: $('table.code')});
-
+	if ( $('table.code').length > 0 ) {
+		window.LineCommentBubbles = new LineCommentBubblesViewCode({el: $('table.code')});
+	} else if ( $('table.trac-diff').length > 0 ) {
+		window.LineCommentBubbles = new LineCommentBubblesViewDiff({el: $('table.trac-diff')});
+	}
+	
 	$(CodeComments.selectorToInsertBefore).before(TopCommentsBlock.render().el);
 	LineCommentsBlock.render();
 	AddCommentDialog.render();
