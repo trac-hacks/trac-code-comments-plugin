@@ -148,13 +148,13 @@ class Comments:
             path = comment.path_plain()
             if not path in paths:
                 dirpath_split = path.split( "/" )
+                dirpath_split = dirpath_split[:3]
                 if dirpath_split:
                     for dirpath in dirpath_split:
                         del dirpath_split[-1]
                         fullpath = "/".join(dirpath_split) + '/%'
                         if (not fullpath in paths) and (not fullpath == '/%'):
                             paths.append( fullpath )
-                paths.append( path )
         paths.sort()
         return paths
          
