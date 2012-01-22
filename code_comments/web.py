@@ -176,7 +176,7 @@ class BundleCommentsRedirect(CodeComments):
 
     # IRequestHandler methods
     def match_request(self, req):
-        return req.path_info == '/' + self.href + '/bundle'
+        return req.path_info == '/' + self.href + '/create-ticket'
 
     def process_request(self, req):
         text = ''

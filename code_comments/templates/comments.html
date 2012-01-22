@@ -12,12 +12,12 @@
         jQuery(function($) {
         	$('#send-to-ticket').click(function(e) {
         	    e.preventDefault();
-                var ids = $('table.code-comments input:checked' ).map(function(i, e) {return e.id.replace('bundle-', '')}).get();
+                var ids = $('table.code-comments input:checked' ).map(function(i, e) {return e.id.replace('checked-', '')}).get();
                 if (!ids.length) {
-                    alert("Please select comments to bundle.");
+                    alert("Please select comments to include in the ticket.");
                     return;
                 }
-                window.location = '${href('code-comments', 'bundle')}?ids=' + ids.join(',');
+                window.location = '${href('code-comments', 'create-ticket')}?ids=' + ids.join(',');
         	});
             
             $('table.code-comments').dataTable({
@@ -34,7 +34,7 @@
   <body>
     <div id="content">
         <h1>Code Comments</h1>
-        <button id="send-to-ticket" type="submit">Send selected to ticket</button>
+        <button id="send-to-ticket" type="submit">Create ticket with selected</button>
         &nbsp;|&nbsp;Filter comments: 
         <form action="${href('code-comments')}" method="GET" style="display: inline;">
             <select id="filter-by-path" name="filter-by-path">
@@ -61,7 +61,7 @@
             <thead>
                 <tr class="tarc-columns">
                     <th>ID</th>
-                    <th>Bundle?</th>
+                    <th>&nbsp;</th>
                     <th>Author</th>
                     <th>Date</th>
                     <th>Path</th>
@@ -74,7 +74,7 @@
             <py:for each="idx, comment in enumerate(comments)">
                 <tr class="${idx % 2 and 'odd' or 'even'}">
                     <td>$comment.id</td>
-                    <td class="check"><input type="checkbox" id="bundle-$comment.id" /></td>
+                    <td class="check"><input type="checkbox" id="checked-$comment.id" /></td>
                     <th>$comment.author</th>
                     <th>${comment.formatted_date()}</th>
                     <td>${comment.path_link_tag()}</td>
