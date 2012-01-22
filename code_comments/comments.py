@@ -158,17 +158,8 @@ class Comments:
         paths.sort()
         return paths
          
-    def build_authors( self ):
-        authors = []
-        comments = self.all()
-        if not comments:
-            return authors
-        for comment in comments:
-            author = comment.author
-            if not author in authors:
-                authors.append( author )
-        authors.sort()
-        return authors
+    def get_all_comment_authors( self ):
+        return set([comment.author for comment in self.all()])
         
     def build_tickets( self ):
         tickets = {}
