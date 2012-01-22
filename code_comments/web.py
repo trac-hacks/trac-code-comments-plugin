@@ -132,7 +132,7 @@ class ListComments(CodeComments):
             args['id__in'] = req.args['filter-by-ticket']
             data['current_ticket_selection'] = req.args['filter-by-ticket']
         
-        data['comments'] = Comments(req, self.env).search(args)
+        data['comments'] = Comments(req, self.env).search(args, 'DESC')
         data['paths'] = Comments(req, self.env).build_paths()
         data['authors'] = sorted(list(Comments(req, self.env).get_all_comment_authors()))
         data['tickets'] = Comments(req, self.env).build_tickets()
