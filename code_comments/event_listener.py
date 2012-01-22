@@ -25,11 +25,11 @@ class UpdateTicketCodeComments(Component):
         changes = ticket.get_changelog()
         description = ticket['description']
         ticket_id = ticket.id
-        code_comments = self.findall( "\[\[CodeComments\(([0-9]+)[,|\)]+", description, code_comments )
+        code_comments = self.findall( "\[\[CodeCommentLink\(([0-9]+)[,|\)]+", description, code_comments )
         if changes:
             for change in changes:
                 if change[2] == 'comment':
-                    code_comments = self.findall( "\[\[CodeComments\(([0-9]+)[,|\)]+", change[4], code_comments )
+                    code_comments = self.findall( "\[\[CodeCommentLink\(([0-9]+)[,|\)]+", change[4], code_comments )
         
         if code_comments:
             existing_comments_query = """SELECT * FROM ticket_custom WHERE ticket = %(ticket_id)s AND name = 'code_comment_relation'""".lstrip() % {'ticket_id': ticket_id}

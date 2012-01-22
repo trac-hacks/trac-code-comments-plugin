@@ -181,8 +181,12 @@ class BundleCommentsRedirect(CodeComments):
     def process_request(self, req):
         text = ''
         for id in req.args['ids'].split(','):
-            text += """[[CodeComments(%(id)s,true)]]
-""".lstrip() % {'id': id}
+            comment = Comments(req, self.env).by_id(id)
+            text += """
+[[CodeCommentLink(%(id)s)]]
+%(comment_text)s
+
+""".lstrip() % {'id': id, 'comment_text': comment.text}
         req.redirect(req.href.newticket(description=text))
 
 class CommentsREST(CodeComments):
