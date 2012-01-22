@@ -41,8 +41,8 @@
             <select id="filter-by-path" name="filter-by-path">
                 <option value='' selected="selected">-- Select Path --</option>
                 <option py:for="path in paths"
-                           selected="${current_path_selection == path or None}"
-                           value="$path" py:content="path"></option>
+                           selected="${current_path_selection == path+'/' or None}"
+                           value="$path/" py:content="path"></option>
             </select>
             <select id="filter-by-author" name="filter-by-author">
                 <option value='' selected="selected">-- Select Author --</option>

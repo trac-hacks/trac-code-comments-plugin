@@ -5,7 +5,9 @@ from trac.util.datefmt import format_datetime
 from time import gmtime, strftime
 from code_comments import db
 from trac.util import Markup
+
 import re
+import os.path
 
 try:
     import json
@@ -21,6 +23,8 @@ except ImportError:
 
 
 VERSION = 1
+
+FILTER_MAX_PATH_DEPTH = 2
 
 class Comment:
     columns = [column.name for column in db.schema['code_comments'].columns]
@@ -76,9 +80,6 @@ class Comment:
     def path_link_tag(self):
         return Markup('<a href="%s">%s</a>' % (self.href(), self.path_revision_line()))
         
-    def path_plain(self):
-        return self.path;
-
     def formatted_date(self):
         return strftime('%d %b %Y, %H:%M', gmtime(self.time))
         
@@ -139,33 +140,23 @@ class Comments:
     def comment_from_row(self, row):
         return Comment(self.req, self.env, row)
 
-    def build_paths( self ):
-        paths = []
+    def get_filter_values(self):
         comments = self.all()
-        if not comments:
-            return paths
-        for comment in comments:
-            path = comment.path_plain()
-            if not path in paths:
-                dirpath_split = path.split( "/" )
-                dirpath_split = dirpath_split[:3]
-                if dirpath_split:
-                    for dirpath in dirpath_split:
-                        del dirpath_split[-1]
-                        fullpath = "/".join(dirpath_split) + '/%'
-                        if (not fullpath in paths) and (not fullpath == '/%'):
-                            paths.append( fullpath )
-        paths.sort()
-        return paths
-         
-    def get_all_comment_authors( self ):
-        return set([comment.author for comment in self.all()])
+        return {
+            'paths': self.get_all_paths(comments),
+            'authors': self.get_all_comment_authors(comments),
+            'tickets': self.get_all_tickets(comments),
+        }
         
-    def build_tickets( self ):
+    def get_all_paths(self, comments):
+        get_directory = lambda path: '/'.join(os.path.split(path)[0].split('/')[:FILTER_MAX_PATH_DEPTH])
+        return sorted(set([get_directory(comment.path) for comment in comments if get_directory(comment.path)]))
+         
+    def get_all_comment_authors(self, comments):
+        return sorted(list(set([comment.author for comment in comments])))
+        
+    def get_all_tickets(self, comments):
         tickets = {}
-        comments = self.all()
-        if not comments:
-            return authors
         for comment in comments:
             comments_join = []
             ticket_links =  comment.get_tickets_for_dropdown()
@@ -198,12 +189,16 @@ class Comments:
 
     def by_id(self, id):
         return self.select("SELECT * FROM code_comments WHERE id=%s", [id])[0]
+        
+    def assert_name(self, name):
+        if not name in Comment.columns:
+            raise ValueError("Column '%s' doesn't exist." % name)
 
     def search(self, args, order = 'ASC'):
         conditions = []
         values = []
         for name in args:
-            if not name.endswith('__in'):
+            if not name.endswith('__in') and not name.endswith('__prefix'):
                 values.append(args[name])
             if name.endswith('__gt'):
                 name = name.replace('__gt', '')
@@ -211,21 +206,28 @@ class Comments:
             elif name.endswith('__lt'):
                 name = name.replace('__lt', '')
                 conditions.append(name + ' < %s')
-            elif name.endswith('__lk'):
-                name = name.replace('__lk', '')
+            elif name.endswith('__prefix'):
+                values.append(args[name].replace('%', '\\%').replace('_', '\\_') + '%')
+                name = name.replace('__prefix', '')
                 conditions.append(name + ' LIKE %s')
             elif name.endswith('__in'):
-                value = args[name]
+                items = [item.strip() for item in args[name].split(',')]
                 name = name.replace('__in', '')
-                conditions.append(name + ' IN( ' + value + ' )')
+                for item in items:
+                    values.append(item)
+                conditions.append(name + ' IN (' + ','.join(['%s']*len(items)) + ')')
             else:
                 conditions.append(name + ' = %s')
+            # don't let SQL injections in - make sure the name is an existing comment column
+            self.assert_name(name)
         conditions_str = ' AND '.join(conditions)
         where = ''
         if conditions_str:
             where = 'WHERE '+conditions_str
         if order != 'ASC':
             order = 'DESC'
+        self.env.log.debug(where)
+        self.env.log.debug(values)        
         return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY time '+order, values)
 
     def create(self, args):
