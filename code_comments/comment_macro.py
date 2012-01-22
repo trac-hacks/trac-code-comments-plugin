@@ -16,6 +16,7 @@ class CodeCommentLinkMacro(WikiMacroBase):
     
     revision = "$Rev$"
     url = "$URL$"
+    re = r'\[\[CodeCommentLink\((\d+)\)\]\]'
     
     def expand_macro(self, formatter, name, text, args):
         self.req = formatter.req
