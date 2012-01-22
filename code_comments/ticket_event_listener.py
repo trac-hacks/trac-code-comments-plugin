@@ -33,27 +33,29 @@ class UpdateTicketCodeComments(Component):
             for change in changes:
                 if change[2] == 'comment':
                     comment_ids += re.findall(CodeCommentLinkMacro.re, change[4])
-        comment_ids = set(comment_ids)
 
-        if comment_ids:
-            existing_comments_query = """SELECT * FROM ticket_custom WHERE ticket = %(ticket_id)s AND name = 'code_comment_relation'""".lstrip() % {'ticket_id': ticket_id}
-            existing_comments = self.do_query( existing_comments_query )
-            if existing_comments:
-                insert_query = """UPDATE ticket_custom SET value = '%(comment_ids)s' WHERE ticket = %(ticket_id)s AND name = 'code_comment_relation'""".lstrip() % {'ticket_id': ticket_id, 'comment_ids': ",".join(comment_ids)}
-            else:
-                insert_query = """INSERT INTO ticket_custom (ticket,name,value) VALUES (%(ticket_id)s, 'code_comment_relation', '%(comment_ids)s')""".lstrip() % {'ticket_id': ticket_id, 'comment_ids': ",".join(comment_ids)}
-            self.do_query(insert_query)
+        comment_ids = set(comment_ids)
+        comment_ids_csv = ','.join(comment_ids)
+        
+        existing_comments_query = 'SELECT * FROM ticket_custom WHERE ticket = %s AND name = "code_comment_relation"'        
+        existing_comments = self.fetch(existing_comments_query, [ticket_id])
+        self.env.log.debug(existing_comments)
+        
+        if existing_comments:
+            self.query('UPDATE ticket_custom SET value=%s WHERE ticket=%s AND name="code_comment_relation"', [comment_ids_csv, ticket_id])
         else:
-            del_query = """UPDATE ticket_custom SET value = '' WHERE ticket = %(ticket_id)s AND name = 'code_comment_relation'""".lstrip() % {'ticket_id': ticket_id}
-            self.do_query(del_query)
+            self.query('INSERT INTO ticket_custom (ticket, name, value) VALUES (%s, "code_comment_relation", %s)', [ticket_id, comment_ids_csv])
             
-    def do_query(self, query):
-        db = self.env.get_db_cnx()
-        cursor = db.cursor()
-        try:
-            cursor.execute(query)
-            result = cursor.fetchall()
-            db.commit()
-            return result
-        except:
-            return False
+    def query(self, query, args = [], result_callback=None):
+        if result_callback is None:
+            result_callback = lambda db, cursor: True
+        result = {}
+        @self.env.with_transaction()
+        def insert_comment(db):
+            cursor = db.cursor()
+            cursor.execute(query, args)
+            result['result'] = result_callback(db, cursor)
+        return result['result']
+        
+    def fetch(self, query, args = []):
+        return self.query(query, args, lambda db, cursor: cursor.fetchall())
