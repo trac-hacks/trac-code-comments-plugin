@@ -26,7 +26,6 @@ class UpdateTicketCodeComments(Component):
         # (time, author, field, oldvalue, newvalue, permanent)
         changes = ticket.get_changelog()
         description = ticket['description']
-        ticket_id = ticket.id
         
         comment_ids += re.findall(CodeCommentLinkMacro.re, description)
         if changes:
@@ -38,13 +37,13 @@ class UpdateTicketCodeComments(Component):
         comment_ids_csv = ','.join(comment_ids)
         
         existing_comments_query = 'SELECT * FROM ticket_custom WHERE ticket = %s AND name = "code_comment_relation"'        
-        existing_comments = self.fetch(existing_comments_query, [ticket_id])
+        existing_comments = self.fetch(existing_comments_query, [ticket.id])
         self.env.log.debug(existing_comments)
         
         if existing_comments:
-            self.query('UPDATE ticket_custom SET value=%s WHERE ticket=%s AND name="code_comment_relation"', [comment_ids_csv, ticket_id])
+            self.query('UPDATE ticket_custom SET value=%s WHERE ticket=%s AND name="code_comment_relation"', [comment_ids_csv, ticket.id])
         else:
-            self.query('INSERT INTO ticket_custom (ticket, name, value) VALUES (%s, "code_comment_relation", %s)', [ticket_id, comment_ids_csv])
+            self.query('INSERT INTO ticket_custom (ticket, name, value) VALUES (%s, "code_comment_relation", %s)', [ticket.id, comment_ids_csv])
             
     def query(self, query, args = [], result_callback=None):
         if result_callback is None:
