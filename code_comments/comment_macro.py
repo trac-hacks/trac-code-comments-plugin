@@ -16,10 +16,8 @@ class CodeCommentLinkMacro(WikiMacroBase):
     re = r'\[\[CodeCommentLink\((\d+)\)\]\]'
     
     def expand_macro(self, formatter, name, text, args):
-        self.req = formatter.req
-        self.env = formatter.env
         try:
-            comment = Comments(self.req, self.env).by_id(text)
+            comment = Comments(formatter.req, formatter.env).by_id(text)
             return tag.a(comment.path_revision_line(), href=comment.href())
         except:
             return ''
