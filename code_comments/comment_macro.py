@@ -1,9 +1,6 @@
-from code_comments.comments import Comments, CommentJSONEncoder, format_to_html
-from genshi.core import Markup
+from code_comments.comments import Comments
 from genshi.builder import tag
 from trac.wiki.macros import WikiMacroBase
-from trac.wiki import Formatter
-import StringIO
 
 class CodeCommentLinkMacro(WikiMacroBase):
     """CodeCommentLink macro.
