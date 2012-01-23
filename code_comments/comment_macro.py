@@ -5,10 +5,8 @@ from trac.wiki.macros import WikiMacroBase
 class CodeCommentLinkMacro(WikiMacroBase):
     """CodeCommentLink macro.
         This macro is used to embed a comment link in a ticket or wiki page:
-        {{{
         [[CodeCommentLink(5)]]
-        where the number in the parenthesis is the comment ID.
-        }}}
+        where the number in the parentheses is the comment ID.
     """
     
     revision = "$Rev$"
