@@ -79,7 +79,7 @@ class Comment:
             href += '#L' + str(self.line)
         return href
 
-    def path_revision_line(self):
+    def link_text(self):
         if self.revision and not self.path:
             return '[%s]' % self.revision
         if self.path.startswith('attachment:'):
@@ -100,7 +100,7 @@ class Comment:
     def trac_link(self):
         if self.is_comment_to_attachment:
             return '[%s %s]' % (self.req.href())
-        return 'source:' + self.path_revision_line()
+        return 'source:' + self.link_text()
         
     def attachment_info(self):
         info = {'is': False, 'ticket': None, 'filename': None}
@@ -115,7 +115,7 @@ class Comment:
         return info
 
     def path_link_tag(self):
-        return Markup('<a href="%s">%s</a>' % (self.href(), self.path_revision_line()))
+        return Markup('<a href="%s">%s</a>' % (self.href(), self.link_text()))
         
     def formatted_date(self):
         return strftime('%d %b %Y, %H:%M', gmtime(self.time))

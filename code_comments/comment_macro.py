@@ -16,6 +16,6 @@ class CodeCommentLinkMacro(WikiMacroBase):
     def expand_macro(self, formatter, name, text, args):
         try:
             comment = Comments(formatter.req, formatter.env).by_id(text)
-            return tag.a(comment.path_revision_line(), href=comment.href())
+            return tag.a(comment.link_text(), href=comment.href())
         except:
             return ''
