@@ -51,12 +51,12 @@ class Comment:
         return not hasattr(self, column_name) or not getattr(self, column_name)
 
     def email_map(self):
-        if self._email_map is None:
-            self._email_map = {}
+        if Comment._email_map is None:
+            Comment._email_map = {}
             for username, name, email in self.env.get_known_users():
                 if email:
-                    self._email_map[username] = email
-        return self._email_map
+                    Comment._email_map[username] = email
+        return Comment._email_map
 
     def validate(self):
         missing = [column_name for column_name in self.required if self._empty(column_name)]
