@@ -83,7 +83,7 @@ class Comment:
         if self.revision and not self.path:
             return '[%s]' % self.revision
         if self.path.startswith('attachment:'):
-            return self.patch_link_text()
+            return self.attachment_link_text()
 
         # except the two specials cases of changesets (revision-only)
         # and arrachments (path-only), we must always have them both
@@ -94,7 +94,7 @@ class Comment:
             link_text += '#L' + str(self.line)
         return link_text
     
-    def patch_link_text(self):
+    def attachment_link_text(self):
         return '#%s: %s' % (self.attachment_ticket, self.attachment_filename)
 
     def trac_link(self):
