@@ -69,10 +69,15 @@ class Comment:
             return self.req.href.changeset(self.revision, codecomment=self.id)
 
     def path_revision_line(self):
-        line_suffix = ''
+        path_revision_line = self.path
+        if self.revision:
+            if self.path:
+                path_revision_line += '@' + str(self.revision)
+            else:
+                path_revision_line += '[%s]' % self.revision
         if self.line:
-            line_suffix = '#L'+str(self.line)
-        return '%s@%s%s' % (self.path, self.revision, line_suffix)
+            path_revision_line += '#L'+str(self.line)
+        return path_revision_line
 
     def trac_link(self):
         return 'source:' + self.path_revision_line()
