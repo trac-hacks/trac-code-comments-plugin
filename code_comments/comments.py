@@ -1,5 +1,8 @@
+import os.path
 from time import time
 from code_comments.comment import Comment
+
+FILTER_MAX_PATH_DEPTH = 2
 
 class Comments:
     def __init__(self, req, env):

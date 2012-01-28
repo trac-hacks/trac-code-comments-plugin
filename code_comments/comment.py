@@ -1,11 +1,10 @@
+import re
+
 import trac.wiki.formatter
 from trac.mimeview.api import Context
 from time import gmtime, strftime
 from code_comments import db
 from trac.util import Markup
-
-import re
-import os.path
 
 try:
     import json
@@ -21,8 +20,6 @@ except ImportError:
 
 
 VERSION = 1
-
-FILTER_MAX_PATH_DEPTH = 2
 
 class Comment:
     columns = [column.name for column in db.schema['code_comments'].columns]
