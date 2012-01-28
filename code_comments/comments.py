@@ -45,6 +45,12 @@ class Comment:
         self.html = format_to_html(self.req, self.env, self.text)
         email = self.email_map().get(self.author, 'baba@baba.net')
         self.email_md5 = md5_hexdigest(email)
+        attachment_info = self.attachment_info()
+        self.is_comment_to_attachment = attachment_info['is']
+        self.attachment_ticket = attachment_info['ticket']
+        self.attachment_filename = attachment_info['filename']
+        self.is_comment_to_changeset = self.revision and not self.path
+        self.is_comment_to_file = self.revision and self.path
 
     def _empty(self, column_name):
         return not hasattr(self, column_name) or not getattr(self, column_name)
@@ -63,24 +69,50 @@ class Comment:
             raise ValueError("Comment column(s) missing: %s" % ', '.join(missing))
 
     def href(self):
-        if self.path:
-            return self.req.href.browser(self.path, rev=self.revision, codecomment=self.id) + '#L' + str(self.line)
-        else:
-            return self.req.href.changeset(self.revision, codecomment=self.id)
+        if self.is_comment_to_file:
+            href = self.req.href.browser(self.path, rev=self.revision, codecomment=self.id)
+        elif self.is_comment_to_changeset:
+            href = self.req.href.changeset(self.revision, codecomment=self.id)
+        elif self.is_comment_to_attachment:
+            href = self.req.href('/attachment/ticket/%d/%s' % (self.attachment_ticket, self.attachment_filename), codecomment=self.id)
+        if self.line:
+            href += '#L' + str(self.line)
+        return href
 
     def path_revision_line(self):
-        path_revision_line = self.path
-        if self.revision:
-            if self.path:
-                path_revision_line += '@' + str(self.revision)
-            else:
-                path_revision_line += '[%s]' % self.revision
+        if self.revision and not self.path:
+            return '[%s]' % self.revision
+        if self.path.startswith('attachment:'):
+            return self.patch_link_text()
+
+        # except the two specials cases of changesets (revision-only)
+        # and arrachments (path-only), we must always have them both
+        assert self.path and self.revision
+        
+        link_text = self.path + '@' + str(self.revision)
         if self.line:
-            path_revision_line += '#L'+str(self.line)
-        return path_revision_line
+            link_text += '#L' + str(self.line)
+        return link_text
+    
+    def patch_link_text(self):
+        return '#%s: %s' % (self.attachment_ticket, self.attachment_filename)
 
     def trac_link(self):
+        if self.is_comment_to_attachment:
+            return '[%s %s]' % (self.req.href())
         return 'source:' + self.path_revision_line()
+        
+    def attachment_info(self):
+        info = {'is': False, 'ticket': None, 'filename': None}
+        info['is'] = self.path.startswith('attachment:')
+        if not info['is']:
+            return info
+        match = re.match(r'attachment:/ticket/(\d+)/(.*)', self.path)
+        if not match:
+            return info
+        info['ticket'] = int(match.group(1))
+        info['filename'] = match.group(2)
+        return info
 
     def path_link_tag(self):
         return Markup('<a href="%s">%s</a>' % (self.href(), self.path_revision_line()))
