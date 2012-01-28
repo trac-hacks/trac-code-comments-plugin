@@ -38,7 +38,6 @@ class UpdateTicketCodeComments(Component):
         
         existing_comments_query = 'SELECT * FROM ticket_custom WHERE ticket = %s AND name = "code_comment_relation"'        
         existing_comments = self.fetch(existing_comments_query, [ticket.id])
-        self.env.log.debug(existing_comments)
         
         if existing_comments:
             self.query('UPDATE ticket_custom SET value=%s WHERE ticket=%s AND name="code_comment_relation"', [comment_ids_csv, ticket.id])

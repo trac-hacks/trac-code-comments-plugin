@@ -226,8 +226,6 @@ class Comments:
             where = 'WHERE '+conditions_str
         if order != 'ASC':
             order = 'DESC'
-        self.env.log.debug(where)
-        self.env.log.debug(values)        
         return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY time '+order, values)
 
     def create(self, args):

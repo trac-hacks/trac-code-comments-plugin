@@ -75,7 +75,6 @@ class CodeCommentsSetup(Component):
         cursor = db.cursor()
         try:
             sql = "SELECT value FROM system WHERE name='code_comments_schema_version'"
-            self.log.debug(sql)
             cursor.execute(sql)
             for row in cursor:
                 return int(row[0])
