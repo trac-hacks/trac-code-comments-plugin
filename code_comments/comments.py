@@ -64,7 +64,7 @@ class Comment:
 
     def href(self):
         if self.path:
-            return self.req.href.browser(None, self.path, rev=self.revision, codecomment=self.id) + '#L' + str(self.line)
+            return self.req.href.browser(self.path, rev=self.revision, codecomment=self.id) + '#L' + str(self.line)
         else:
             return self.req.href.changeset(self.revision, codecomment=self.id)
 
