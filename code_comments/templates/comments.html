@@ -50,12 +50,6 @@
                            selected="${current_author_selection == author or None}"
                            value="$author" py:content="author"></option>
             </select>
-            <select id="filter-by-ticket" name="filter-by-ticket">
-                <option value='' selected="selected">-- Select Ticket --</option>
-                <option py:for="ticket_id, ticket in tickets.items()"
-                           selected="${current_ticket_selection == ticket['code_comments_like'] or None}"
-                           value="${ticket['code_comments_like']}">${ticket['ticket_id']} - ${ticket['title']}</option>
-            </select>
             <button id="filter" type="submit" name="filter">Filter comments</button>
         </form>
         <table class="listing code-comments">

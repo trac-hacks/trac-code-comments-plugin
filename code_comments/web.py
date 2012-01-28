@@ -127,7 +127,6 @@ class ListComments(CodeComments):
         data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
         data['current_path_selection'] = '';
         data['current_author_selection'] = '';
-        data['current_ticket_selection'] = '';
         
         if (req.args) and (req.args['filter-by-path']):
             args['path__prefix'] = req.args['filter-by-path'];
@@ -135,10 +134,7 @@ class ListComments(CodeComments):
         if (req.args) and (req.args['filter-by-author']):
             args['author'] = req.args['filter-by-author']
             data['current_author_selection'] = req.args['filter-by-author']
-        if (req.args) and (req.args['filter-by-ticket']):
-            args['id__in'] = req.args['filter-by-ticket']
-            data['current_ticket_selection'] = req.args['filter-by-ticket']
-        
+
         data['comments'] = Comments(req, self.env).search(args, 'DESC')
 
         data.update(Comments(req, self.env).get_filter_values())

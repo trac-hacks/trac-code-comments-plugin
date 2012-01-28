@@ -16,7 +16,6 @@ class Comments:
         return {
             'paths': self.get_all_paths(comments),
             'authors': self.get_all_comment_authors(comments),
-            'tickets': self.get_all_tickets(comments),
         }
         
     def get_all_paths(self, comments):
@@ -25,26 +24,6 @@ class Comments:
          
     def get_all_comment_authors(self, comments):
         return sorted(list(set([comment.author for comment in comments])))
-        
-    def get_all_tickets(self, comments):
-        tickets = {}
-        for comment in comments:
-            comments_join = []
-            ticket_links =  comment.get_tickets_for_dropdown()
-            if ticket_links:
-                for ticket_id, ticket in ticket_links.items():
-                    if ticket_id not in tickets:
-                        tickets[ticket_id] = ticket
-                    else:
-                        for code_comment in ticket['code_comments']:
-                            if code_comment not in tickets[ticket_id]['code_comments']:
-                                tickets[ticket_id]['code_comments'].append(code_comment)
-
-        if tickets:
-            for ticket_id, ticket in tickets.items():
-                tickets[ticket_id]['code_comments_like'] = ",".join(tickets[ticket_id]['code_comments'])
-        return tickets
-        
         
     def select(self, *query):
         result = {}

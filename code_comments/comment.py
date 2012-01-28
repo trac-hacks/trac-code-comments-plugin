@@ -136,19 +136,6 @@ class Comment:
         links = ['[[ticket:%s]]' % relation for relation in relations]
         return format_to_html(self.req, self.env, ', '.join(links))
 
-    def get_tickets_for_dropdown(self):
-        relations = self.get_ticket_relations()
-        links = ['[[ticket:%s]]' % relation for relation in relations]
-        res = {}
-        for link in links:
-            link_html = format_to_html(self.req, self.env, link)
-            if link_html:
-                # <a class="new ticket" href="/ticket/9" title="defect: just testing (new)">9</a>
-                pattern = "<a.+href=\"(.+)\" title=\"(.+)\">(.+)</a>"
-                for match in re.finditer(pattern, link_html, re.I):
-                    res[int(match.group(3))] = {'title': match.group(2), 'link': match.group(1), 'ticket_id': int(match.group(3)), 'code_comments': [str(self.id)]}
-        return res
-        
     def delete(self):
         @self.env.with_transaction()
         def delete_comment(db):
