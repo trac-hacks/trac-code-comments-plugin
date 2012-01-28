@@ -5,7 +5,8 @@ from trac.web.main import IRequestHandler, IRequestFilter
 from trac.util import Markup
 from trac.util.text import to_unicode
 from trac.versioncontrol.api import RepositoryManager
-from code_comments.comments import Comments, CommentJSONEncoder, format_to_html
+from code_comments.comments import Comments
+from code_comments.comment import CommentJSONEncoder, format_to_html
 
 try:
     import json
