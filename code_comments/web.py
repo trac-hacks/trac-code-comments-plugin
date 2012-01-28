@@ -1,3 +1,4 @@
+import re
 from trac.core import *
 from trac.web.chrome import INavigationContributor, ITemplateProvider, add_script, add_script_data, add_stylesheet, add_notice
 from trac.web.main import IRequestHandler, IRequestFilter
@@ -68,11 +69,12 @@ class JSDataForRequests(CodeComments):
         }
 
         original_return_value = template, data, content_type
-
         if req.path_info.startswith('/changeset/'):
-            js_data.update(self.changeset_js_data(data))
+            js_data.update(self.changeset_js_data(req, data))
         elif req.path_info.startswith('/browser'):
-            js_data.update(self.browser_js_data(data))
+            js_data.update(self.browser_js_data(req, data))
+        elif re.match(r'/attachment/ticket/\d+/.*', req.path_info):
+            js_data.update(self.attachment_js_data(req, data))
         else:
             return original_return_value
 
@@ -94,11 +96,15 @@ class JSDataForRequests(CodeComments):
             data[name.replace('-', '_')] = self.template_js_data(name)
         return data
 
-    def changeset_js_data(self, data):
+    def changeset_js_data(self, req, data):
         return {'page': 'changeset', 'revision': data['new_rev'], 'path': '', 'selectorToInsertBefore': 'div.diff:first'}
 
-    def browser_js_data(self, data):
+    def browser_js_data(self, req, data):
         return {'page': 'browser', 'revision': data['rev'], 'path': data['path'], 'selectorToInsertBefore': 'table#info'}
+
+    def attachment_js_data(self, req, data):
+        path = req.path_info.replace('/attachment/', 'attachment:/')
+        return {'page': 'attachment', 'revision': 0, 'path': path, 'selectorToInsertBefore': 'table#info'}
 
     def template_js_data(self, name):
         file_name = name + '.html'
