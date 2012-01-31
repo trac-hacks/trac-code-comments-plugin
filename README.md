@@ -10,6 +10,8 @@ This plugin allows you to leave comments on top of files, changesets, and
 attachments. Once you've added all of your comments, you can send them to
 tickets. These include links to these comments and their description.
 
+It's Github, in your Trac.
+
 Installation
 ------------
 
