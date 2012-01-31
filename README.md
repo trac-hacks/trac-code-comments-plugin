@@ -16,6 +16,8 @@ Installation
 Pick an `.egg` file from the Downloads section and place it in the `plugins/`
 directory of your Trac install.
 
+Trac Code Comments plugin requres at least python 2.4 and runs on Trac 0.12.
+
 Features
 --------
 
