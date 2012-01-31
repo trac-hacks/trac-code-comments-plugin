@@ -42,7 +42,7 @@ and create a new ticket out of them. The text of the ticket defaults to links
 to the comments and their text, but you can edit these before saving the
 ticket.
 
-* Comments/ticket cross-refernce – to remember which comments are already in
+* Comments/ticket cross-reference – to remember which comments are already in
 tickets and which are not.
 
 Screenshots
