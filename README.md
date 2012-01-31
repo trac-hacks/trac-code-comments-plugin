@@ -41,6 +41,19 @@ ticket.
 * Comments/ticket cross-refernce – to remember which comments are already in
 tickets and which are not.
 
+Contributing
+------------
+
+We'd love your help!
+
+If you are a developer, feel free to fork the project here, on github and
+submit a pull request with your changes.
+
+If you are a designer and have UI suggestions, [open an issue](https://github.com/Automattic/trac-code-comments-plugin/issues) and we'll make sure to address your concerns.
+
+If you want to help with copy, or just wanna say how great or sucky we are
+[creating an issue](https://github.com/Automattic/trac-code-comments-plugin/issues) is the way to go.
+
 Roadmap
 -------
 
