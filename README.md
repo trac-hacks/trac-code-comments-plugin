@@ -69,6 +69,7 @@ Roadmap
 -------
 
 Nobody can predict the future, but here are some features on the roadmap:
+
 * Line-level comments for changesets and diff atatchments, too
 * E-mail notifictaions
 
