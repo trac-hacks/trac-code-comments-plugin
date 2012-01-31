@@ -1,14 +1,14 @@
-Trac plugin for leaving code comments
+Code Comments, an enhancement for Trac
 =====================================
 
-Problem: when doing a code review leaving comments in context is hard.
-Gathering all issues from a code review into tickets is also hard.
+The problem is two-fold. When reviewing code, it's difficult to
+associate your comments with their appropriate context. Then,
+collecting all of these new issues into actionable tickets requires
+a lot of manual effort.
 
-This plugin allows you to leave comments on files, changesets, and
-attachments.
-
-Then, it allows you to send some of these comments to tickets, including
-links to these comments and their description.
+This plugin allows you to leave comments on top of files, changesets, and
+attachments. Once you've added all of your comments, you can send them to
+tickets. These include links to these comments and their description.
 
 Installation
 ------------
