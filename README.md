@@ -46,7 +46,7 @@ tickets and which are not.
 Screenshots
 -----------
 
-![Inline comment screenshot](https://github.com/Automattic/trac-code-comments-plugin/blob/master/screenshots/0.png)
+![Inline comment screenshot](https://github.com/Automattic/trac-code-comments-plugin/raw/master/screenshots/0.png)
 
 Contributing
 ------------
