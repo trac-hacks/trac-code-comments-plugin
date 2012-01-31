@@ -7,8 +7,14 @@ Gathering all issues from a code review into tickets is also hard.
 This plugin allows you to leave comments on files, changesets, and
 attachments.
 
-Then, it allows you to send some of these comments into tickets, including
+Then, it allows you to send some of these comments to tickets, including
 links to these comments and their description.
+
+Installation
+------------
+
+Pick an `.egg` file from the Downloads section and place it in the `plugins/`
+directory of your Trac install.
 
 Features
 --------
