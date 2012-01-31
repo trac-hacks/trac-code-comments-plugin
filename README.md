@@ -56,6 +56,8 @@ If you are a designer and have UI suggestions, [open an issue](https://github.co
 If you want to help with copy, or just wanna say how great or sucky we are
 [creating an issue](https://github.com/Automattic/trac-code-comments-plugin/issues) is the way to go.
 
+You can find help with setting up a local development environment in the [`HACKING`](https://github.com/Automattic/trac-code-comments-plugin/blob/master/HACKING) file in this repostitory,
+
 Roadmap
 -------
 
