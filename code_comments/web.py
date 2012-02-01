@@ -62,7 +62,7 @@ class JSDataForRequests(CodeComments):
 
         js_data = {
             'formatting_help_url': req.href.wiki('WikiFormatting'),
-            'delete_url': req.href('code-comments', 'delete'),
+            'delete_url': req.href(DeleteCommentForm.href),
             'templates': self.templates_js_data(),
             'active_comment_id': req.args.get('codecomment'),
             'username': req.authname,
