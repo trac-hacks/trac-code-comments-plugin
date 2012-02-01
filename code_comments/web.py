@@ -61,6 +61,7 @@ class JSDataForRequests(CodeComments):
             return
 
         js_data = {
+            'comments_rest_url': req.href(CommentsREST.href),
             'formatting_help_url': req.href.wiki('WikiFormatting'),
             'delete_url': req.href(DeleteCommentForm.href),
             'templates': self.templates_js_data(),

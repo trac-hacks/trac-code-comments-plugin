@@ -19,7 +19,7 @@ jQuery(function($) {
 
 	window.CommentsList = Backbone.Collection.extend({
 		model: Comment,
-		url: '/code-comments/comments',
+		url: CodeComments.comments_rest_url,
 		comparator: function(comment) {
 			return comment.get('time');
 		}
