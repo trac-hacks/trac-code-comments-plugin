@@ -25,7 +25,7 @@ class CodeComments(Component):
     def get_navigation_items(self, req):
         if 'TRAC_ADMIN' in req.perm:
             yield 'mainnav', 'code-comments', Markup('<a href="%s">Code Comments</a>' % (
-                     req.href('code-comments') ) )
+                     req.href(self.href) ) )
 
     # ITemplateProvider methods
     def get_templates_dirs(self):
@@ -148,10 +148,12 @@ class ListComments(CodeComments):
 
 class DeleteCommentForm(CodeComments):
     implements(IRequestHandler)
+    
+    href = CodeComments.href + '/delete'
 
     # IRequestHandler methods
     def match_request(self, req):
-        return req.path_info == '/' + self.href + '/delete'
+        return req.path_info == '/' + self.href
 
     def process_request(self, req):
         req.perm.require('TRAC_ADMIN')
@@ -175,10 +177,12 @@ class DeleteCommentForm(CodeComments):
 
 class BundleCommentsRedirect(CodeComments):
     implements(IRequestHandler)
+    
+    href = CodeComments.href + '/create-ticket'
 
     # IRequestHandler methods
     def match_request(self, req):
-        return req.path_info == '/' + self.href + '/create-ticket'
+        return req.path_info == '/' + self.href
 
     def process_request(self, req):
         text = ''
@@ -193,17 +197,19 @@ class BundleCommentsRedirect(CodeComments):
 
 class CommentsREST(CodeComments):
     implements(IRequestHandler)
+    
+    href = CodeComments.href + '/comments'
 
     # IRequestHandler methods
     def match_request(self, req):
-        return req.path_info.startswith('/' + self.href + '/comments')
+        return req.path_info.startswith('/' + self.href)
 
     def return_json(self, req, data, code=200):
         req.send(json.dumps(data, cls=CommentJSONEncoder), 'application/json')
 
     def process_request(self, req):
         #TODO: catch errors
-        if '/' + self.href + '/comments' == req.path_info:
+        if '/' + self.href == req.path_info:
             if 'GET' == req.method:
                 self.return_json(req, Comments(req, self.env).search(req.args))
             if 'POST' == req.method:
@@ -214,9 +220,11 @@ class CommentsREST(CodeComments):
 class WikiPreview(CodeComments):
     implements(IRequestHandler)
     
+    href = CodeComments.href + '/preview'
+    
     # IRequestHandler methods
     def match_request(self, req):
-        return req.path_info.startswith('/' + self.href + '/preview')
+        return req.path_info.startswith('/' + self.href)
 
     def process_request(self, req):
         req.send(format_to_html(req, self.env, req.args.get('text', '')).encode('utf-8'))
