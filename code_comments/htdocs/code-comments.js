@@ -168,7 +168,7 @@ jQuery(function($) {
 		previewThrottled: $.throttle(1500, function(e) { return this.preview(e); }),
 		preview: function(e) {
 			var view = this;
-			$.get('/code-comments/preview', {text: this.$('textarea').val()}, function(data) {
+			$.get(CodeComments.preview_url, {text: this.$('textarea').val()}, function(data) {
 				view.$('div.preview').html(data);
 				view.$('h3').toggle(data != '');
 			});
