@@ -129,7 +129,7 @@ class ListComments(CodeComments):
         data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
         data['current_path_selection'] = '';
         data['current_author_selection'] = '';
-        
+
         if (req.args) and (req.args['filter-by-path']):
             args['path__prefix'] = req.args['filter-by-path'];
             data['current_path_selection'] = req.args['filter-by-path']
@@ -150,7 +150,7 @@ class ListComments(CodeComments):
 
 class DeleteCommentForm(CodeComments):
     implements(IRequestHandler)
-    
+
     href = CodeComments.href + '/delete'
 
     # IRequestHandler methods
@@ -179,7 +179,7 @@ class DeleteCommentForm(CodeComments):
 
 class BundleCommentsRedirect(CodeComments):
     implements(IRequestHandler)
-    
+
     href = CodeComments.href + '/create-ticket'
 
     # IRequestHandler methods
@@ -199,7 +199,7 @@ class BundleCommentsRedirect(CodeComments):
 
 class CommentsREST(CodeComments):
     implements(IRequestHandler)
-    
+
     href = CodeComments.href + '/comments'
 
     # IRequestHandler methods
@@ -221,9 +221,9 @@ class CommentsREST(CodeComments):
 
 class WikiPreview(CodeComments):
     implements(IRequestHandler)
-    
+
     href = CodeComments.href + '/preview'
-    
+
     # IRequestHandler methods
     def match_request(self, req):
         return req.path_info.startswith('/' + self.href)
