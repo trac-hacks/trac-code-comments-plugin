@@ -14,18 +14,9 @@ except ImportError:
     import simplejson as json
 
 class CodeComments(Component):
-    implements(INavigationContributor, ITemplateProvider, IRequestFilter)
+    implements(ITemplateProvider, IRequestFilter)
 
     href = 'code-comments'
-
-    # INavigationContributor methods
-    def get_active_navigation_item(self, req):
-        return self.href
-
-    def get_navigation_items(self, req):
-        if 'TRAC_ADMIN' in req.perm:
-            yield 'mainnav', 'code-comments', Markup('<a href="%s">Code Comments</a>' % (
-                     req.href(self.href) ) )
 
     # ITemplateProvider methods
     def get_templates_dirs(self):
@@ -46,6 +37,18 @@ class CodeComments(Component):
     def post_process_request(self, req, template, data, content_type):
         add_stylesheet(req, 'code-comments/code-comments.css')
         return template, data, content_type
+
+class MainNavigation(CodeComments):
+    implements(INavigationContributor)
+
+    # INavigationContributor methods
+    def get_active_navigation_item(self, req):
+        return self.href
+
+    def get_navigation_items(self, req):
+        if 'TRAC_ADMIN' in req.perm:
+            yield 'mainnav', 'code-comments', Markup('<a href="%s">Code Comments</a>' % (
+                     req.href(self.href) ) )
 
 class JSDataForRequests(CodeComments):
     implements(IRequestFilter)
