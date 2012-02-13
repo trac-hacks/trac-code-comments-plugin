@@ -1,0 +1,9 @@
+CHANGELOG
+
+1.0.1	2012-02-13
+	* Fix AJAX calls not working in sub-folder installs
+	* Closed issues: http://git.io/zimpow
+	* Props: https://github.com/mumpitzstuff
+
+1.0.0	2012-01-31
+	* Initial release
