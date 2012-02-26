@@ -1,4 +1,5 @@
 jQuery(function($) {
+	var _ = window.underscore;
 	$(document).ajaxError( function(e, xhr, options){
 		var errorText = xhr.statusText;
 		if (-1 == xhr.responseText.indexOf('<html')) {
