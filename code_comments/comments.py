@@ -45,6 +45,18 @@ class Comments:
             raise ValueError("Column '%s' doesn't exist." % name)
 
     def search(self, args, order = 'ASC', per_page = None, page = 0):
+        conditions_str, values = self.condition_str_and_corresponding_values(args)
+        where = ''
+        limit = ''
+        if conditions_str:
+            where = 'WHERE '+conditions_str
+        if order != 'ASC':
+            order = 'DESC'
+        if per_page:
+            limit = ' LIMIT %d OFFSET %d' % (per_page, page*per_page)
+        return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY time ' + order + limit, values)
+    
+    def condition_str_and_corresponding_values(self, args):
         conditions = []
         values = []
         for name in args:
@@ -71,16 +83,8 @@ class Comments:
             # don't let SQL injections in - make sure the name is an existing comment column
             self.assert_name(name)
         conditions_str = ' AND '.join(conditions)
-        where = ''
-        limit = ''
-        if conditions_str:
-            where = 'WHERE '+conditions_str
-        if order != 'ASC':
-            order = 'DESC'
-        if per_page:
-            limit = ' LIMIT %d OFFSET %d' % (per_page, page*per_page)
-        return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY time ' + order + limit, values)
-
+        return conditions_str, values
+        
     def create(self, args):
         comment = Comment(self.req, self.env, args)
         comment.validate()
