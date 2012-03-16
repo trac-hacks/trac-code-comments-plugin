@@ -1,6 +1,6 @@
 import re
 from trac.core import *
-from trac.web.chrome import INavigationContributor, ITemplateProvider, add_script, add_script_data, add_stylesheet, add_notice
+from trac.web.chrome import INavigationContributor, ITemplateProvider, add_script, add_script_data, add_stylesheet, add_notice, add_link
 from trac.web.main import IRequestHandler, IRequestFilter
 from trac.util import Markup
 from trac.util.text import to_unicode
@@ -154,12 +154,27 @@ class ListComments(CodeComments):
         self.data.update(Comments(req, self.env).get_filter_values())
 
         self.data['can_delete'] = 'TRAC_ADMIN' in req.perm
+        self.data['paginator'] = self.get_paginator()
         # DataTables lets us filter and sort comments table
         add_script(req, 'code-comments/DataTables/js/jquery.dataTables.min.js')
         add_stylesheet(req, 'code-comments/DataTables/css/demo_page.css')
         add_stylesheet(req, 'code-comments/DataTables/css/demo_table.css')
         return 'comments.html', self.data, None
     
+    def get_paginator(self):
+        href_with_page = lambda page: self.req.href(self.href, page=page)
+        paginator = Paginator(self.data['comments'], self.page-1, self.per_page, Comments(self.req, self.env).count(self.args))
+        if paginator.has_next_page:
+            add_link(self.req, 'next', href_with_page(self.page + 1), 'Next Page')
+        if paginator.has_previous_page:
+            add_link(self.req, 'prev', href_with_page(self.page - 1), 'Previous Page')
+        shown_pages = paginator.get_shown_pages(page_index_count = 11)
+        links = [{'href': href_with_page(page), 'class': None, 'string': str(page), 'title': 'Page %d' % page}
+            for page in shown_pages]
+        paginator.shown_pages = links
+        paginator.current_page = {'href': None, 'class': 'current', 'string': str(paginator.page + 1), 'title': None}
+        return paginator
+
 class DeleteCommentForm(CodeComments):
     implements(IRequestHandler)
 
