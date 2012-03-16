@@ -44,7 +44,7 @@ class Comments:
         if not name in Comment.columns:
             raise ValueError("Column '%s' doesn't exist." % name)
 
-    def search(self, args, order = 'ASC'):
+    def search(self, args, order = 'ASC', per_page = None, page = 0):
         conditions = []
         values = []
         for name in args:
@@ -72,11 +72,14 @@ class Comments:
             self.assert_name(name)
         conditions_str = ' AND '.join(conditions)
         where = ''
+        limit = ''
         if conditions_str:
             where = 'WHERE '+conditions_str
         if order != 'ASC':
             order = 'DESC'
-        return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY time '+order, values)
+        if per_page:
+            limit = ' LIMIT %d OFFSET %d' % (per_page, page*per_page)
+        return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY time ' + order + limit, values)
 
     def create(self, args):
         comment = Comment(self.req, self.env, args)
