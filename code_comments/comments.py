@@ -58,7 +58,7 @@ class Comments:
         if not name in Comment.columns:
             raise ValueError("Column '%s' doesn't exist." % name)
 
-    def search(self, args, order = 'ASC', per_page = None, page = 0):
+    def search(self, args, order = 'ASC', per_page = None, page = 1):
         conditions_str, values = self.condition_str_and_corresponding_values(args)
         where = ''
         limit = ''
@@ -67,7 +67,7 @@ class Comments:
         if order != 'ASC':
             order = 'DESC'
         if per_page:
-            limit = ' LIMIT %d OFFSET %d' % (per_page, page*per_page)
+            limit = ' LIMIT %d OFFSET %d' % (per_page, (page - 1)*per_page)
         return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY time ' + order + limit, values)
     
     def condition_str_and_corresponding_values(self, args):
