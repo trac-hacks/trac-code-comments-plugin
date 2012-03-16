@@ -34,6 +34,20 @@ class Comments:
             result['comments'] = cursor.fetchall()
         return [self.comment_from_row(row) for row in result['comments']]
 
+    def count(self, args = {}):
+        conditions_str, values = self.condition_str_and_corresponding_values(args)
+        where = ''
+        if conditions_str:
+            where = 'WHERE '+conditions_str
+        query = 'SELECT COUNT(*) FROM code_comments ' + where
+        result = {}
+        @self.env.with_transaction()
+        def get_comment_count(db):
+            cursor = db.cursor()
+            cursor.execute(query, values)
+            result['count'] = cursor.fetchone()[0]
+        return result['count']
+
     def all(self):
         return self.search({}, order='DESC')
 
