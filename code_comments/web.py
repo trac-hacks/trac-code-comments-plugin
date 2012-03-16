@@ -122,7 +122,7 @@ class JSDataForRequests(CodeComments):
 class ListComments(CodeComments):
     implements(IRequestHandler)
     
-    COMMENTS_PER_PAGE = 50
+    COMMENTS_PER_PAGE = 20
     
     def __init__(self):
         self.data = {}
