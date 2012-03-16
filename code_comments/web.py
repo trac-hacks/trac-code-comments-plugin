@@ -136,15 +136,8 @@ class ListComments(CodeComments):
 
         self.req = req
         self.data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
-        self.data['current_path_selection'] = '';
-        self.data['current_author_selection'] = '';
 
-        if req.args.get('filter-by-path'):
-            self.args['path__prefix'] = req.args['filter-by-path'];
-            self.data['current_path_selection'] = req.args['filter-by-path']
-        if req.args.get('filter-by-author'):
-            self.args['author'] = req.args['filter-by-author']
-            self.data['current_author_selection'] = req.args['filter-by-author']
+        self.add_path_and_author_filters()
         
         self.per_page = int(req.args.get('per_page', self.COMMENTS_PER_PAGE))
         self.page = int(req.args.get('page', 1))
@@ -160,6 +153,18 @@ class ListComments(CodeComments):
         add_stylesheet(req, 'code-comments/DataTables/css/demo_page.css')
         add_stylesheet(req, 'code-comments/DataTables/css/demo_table.css')
         return 'comments.html', self.data, None
+        
+    def add_path_and_author_filters(self):
+        self.data['current_path_selection'] = '';
+        self.data['current_author_selection'] = '';
+        
+        if req.args.get('filter-by-path'):
+            self.args['path__prefix'] = req.args['filter-by-path'];
+            self.data['current_path_selection'] = req.args['filter-by-path']
+        if req.args.get('filter-by-author'):
+            self.args['author'] = req.args['filter-by-author']
+            self.data['current_author_selection'] = req.args['filter-by-author']
+        
     
     def get_paginator(self):
         href_with_page = lambda page: self.req.href(self.href, page=page)
