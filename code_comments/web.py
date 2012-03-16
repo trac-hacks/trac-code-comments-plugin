@@ -124,20 +124,17 @@ class ListComments(CodeComments):
     
     COMMENTS_PER_PAGE = 20
     
-    def __init__(self):
-        self.data = {}
-        self.args = {}
-        self.page = 0
-        self.per_page = self.COMMENTS_PER_PAGE
-        
-
     # IRequestHandler methods
     def match_request(self, req):
         return req.path_info == '/' + self.href
 
     def process_request(self, req):
         req.perm.require('TRAC_ADMIN')
-        
+
+        self.data = {}
+        self.args = {}
+
+        self.req = req
         self.data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
         self.data['current_path_selection'] = '';
         self.data['current_author_selection'] = '';
@@ -149,8 +146,8 @@ class ListComments(CodeComments):
             self.args['author'] = req.args['filter-by-author']
             self.data['current_author_selection'] = req.args['filter-by-author']
         
-        self.per_page = req.args.get('per_page', self.per_page)
-        self.page = req.args.get('page', self.page)
+        self.per_page = int(req.args.get('per_page', self.COMMENTS_PER_PAGE))
+        self.page = int(req.args.get('page', 1))
 
         self.data['comments'] = Comments(req, self.env).search(self.args, 'DESC', self.per_page, self.page)
 
