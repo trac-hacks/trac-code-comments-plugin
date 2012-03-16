@@ -158,12 +158,12 @@ class ListComments(CodeComments):
         self.data['current_path_selection'] = '';
         self.data['current_author_selection'] = '';
 
-        if req.args.get('filter-by-path'):
-            self.args['path__prefix'] = req.args['filter-by-path'];
-            self.data['current_path_selection'] = req.args['filter-by-path']
-        if req.args.get('filter-by-author'):
-            self.args['author'] = req.args['filter-by-author']
-            self.data['current_author_selection'] = req.args['filter-by-author']
+        if self.req.args.get('filter-by-path'):
+            self.args['path__prefix'] = self.req.args['filter-by-path'];
+            self.data['current_path_selection'] = self.req.args['filter-by-path']
+        if self.req.args.get('filter-by-author'):
+            self.args['author'] = self.req.args['filter-by-author']
+            self.data['current_author_selection'] = self.req.args['filter-by-author']
 
 
     def get_paginator(self):
