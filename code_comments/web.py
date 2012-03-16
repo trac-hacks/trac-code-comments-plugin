@@ -133,10 +133,10 @@ class ListComments(CodeComments):
         data['current_path_selection'] = '';
         data['current_author_selection'] = '';
 
-        if (req.args) and (req.args['filter-by-path']):
+        if req.args.get('filter-by-path'):
             args['path__prefix'] = req.args['filter-by-path'];
             data['current_path_selection'] = req.args['filter-by-path']
-        if (req.args) and (req.args['filter-by-author']):
+        if req.args.get('filter-by-author'):
             args['author'] = req.args['filter-by-author']
             data['current_author_selection'] = req.args['filter-by-author']
 
