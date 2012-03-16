@@ -39,13 +39,13 @@
         &nbsp;Filter comments: 
         <form action="${href('code-comments')}" method="GET" style="display: inline;">
             <select id="filter-by-path" name="filter-by-path">
-                <option value='' selected="selected">-- Select Path --</option>
+                <option value='' selected="selected">-- All paths --</option>
                 <option py:for="path in paths"
                            selected="${current_path_selection == path+'/' or None}"
                            value="$path/" py:content="path"></option>
             </select>
             <select id="filter-by-author" name="filter-by-author">
-                <option value='' selected="selected">-- Select Author --</option>
+                <option value='' selected="selected">-- All authors --</option>
                 <option py:for="author in authors"
                            selected="${current_author_selection == author or None}"
                            value="$author" py:content="author"></option>
