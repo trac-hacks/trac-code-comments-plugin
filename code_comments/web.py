@@ -133,21 +133,20 @@ class ListComments(CodeComments):
 
         self.data = {}
         self.args = {}
-
         self.req = req
-        self.data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
-
-        self.add_path_and_author_filters()
 
         self.per_page = int(req.args.get('per_page', self.COMMENTS_PER_PAGE))
         self.page = int(req.args.get('page', 1))
+        
+        self.add_path_and_author_filters()
 
         self.data['comments'] = Comments(req, self.env).search(self.args, 'DESC', self.per_page, self.page)
-
-        self.data.update(Comments(req, self.env).get_filter_values())
-
+        self.data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
         self.data['can_delete'] = 'TRAC_ADMIN' in req.perm
         self.data['paginator'] = self.get_paginator()
+        
+        self.data.update(Comments(req, self.env).get_filter_values())
+
         # DataTables lets us filter and sort comments table
         add_script(req, 'code-comments/DataTables/js/jquery.dataTables.min.js')
         add_stylesheet(req, 'code-comments/DataTables/css/demo_page.css')
