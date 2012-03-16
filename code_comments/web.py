@@ -4,6 +4,7 @@ from trac.web.chrome import INavigationContributor, ITemplateProvider, add_scrip
 from trac.web.main import IRequestHandler, IRequestFilter
 from trac.util import Markup
 from trac.util.text import to_unicode
+from trac.util.presentation import Paginator
 from trac.versioncontrol.api import RepositoryManager
 from code_comments.comments import Comments
 from code_comments.comment import CommentJSONEncoder, format_to_html
@@ -120,6 +121,15 @@ class JSDataForRequests(CodeComments):
 
 class ListComments(CodeComments):
     implements(IRequestHandler)
+    
+    COMMENTS_PER_PAGE = 50
+    
+    def __init__(self):
+        self.data = {}
+        self.args = {}
+        self.page = 0
+        self.per_page = self.COMMENTS_PER_PAGE
+        
 
     # IRequestHandler methods
     def match_request(self, req):
@@ -127,30 +137,32 @@ class ListComments(CodeComments):
 
     def process_request(self, req):
         req.perm.require('TRAC_ADMIN')
-        data = {}
-        args = {}
-        data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
-        data['current_path_selection'] = '';
-        data['current_author_selection'] = '';
+        
+        self.data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
+        self.data['current_path_selection'] = '';
+        self.data['current_author_selection'] = '';
 
         if req.args.get('filter-by-path'):
-            args['path__prefix'] = req.args['filter-by-path'];
-            data['current_path_selection'] = req.args['filter-by-path']
+            self.args['path__prefix'] = req.args['filter-by-path'];
+            self.data['current_path_selection'] = req.args['filter-by-path']
         if req.args.get('filter-by-author'):
-            args['author'] = req.args['filter-by-author']
-            data['current_author_selection'] = req.args['filter-by-author']
+            self.args['author'] = req.args['filter-by-author']
+            self.data['current_author_selection'] = req.args['filter-by-author']
+        
+        self.per_page = req.args.get('per_page', self.per_page)
+        self.page = req.args.get('page', self.page)
 
-        data['comments'] = Comments(req, self.env).search(args, 'DESC')
+        self.data['comments'] = Comments(req, self.env).search(self.args, 'DESC', self.per_page, self.page)
 
-        data.update(Comments(req, self.env).get_filter_values())
+        self.data.update(Comments(req, self.env).get_filter_values())
 
-        data['can_delete'] = 'TRAC_ADMIN' in req.perm
+        self.data['can_delete'] = 'TRAC_ADMIN' in req.perm
         # DataTables lets us filter and sort comments table
         add_script(req, 'code-comments/DataTables/js/jquery.dataTables.min.js')
         add_stylesheet(req, 'code-comments/DataTables/css/demo_page.css')
         add_stylesheet(req, 'code-comments/DataTables/css/demo_table.css')
-        return 'comments.html', data, None
-
+        return 'comments.html', self.data, None
+    
 class DeleteCommentForm(CodeComments):
     implements(IRequestHandler)
 
