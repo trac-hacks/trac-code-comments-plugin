@@ -147,10 +147,6 @@ class ListComments(CodeComments):
         
         self.data.update(Comments(req, self.env).get_filter_values())
 
-        # DataTables lets us filter and sort comments table
-        add_script(req, 'code-comments/DataTables/js/jquery.dataTables.min.js')
-        add_stylesheet(req, 'code-comments/DataTables/css/demo_page.css')
-        add_stylesheet(req, 'code-comments/DataTables/css/demo_table.css')
         return 'comments.html', self.data, None
 
     def add_path_and_author_filters(self):

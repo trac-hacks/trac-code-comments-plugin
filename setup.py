@@ -11,6 +11,5 @@ setup(
             'code_comments = code_comments',
         ],
     },
-    package_data = {'code_comments': ['templates/*.html', 'templates/js/*.html', 'htdocs/*.*','htdocs/jquery-ui/*.*', 'htdocs/jquery-ui/images/*.*',
-            'htdocs/DataTables/css/*.*', 'htdocs/DataTables/js/*.*', 'htdocs/DataTables/images/*.*' ]},
+    package_data = {'code_comments': ['templates/*.html', 'templates/js/*.html', 'htdocs/*.*','htdocs/jquery-ui/*.*', 'htdocs/jquery-ui/images/*.*',]},
 )
