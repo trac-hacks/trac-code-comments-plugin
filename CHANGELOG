@@ -1,8 +1,14 @@
 CHANGELOG
 
+1.1		2012-04-05
+	* NEW: Paging for comments listing page
+	* Pagination now respects filter arguments
+	* Fix expander icon not working in tree view
+	* Closed issues: https://github.com/Automattic/trac-code-comments-plugin/issues?milestone=3&state=closed
+
 1.0.1	2012-02-13
 	* Fix AJAX calls not working in sub-folder installs
-	* Closed issues: http://git.io/zimpow
+	* Closed issues: https://github.com/Automattic/trac-code-comments-plugin/issues?milestone=1&state=closed
 	* Props: https://github.com/mumpitzstuff
 
 1.0.0	2012-01-31
