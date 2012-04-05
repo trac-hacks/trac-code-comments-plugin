@@ -1,4 +1,5 @@
 import re
+import copy
 from trac.core import *
 from trac.web.chrome import INavigationContributor, ITemplateProvider, add_script, add_script_data, add_stylesheet, add_notice, add_link
 from trac.web.main import IRequestHandler, IRequestFilter
@@ -162,7 +163,10 @@ class ListComments(CodeComments):
 
 
     def get_paginator(self):
-        href_with_page = lambda page: self.req.href(self.href, page=page)
+        def href_with_page(page):
+            args = copy.copy(self.req.args)
+            args['page'] = page
+            return self.req.href(self.href, args)
         paginator = Paginator(self.data['comments'], self.page-1, self.per_page, Comments(self.req, self.env).count(self.args))
         if paginator.has_next_page:
             add_link(self.req, 'next', href_with_page(self.page + 1), 'Next Page')
