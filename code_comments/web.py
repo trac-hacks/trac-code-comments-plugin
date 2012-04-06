@@ -123,7 +123,7 @@ class JSDataForRequests(CodeComments):
 class ListComments(CodeComments):
     implements(IRequestHandler)
 
-    COMMENTS_PER_PAGE = 20
+    COMMENTS_PER_PAGE = 50
 
     # IRequestHandler methods
     def match_request(self, req):
