@@ -147,6 +147,8 @@ class ListComments(CodeComments):
         self.data['paginator'] = self.get_paginator()
         
         self.data.update(Comments(req, self.env).get_filter_values())
+        add_script(req, 'code-comments/tablesorter/jquery.tablesorter.min.js')
+        add_stylesheet(req, 'code-comments/tablesorter/style.css')
 
         return 'comments.html', self.data, None
 

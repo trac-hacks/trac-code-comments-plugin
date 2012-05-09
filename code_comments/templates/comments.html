@@ -20,6 +20,9 @@
                 window.location = '${href('code-comments', 'create-ticket')}?ids=' + ids.join(',');
         	});            
         });
+        jQuery(document).ready(function($){
+            $('#list-code-comments').tablesorter({ headers: { 1:{sorter: false}, 6:{sorter: false}, 7:{sorter:false} } });
+        });
     /*]]>*/</script>
     
   </head>
@@ -44,7 +47,7 @@
             </select>
             <button id="filter" type="submit" name="filter">Filter comments</button>
         </form>
-        <table class="listing code-comments">
+        <table id="list-code-comments" class="listing code-comments tablesorter">
             <thead>
                 <tr class="tarc-columns">
                     <th>ID</th>
