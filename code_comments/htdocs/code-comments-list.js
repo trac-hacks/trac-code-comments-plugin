@@ -2,13 +2,12 @@ jQuery(document).ready(function($){
 
 	$('#send-to-ticket').click(function(e) {
 		e.preventDefault();
-		$this = $(this);
 		var ids = $('table.code-comments .check input:checked' ).map(function(i, e) {return e.id.replace('checked-', '')}).get();
 		if (!ids.length) {
 			alert("Please select comments to include in the ticket.");
 			return;
 		}
-		window.location = $this.data('url') + '?ids=' + ids.join(',');
+		window.location = $(this).data('url') + '?ids=' + ids.join(',');
 	});
 
 	$check_all_checkbox = $('#check-all input');
