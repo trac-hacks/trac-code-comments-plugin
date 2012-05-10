@@ -60,8 +60,8 @@
             <tbody>
             <py:for each="idx, comment in enumerate(comments)">
                 <tr class="${idx % 2 and 'odd' or 'even'}">
-                    <td>$comment.id</td>
                     <td class="check"><input type="checkbox" id="checked-$comment.id" /></td>
+                    <td>$comment.id</td>
                     <th>$comment.author</th>
                     <th>${comment.formatted_date()}</th>
                     <td>${comment.path_link_tag()}</td>
