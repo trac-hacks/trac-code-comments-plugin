@@ -2,7 +2,7 @@ jQuery(document).ready(function($){
 
 	$('#send-to-ticket').click(function(e) {
 		e.preventDefault();
-		var ids = $('table.code-comments .check input:checked' ).map(function(i, e) {return e.id.replace('checked-', '')}).get();
+		var ids = $('table.code-comments td.check input:checked' ).map(function(i, e) {return e.id.replace('checked-', '')}).get();
 		if (!ids.length) {
 			alert("Please select comments to include in the ticket.");
 			return;
