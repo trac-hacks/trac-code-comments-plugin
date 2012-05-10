@@ -10,7 +10,7 @@ jQuery(document).ready(function($){
 		window.location = $(this).data('url') + '?ids=' + ids.join(',');
 	});
 
-	$check_all_checkbox = $('#check-all input');
+	$check_all_checkbox = $('th.check input');
 	$all_checkboxes = $('td.check input')
 
 	$check_all_checkbox.click(function(){
