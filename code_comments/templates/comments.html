@@ -7,27 +7,12 @@
   <xi:include href="layout.html" />
   <head>
     <title>Code Comments</title>
-    
-    <script type="text/javascript" charset="utf-8">/*<![CDATA[*/
-        jQuery(function($) {
-        	$('#send-to-ticket').click(function(e) {
-        	    e.preventDefault();
-                var ids = $('table.code-comments .check input:checked' ).map(function(i, e) {return e.id.replace('checked-', '')}).get();
-                if (!ids.length) {
-                    alert("Please select comments to include in the ticket.");
-                    return;
-                }
-                window.location = '${href('code-comments', 'create-ticket')}?ids=' + ids.join(',');
-        	});            
-        });
-    /*]]>*/</script>
-    
   </head>
 
   <body>
     <div id="content">
         <h1>Code Comments</h1>
-        <button id="send-to-ticket" type="submit">Create ticket with selected</button>
+        <button id="send-to-ticket" type="submit" data-url="${href('code-comments', 'create-ticket')}">Create ticket with selected</button>
         &nbsp;Filter comments: 
         <form action="$current_action" method="GET" style="display: inline;">
             <select id="filter-by-path" name="filter-by-path">
