@@ -194,6 +194,8 @@ class ListComments(CodeComments):
         displayed_sorting_methods = ('id', 'author', 'time', 'path', 'text')
         displayed_sorting_method_names = ('ID', 'Author', 'Date', 'Path', 'Text')
         query_args = self.req.args
+        if ( query_args.has_key('page') ):
+            del query_args['page']
         for sorting_method, sorting_method_name in zip(displayed_sorting_methods, displayed_sorting_method_names):
             query_args['orderby'] = sorting_method
             html_class = 'header'
