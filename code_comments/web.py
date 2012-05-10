@@ -1,6 +1,5 @@
 import re
 import copy
-import urllib
 from trac.core import *
 from trac.web.chrome import INavigationContributor, ITemplateProvider, add_script, add_script_data, add_stylesheet, add_notice, add_link
 from trac.web.main import IRequestHandler, IRequestFilter
@@ -141,8 +140,6 @@ class ListComments(CodeComments):
         self.page = int(req.args.get('page', 1))
         self.order_by = req.args.get('orderby', 'id')
         self.order = req.args.get('order', 'ASC')
-        self.filter_by_path = str(req.args.get('filter-by-path', ''))
-        self.filter_by_author = str(req.args.get('filter-by-author', ''))
 
         self.add_path_and_author_filters()
 
@@ -154,28 +151,9 @@ class ListComments(CodeComments):
         self.data['current_sorting_method'] = self.order_by
         self.data['current_order'] = self.order
         self.data['sortable_headers'] = []
-        self.query_args = {}
 
         self.data.update(self.comments.get_filter_values())
-
-        for sorting_method in self.comments.valid_sorting_methods:
-            self.name = sorting_method.title()
-            if 'Id' == self.name:
-                self.name = 'ID'
-            self.query_args['orderby'] = sorting_method
-            self.html_class = 'header'
-            if self.order_by == sorting_method:
-                if 'ASC' == self.order:
-                    self.query_args['order'] = 'DESC'
-                    self.html_class += ' headerSortUp'
-                else:
-                    self.html_class += ' headerSortDown'
-            if self.filter_by_path:
-                self.query_args['filter-by-path'] = self.filter_by_path
-            if self.filter_by_author:
-                self.query_args['filter-by-author'] = self.filter_by_author
-            self.link = self.href + '?' + urllib.urlencode(self.query_args)
-            self.data['sortable_headers'].append({ 'name': self.name, 'link': self.link, 'html_class': self.html_class })
+        self.prepare_sortable_headers(self.comments.valid_sorting_methods, self.comments.valid_sorting_method_names)
 
         return 'comments.html', self.data, None
 
@@ -211,6 +189,21 @@ class ListComments(CodeComments):
         paginator.shown_pages = links
         paginator.current_page = {'href': None, 'class': 'current', 'string': str(paginator.page + 1), 'title': None}
         return paginator
+
+    def prepare_sortable_headers(self, valid_sorting_methods, valid_sorting_method_names):
+        query_args = self.req.args
+        for sorting_method, sorting_method_name in zip(valid_sorting_methods, valid_sorting_method_names):
+            query_args['orderby'] = sorting_method
+            html_class = 'header'
+            if self.order_by == sorting_method:
+                if 'ASC' == self.order:
+                    query_args['order'] = 'DESC'
+                    html_class += ' headerSortUp'
+                else:
+                    query_args['order'] = 'ASC'
+                    html_class += ' headerSortDown'
+            link = self.req.href(self.href, query_args)
+            self.data['sortable_headers'].append({ 'name': sorting_method_name, 'link': link, 'html_class': html_class })
 
 class DeleteCommentForm(CodeComments):
     implements(IRequestHandler)
