@@ -138,6 +138,7 @@ class ListComments(CodeComments):
         self.req = req
 
         add_stylesheet(req, 'code-comments/sort/sort.css')
+        add_script(req, 'code-comments/code-comments-list.js')
 
         self.per_page = int(req.args.get('per_page', self.COMMENTS_PER_PAGE))
         self.page = int(req.args.get('page', 1))
