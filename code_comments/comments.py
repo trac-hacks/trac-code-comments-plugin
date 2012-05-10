@@ -8,7 +8,6 @@ class Comments:
     def __init__(self, req, env):
         self.req, self.env = req, env
         self.valid_sorting_methods = ('id', 'author', 'time', 'path', 'text')
-        self.valid_sorting_method_names = ('ID', 'Author', 'Date', 'Path', 'Text')
 
     def comment_from_row(self, row):
         return Comment(self.req, self.env, row)

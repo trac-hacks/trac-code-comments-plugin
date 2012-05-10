@@ -153,7 +153,7 @@ class ListComments(CodeComments):
         self.data['sortable_headers'] = []
 
         self.data.update(self.comments.get_filter_values())
-        self.prepare_sortable_headers(self.comments.valid_sorting_methods, self.comments.valid_sorting_method_names)
+        self.prepare_sortable_headers()
 
         return 'comments.html', self.data, None
 
@@ -190,9 +190,11 @@ class ListComments(CodeComments):
         paginator.current_page = {'href': None, 'class': 'current', 'string': str(paginator.page + 1), 'title': None}
         return paginator
 
-    def prepare_sortable_headers(self, valid_sorting_methods, valid_sorting_method_names):
+    def prepare_sortable_headers(self):
+        displayed_sorting_methods = ('id', 'author', 'time', 'path', 'text')
+        displayed_sorting_method_names = ('ID', 'Author', 'Date', 'Path', 'Text')
         query_args = self.req.args
-        for sorting_method, sorting_method_name in zip(valid_sorting_methods, valid_sorting_method_names):
+        for sorting_method, sorting_method_name in zip(displayed_sorting_methods, displayed_sorting_method_names):
             query_args['orderby'] = sorting_method
             html_class = 'header'
             if self.order_by == sorting_method:
