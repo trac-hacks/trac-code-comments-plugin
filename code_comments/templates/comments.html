@@ -13,8 +13,8 @@
     <div id="content">
         <h1>Code Comments</h1>
         <button id="send-to-ticket" type="submit" data-url="${href('code-comments', 'create-ticket')}">Create ticket with selected</button>
-        &nbsp;Filter comments: 
-        <form action="$current_action" method="GET" style="display: inline;">
+        &nbsp;Filter comments:
+        <form action="${href('code-comments')}" method="GET" style="display: inline;">
             <select id="filter-by-path" name="filter-by-path">
                 <option value='' selected="selected">-- All paths --</option>
                 <option py:for="path in paths"
