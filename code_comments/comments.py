@@ -7,6 +7,7 @@ FILTER_MAX_PATH_DEPTH = 2
 class Comments:
     def __init__(self, req, env):
         self.req, self.env = req, env
+        self.valid_sorting_methods = ['id', 'author', 'date', 'author', 'text']
 
     def comment_from_row(self, row):
         return Comment(self.req, self.env, row)
@@ -58,7 +59,9 @@ class Comments:
         if not name in Comment.columns:
             raise ValueError("Column '%s' doesn't exist." % name)
 
-    def search(self, args, order = 'ASC', per_page = None, page = 1):
+    def search(self, args, order = 'ASC', per_page = None, page = 1, order_by = 'time'):
+        if order_by not in self.valid_sorting_methods or 'date' == order_by :
+            order_by = 'time'
         conditions_str, values = self.condition_str_and_corresponding_values(args)
         where = ''
         limit = ''
@@ -68,7 +71,7 @@ class Comments:
             order = 'DESC'
         if per_page:
             limit = ' LIMIT %d OFFSET %d' % (per_page, (page - 1)*per_page)
-        return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY time ' + order + limit, values)
+        return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY ' + order_by + ' ' + order + limit, values)
     
     def condition_str_and_corresponding_values(self, args):
         conditions = []
