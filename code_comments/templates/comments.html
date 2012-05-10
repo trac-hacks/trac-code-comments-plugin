@@ -7,7 +7,7 @@
   <xi:include href="layout.html" />
   <head>
     <title>Code Comments</title>
-    
+
     <script type="text/javascript" charset="utf-8">/*<![CDATA[*/
         jQuery(function($) {
         	$('#send-to-ticket').click(function(e) {
@@ -18,17 +18,17 @@
                     return;
                 }
                 window.location = '${href('code-comments', 'create-ticket')}?ids=' + ids.join(',');
-        	});            
+        	});
         });
     /*]]>*/</script>
-    
+
   </head>
 
   <body>
     <div id="content">
         <h1>Code Comments</h1>
         <button id="send-to-ticket" type="submit">Create ticket with selected</button>
-        &nbsp;Filter comments: 
+        &nbsp;Filter comments:
         <form action="${href('code-comments')}" method="GET" style="display: inline;">
             <select id="filter-by-path" name="filter-by-path">
                 <option value='' selected="selected">-- All paths --</option>
