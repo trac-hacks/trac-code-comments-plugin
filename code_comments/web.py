@@ -161,21 +161,21 @@ class ListComments(CodeComments):
 
         self.data.update(self.comments.get_filter_values())
 
-        for sorting_method in self.comments.valid_sorting_methods :
+        for sorting_method in self.comments.valid_sorting_methods:
             self.name = sorting_method.title()
-            if 'Id' == self.name :
+            if 'Id' == self.name:
                 self.name = 'ID'
             self.query_args['orderby'] = sorting_method
             self.html_class = 'header'
-            if self.order_by == sorting_method :
-                if 'ASC' == self.order :
+            if self.order_by == sorting_method:
+                if 'ASC' == self.order:
                     self.query_args['order'] = 'DESC'
                     self.html_class += ' headerSortUp'
-                else :
+                else:
                     self.html_class += ' headerSortDown'
-            if self.filter_by_path :
+            if self.filter_by_path:
                 self.query_args['filter-by-path'] = self.filter_by_path
-            if self.filter_by_author :
+            if self.filter_by_author:
                 self.query_args['filter-by-author'] = self.filter_by_author
             self.link = self.href + '?' + urllib.urlencode(self.query_args)
             self.data['sortable_headers'].append({ 'name': self.name, 'link': self.link, 'html_class': self.html_class })

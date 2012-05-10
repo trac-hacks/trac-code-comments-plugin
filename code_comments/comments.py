@@ -60,7 +60,7 @@ class Comments:
             raise ValueError("Column '%s' doesn't exist." % name)
 
     def search(self, args, order = 'ASC', per_page = None, page = 1, order_by = 'time'):
-        if order_by not in self.valid_sorting_methods or 'date' == order_by :
+        if order_by not in self.valid_sorting_methods or 'date' == order_by:
             order_by = 'time'
         conditions_str, values = self.condition_str_and_corresponding_values(args)
         where = ''
