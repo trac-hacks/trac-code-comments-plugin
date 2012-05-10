@@ -137,9 +137,6 @@ class ListComments(CodeComments):
         self.args = {}
         self.req = req
 
-        add_stylesheet(req, 'code-comments/sort/sort.css')
-        add_script(req, 'code-comments/code-comments-list.js')
-
         self.per_page = int(req.args.get('per_page', self.COMMENTS_PER_PAGE))
         self.page = int(req.args.get('page', 1))
         self.order_by = req.args.get('orderby', 'id')
@@ -182,6 +179,11 @@ class ListComments(CodeComments):
 
         return 'comments.html', self.data, None
 
+    def post_process_request(self, req, template, data, content_type):
+        add_stylesheet(req, 'code-comments/sort/sort.css')
+        add_script(req, 'code-comments/code-comments-list.js')
+        return template, data, content_type
+
     def add_path_and_author_filters(self):
         self.data['current_path_selection'] = '';
         self.data['current_author_selection'] = '';
@@ -192,7 +194,6 @@ class ListComments(CodeComments):
         if self.req.args.get('filter-by-author'):
             self.args['author'] = self.req.args['filter-by-author']
             self.data['current_author_selection'] = self.req.args['filter-by-author']
-
 
     def get_paginator(self):
         def href_with_page(page):
