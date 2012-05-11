@@ -7,27 +7,12 @@
   <xi:include href="layout.html" />
   <head>
     <title>Code Comments</title>
-
-    <script type="text/javascript" charset="utf-8">/*<![CDATA[*/
-        jQuery(function($) {
-        	$('#send-to-ticket').click(function(e) {
-        	    e.preventDefault();
-                var ids = $('table.code-comments input:checked' ).map(function(i, e) {return e.id.replace('checked-', '')}).get();
-                if (!ids.length) {
-                    alert("Please select comments to include in the ticket.");
-                    return;
-                }
-                window.location = '${href('code-comments', 'create-ticket')}?ids=' + ids.join(',');
-        	});
-        });
-    /*]]>*/</script>
-
   </head>
 
   <body>
     <div id="content">
         <h1>Code Comments</h1>
-        <button id="send-to-ticket" type="submit">Create ticket with selected</button>
+        <button id="send-to-ticket" type="submit" data-url="${href('code-comments', 'create-ticket')}">Create ticket with selected</button>
         &nbsp;Filter comments:
         <form action="${href('code-comments')}" method="GET" style="display: inline;">
             <select id="filter-by-path" name="filter-by-path">
@@ -42,17 +27,17 @@
                            selected="${current_author_selection == author or None}"
                            value="$author" py:content="author"></option>
             </select>
-            <button id="filter" type="submit" name="filter">Filter comments</button>
+            <input type="hidden" name="orderby" value="$current_sorting_method" />
+            <input type="hidden" name="order" value="$current_order" />
+            <button id="filter" type="submit">Filter comments</button>
         </form>
         <table class="listing code-comments">
             <thead>
                 <tr class="tarc-columns">
-                    <th>ID</th>
-                    <th>&nbsp;</th>
-                    <th>Author</th>
-                    <th>Date</th>
-                    <th>Path</th>
-                    <th>Text</th>
+                    <th class="check"><input type="checkbox" /></th>
+                    <py:for each="header in sortable_headers">
+                        <th class="$header.html_class"><a href="$header.link">$header.name</a></th>
+                    </py:for>
                     <th>Tickets</th>
                     <th>Actions</th>
                 </tr>
@@ -60,8 +45,8 @@
             <tbody>
             <py:for each="idx, comment in enumerate(comments)">
                 <tr class="${idx % 2 and 'odd' or 'even'}">
-                    <td>$comment.id</td>
                     <td class="check"><input type="checkbox" id="checked-$comment.id" /></td>
+                    <td>$comment.id</td>
                     <th>$comment.author</th>
                     <th>${comment.formatted_date()}</th>
                     <td>${comment.path_link_tag()}</td>

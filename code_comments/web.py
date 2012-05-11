@@ -138,17 +138,29 @@ class ListComments(CodeComments):
 
         self.per_page = int(req.args.get('per_page', self.COMMENTS_PER_PAGE))
         self.page = int(req.args.get('page', 1))
-        
+        self.order_by = req.args.get('orderby', 'id')
+        self.order = req.args.get('order', 'ASC')
+
         self.add_path_and_author_filters()
 
-        self.data['comments'] = Comments(req, self.env).search(self.args, 'DESC', self.per_page, self.page)
+        self.comments = Comments(req, self.env);
+        self.data['comments'] = self.comments.search(self.args, self.order, self.per_page, self.page, self.order_by)
         self.data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
         self.data['can_delete'] = 'TRAC_ADMIN' in req.perm
         self.data['paginator'] = self.get_paginator()
-        
-        self.data.update(Comments(req, self.env).get_filter_values())
+        self.data['current_sorting_method'] = self.order_by
+        self.data['current_order'] = self.order
+        self.data['sortable_headers'] = []
+
+        self.data.update(self.comments.get_filter_values())
+        self.prepare_sortable_headers()
 
         return 'comments.html', self.data, None
+
+    def post_process_request(self, req, template, data, content_type):
+        add_stylesheet(req, 'code-comments/sort/sort.css')
+        add_script(req, 'code-comments/code-comments-list.js')
+        return template, data, content_type
 
     def add_path_and_author_filters(self):
         self.data['current_path_selection'] = '';
@@ -160,7 +172,6 @@ class ListComments(CodeComments):
         if self.req.args.get('filter-by-author'):
             self.args['author'] = self.req.args['filter-by-author']
             self.data['current_author_selection'] = self.req.args['filter-by-author']
-
 
     def get_paginator(self):
         def href_with_page(page):
@@ -178,6 +189,25 @@ class ListComments(CodeComments):
         paginator.shown_pages = links
         paginator.current_page = {'href': None, 'class': 'current', 'string': str(paginator.page + 1), 'title': None}
         return paginator
+
+    def prepare_sortable_headers(self):
+        displayed_sorting_methods = ('id', 'author', 'time', 'path', 'text')
+        displayed_sorting_method_names = ('ID', 'Author', 'Date', 'Path', 'Text')
+        query_args = self.req.args
+        if ( query_args.has_key('page') ):
+            del query_args['page']
+        for sorting_method, sorting_method_name in zip(displayed_sorting_methods, displayed_sorting_method_names):
+            query_args['orderby'] = sorting_method
+            html_class = 'header'
+            if self.order_by == sorting_method:
+                if 'ASC' == self.order:
+                    query_args['order'] = 'DESC'
+                    html_class += ' headerSortUp'
+                else:
+                    query_args['order'] = 'ASC'
+                    html_class += ' headerSortDown'
+            link = self.req.href(self.href, query_args)
+            self.data['sortable_headers'].append({ 'name': sorting_method_name, 'link': link, 'html_class': html_class })
 
 class DeleteCommentForm(CodeComments):
     implements(IRequestHandler)
