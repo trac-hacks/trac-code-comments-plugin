@@ -7,7 +7,7 @@ jQuery(document).ready(function($){
 			alert("Please select comments to include in the ticket.");
 			return;
 		}
-		window.location = $(this).data('url') + '?ids=' + ids.join(',');
+		window.location = $(this).attr('data-url') + '?ids=' + ids.join(',');
 	});
 
 	$check_all_checkbox = $('th.check input');
