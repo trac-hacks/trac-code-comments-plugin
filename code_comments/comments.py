@@ -18,14 +18,14 @@ class Comments:
             'paths': self.get_all_paths(comments),
             'authors': self.get_all_comment_authors(comments),
         }
-        
+
     def get_all_paths(self, comments):
         get_directory = lambda path: '/'.join(os.path.split(path)[0].split('/')[:FILTER_MAX_PATH_DEPTH])
         return sorted(set([get_directory(comment.path) for comment in comments if get_directory(comment.path)]))
-         
+
     def get_all_comment_authors(self, comments):
         return sorted(list(set([comment.author for comment in comments])))
-        
+
     def select(self, *query):
         result = {}
         @self.env.with_transaction()
@@ -54,7 +54,7 @@ class Comments:
 
     def by_id(self, id):
         return self.select("SELECT * FROM code_comments WHERE id=%s", [id])[0]
-        
+
     def assert_name(self, name):
         if not name in Comment.columns:
             raise ValueError("Column '%s' doesn't exist." % name)
@@ -72,7 +72,7 @@ class Comments:
         if per_page:
             limit = ' LIMIT %d OFFSET %d' % (per_page, (page - 1)*per_page)
         return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY ' + order_by + ' ' + order + limit, values)
-    
+
     def condition_str_and_corresponding_values(self, args):
         conditions = []
         values = []
@@ -101,7 +101,7 @@ class Comments:
             self.assert_name(name)
         conditions_str = ' AND '.join(conditions)
         return conditions_str, values
-        
+
     def create(self, args):
         comment = Comment(self.req, self.env, args)
         comment.validate()
