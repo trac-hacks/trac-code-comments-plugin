@@ -36,7 +36,7 @@ class Comments:
         return [self.comment_from_row(row) for row in result['comments']]
 
     def count(self, args = {}):
-        conditions_str, values = self.condition_str_and_corresponding_values(args)
+        conditions_str, values = self.get_condition_str_and_corresponding_values(args)
         where = ''
         if conditions_str:
             where = 'WHERE '+conditions_str
@@ -62,7 +62,7 @@ class Comments:
     def search(self, args, order = 'ASC', per_page = None, page = 1, order_by = 'time'):
         if order_by not in self.valid_sorting_methods:
             order_by = 'time'
-        conditions_str, values = self.condition_str_and_corresponding_values(args)
+        conditions_str, values = self.get_condition_str_and_corresponding_values(args)
         where = ''
         limit = ''
         if conditions_str:
@@ -73,7 +73,7 @@ class Comments:
             limit = ' LIMIT %d OFFSET %d' % (per_page, (page - 1)*per_page)
         return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY ' + order_by + ' ' + order + limit, values)
 
-    def condition_str_and_corresponding_values(self, args):
+    def get_condition_str_and_corresponding_values(self, args):
         conditions = []
         values = []
         for name in args:
