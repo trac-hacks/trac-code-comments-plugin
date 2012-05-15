@@ -2,9 +2,10 @@ import os.path
 from time import time
 from code_comments.comment import Comment
 
-FILTER_MAX_PATH_DEPTH = 2
-
 class Comments:
+
+    FILTER_MAX_PATH_DEPTH = 2
+
     def __init__(self, req, env):
         self.req, self.env = req, env
         self.valid_sorting_methods = ('id', 'author', 'time', 'path', 'text')
@@ -20,7 +21,7 @@ class Comments:
         }
 
     def get_all_paths(self, comments):
-        get_directory = lambda path: '/'.join(os.path.split(path)[0].split('/')[:FILTER_MAX_PATH_DEPTH])
+        get_directory = lambda path: '/'.join(os.path.split(path)[0].split('/')[:self.FILTER_MAX_PATH_DEPTH])
         return sorted(set([get_directory(comment.path) for comment in comments if get_directory(comment.path)]))
 
     def get_all_comment_authors(self, comments):
