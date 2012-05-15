@@ -139,7 +139,7 @@ class ListComments(CodeComments):
         self.per_page = int(req.args.get('per_page', self.COMMENTS_PER_PAGE))
         self.page = int(req.args.get('page', 1))
         self.order_by = req.args.get('orderby', 'id')
-        self.order = req.args.get('order', 'ASC')
+        self.order = req.args.get('order', 'DESC')
 
         self.add_path_and_author_filters()
 
