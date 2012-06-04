@@ -107,12 +107,14 @@ class Comments:
         comment = Comment(self.req, self.env, args)
         comment.validate()
         comment.time = int(time())
-        values = [getattr(comment, column_name) for column_name in comment.columns if column_name != 'id']
+        column_names_to_insert = [column_name for column_name in comment.columns if column_name != 'id']
+        values = [getattr(comment, column_name) for column_name in column_names_to_insert]
         comment_id = [None]
         @self.env.with_transaction()
         def insert_comment(db):
             cursor = db.cursor()
-            sql = "INSERT INTO code_comments values(NULL, %s)" % ', '.join(['%s'] * len(values))
+            sql = "INSERT INTO code_comments (%s) values(%s)" % (', '.join(column_names_to_insert), ', '.join(['%s'] * len(values)))
+            self.env.log.debug(sql)
             cursor.execute(sql, values)
             comment_id[0] = db.get_last_id(cursor, 'code_comments')
         return comment_id[0]
