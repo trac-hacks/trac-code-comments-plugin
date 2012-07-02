@@ -136,7 +136,7 @@ class ListComments(CodeComments):
         self.args = {}
         self.req = req
 
-        self.per_page = int(req.args.get('per_page', self.COMMENTS_PER_PAGE))
+        self.per_page = int(req.args.get('per-page', self.COMMENTS_PER_PAGE))
         self.page = int(req.args.get('page', 1))
         self.order_by = req.args.get('orderby', 'id')
         self.order = req.args.get('order', 'DESC')
