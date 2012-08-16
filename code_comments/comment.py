@@ -2,7 +2,7 @@ import re
 
 import trac.wiki.formatter
 from trac.mimeview.api import Context
-from time import gmtime, strftime
+from time import gmtime, localtime, strftime
 from code_comments import db
 from trac.util import Markup
 
@@ -65,9 +65,9 @@ class Comment:
 
     def href(self):
         if self.is_comment_to_file:
-            href = self.req.href.browser(self.path, rev=self.revision, codecomment=self.id)
+            href = self.req.href.browser(self.repository, self.path, rev=self.revision, codecomment=self.id)
         elif self.is_comment_to_changeset:
-            href = self.req.href.changeset(self.revision, codecomment=self.id)
+            href = self.req.href.changeset(self.revision, self.repository, codecomment=self.id)
         elif self.is_comment_to_attachment:
             href = self.req.href('/attachment/ticket/%d/%s' % (self.attachment_ticket, self.attachment_filename), codecomment=self.id)
         if self.line:
@@ -113,7 +113,7 @@ class Comment:
         return Markup('<a href="%s">%s</a>' % (self.href(), self.link_text()))
         
     def formatted_date(self):
-        return strftime('%d %b %Y, %H:%M', gmtime(self.time))
+        return strftime('%x, %X', localtime(self.time))
         
     def get_ticket_relations(self):
         relations = set()
@@ -155,3 +155,4 @@ class CommentJSONEncoder(json.JSONEncoder):
 def format_to_html(req, env, text):
     context = Context.from_request(req)
     return trac.wiki.formatter.format_to_html(env, context, text)
+

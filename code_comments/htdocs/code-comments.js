@@ -164,7 +164,7 @@ jQuery(function($) {
 					self.$el.dialog('close');
 				}
 			}
-			this.collection.create({text: text, author: CodeComments.username, path: CodeComments.path, revision: CodeComments.revision, line: line}, options);
+			this.collection.create({text: text, author: CodeComments.username, path: CodeComments.path, repository: CodeComments.repository, revision: CodeComments.revision, line: line}, options);
 		},
 		previewThrottled: $.throttle(1500, function(e) { return this.preview(e); }),
 		preview: function(e) {
