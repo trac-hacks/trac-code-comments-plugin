@@ -30,15 +30,15 @@ jQuery(function($) {
 		tagName: 'li',
 		template:  _.template(CodeComments.templates.comment),
 		initialize: function() {
-		   this.model.bind('change', this.render, this);
+			this.model.bind('change', this.render, this);
 		},
 		render: function() {
-		   $(this.el).html(this.template(_.extend(this.model.toJSON(), {
+			$(this.el).html(this.template(_.extend(this.model.toJSON(), {
 				delete_url: CodeComments.delete_url,
 				active: this.model.id == CodeComments.active_comment_id,
-				can_delete: CodeComments.is_admin,
+				can_delete: CodeComments.is_admin
 			})));
-		   return this;
+			return this;
 		}
 	});
 
@@ -51,7 +51,7 @@ jQuery(function($) {
 		},
 
 		initialize: function() {
-			TopComments.bind('add',	  this.addOne, this);
+			TopComments.bind('add',   this.addOne, this);
 			TopComments.bind('reset', this.addAll, this);
 		},
 
@@ -81,7 +81,7 @@ jQuery(function($) {
 	window.LineCommentsView = Backbone.View.extend({
 		id: 'preview',
 		initialize: function() {
-			LineComments.bind('add',	  this.addOne, this);
+			LineComments.bind('add',   this.addOne, this);
 			LineComments.bind('reset', this.addAll, this);
 			this.viewPerLine = {};
 		},
@@ -103,7 +103,7 @@ jQuery(function($) {
 			LineComments.each(function(comment) {
 				view.addOne.call(view, comment);
 			});
-		},
+		}
 	});
 
 	window.CommentsForALineView = Backbone.View.extend({
@@ -163,7 +163,7 @@ jQuery(function($) {
 					self.$('textarea').val('');
 					self.$el.dialog('close');
 				}
-			}
+			};
 			this.collection.create({text: text, author: CodeComments.username, path: CodeComments.path, revision: CodeComments.revision, line: line}, options);
 		},
 		previewThrottled: $.throttle(1500, function(e) { return this.preview(e); }),
@@ -171,7 +171,7 @@ jQuery(function($) {
 			var view = this;
 			$.get(CodeComments.preview_url, {text: this.$('textarea').val()}, function(data) {
 				view.$('div.preview').html(data);
-				view.$('h3').toggle(data != '');
+				view.$('h3').toggle(data !== '');
 			});
 		}
 	});
@@ -201,11 +201,11 @@ jQuery(function($) {
 		}
 	});
 
-	window.TopComments = new CommentsList;
-	window.LineComments = new CommentsList;
-	window.TopCommentsBlock = new TopCommentsView;
-	window.LineCommentsBlock = new LineCommentsView;
-	window.AddCommentDialog = new AddCommentDialogView;
+	window.TopComments = new CommentsList();
+	window.LineComments = new CommentsList();
+	window.TopCommentsBlock = new TopCommentsView();
+	window.LineCommentsBlock = new LineCommentsView();
+	window.AddCommentDialog = new AddCommentDialogView();
 	window.LineCommentBubbles = new LineCommentBubblesView({el: $('table.code')});
 
 	$(CodeComments.selectorToInsertBefore).before(TopCommentsBlock.render().el);
