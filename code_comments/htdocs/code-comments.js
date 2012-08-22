@@ -179,7 +179,7 @@ jQuery(function($) {
 
 	window.LineCommentBubblesView = Backbone.View.extend({
 		render: function() {
-			this.$('tr').not('.comments').hover(
+			this.$('tbody tr').not('.comments').hover(
 				function() {
 					var $th = $('th', this);
 					var line = $('a', $th).attr('href').replace('#L', '');
