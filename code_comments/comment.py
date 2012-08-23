@@ -1,8 +1,9 @@
 import re
+import locale
 
 import trac.wiki.formatter
 from trac.mimeview.api import Context
-from time import gmtime, strftime
+from time import strftime, localtime
 from code_comments import db
 from trac.util import Markup
 
@@ -113,7 +114,8 @@ class Comment:
         return Markup('<a href="%s">%s</a>' % (self.href(), self.link_text()))
 
     def formatted_date(self):
-        return strftime('%d %b %Y, %H:%M', gmtime(self.time))
+        encoding = locale.getlocale()[1] if locale.getlocale()[1] else 'utf-8'
+        return strftime('%d %b %Y, %H:%M', localtime(self.time)).decode(encoding)
 
     def get_ticket_relations(self):
         relations = set()
