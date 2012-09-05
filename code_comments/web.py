@@ -105,10 +105,10 @@ class JSDataForRequests(CodeComments):
         return data
 
     def changeset_js_data(self, req, data):
-        return {'page': 'changeset', 'revision': data['new_rev'], 'path': '', 'selectorToInsertBefore': 'div.diff:first'}
+        return {'page': 'changeset', 'repository': data['reponame'], 'revision': data['new_rev'], 'path': '', 'selectorToInsertBefore': 'div.diff:first'}
 
     def browser_js_data(self, req, data):
-        return {'page': 'browser', 'revision': data['rev'], 'path': data['path'], 'selectorToInsertBefore': 'table#info'}
+        return {'page': 'browser', 'repository': data['reponame'], 'revision': data['rev'], 'path': data['path'], 'selectorToInsertBefore': 'table#info'}
 
     def attachment_js_data(self, req, data):
         path = req.path_info.replace('/attachment/', 'attachment:/')
