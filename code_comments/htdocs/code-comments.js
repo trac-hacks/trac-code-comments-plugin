@@ -92,8 +92,11 @@ jQuery(function($) {
 		addOne: function(comment) {
 			var line = comment.get('line');
 			if (!this.viewPerLine[line]) {
-				this.viewPerLine[line] = new CommentsForALineView();
-				var $tr = $("th#L"+line).parent();
+				var template = _.template(CodeComments.templates.comments_for_a_line_commit);
+				if ('browser' === CodeComments.page)
+					template = _.template(CodeComments.templates.comments_for_a_line_file);
+				var $tr = ($("th#L"+line).parent().length > 0) ? $("th#L"+line).parent() : $($('td.l')[line - 1]).parent();
+				this.viewPerLine[line] = new CommentsForALineView({template: template});
 				$tr.after(this.viewPerLine[line].render().el).addClass('with-comments');
 			}
 			this.viewPerLine[line].addOne(comment);
@@ -109,12 +112,14 @@ jQuery(function($) {
 	window.CommentsForALineView = Backbone.View.extend({
 		tagName: 'tr',
 		className: 'comments',
-		template: _.template(CodeComments.templates.comments_for_a_line),
+		initialize: function(attrs) {
+			this.options = attrs; // The template is passed as an argument now, and is stored in this.options.template instead of this.template
+		},
 		events: {
 			'click button': 'showAddCommentDialog'
 		},
 		render: function() {
-			$(this.el).html(this.template());
+			$(this.el).html(this.options.template());
 			this.$('button').button();
 			return this;
 		},
