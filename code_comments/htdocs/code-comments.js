@@ -177,7 +177,7 @@ jQuery(function($) {
 	});
 
 
-	window.LineCommentBubblesView = Backbone.View.extend({
+	window.LineCommentBubblesFileView = Backbone.View.extend({
 		render: function() {
 			this.$('tbody tr').not('.comments').hover(
 				function() {
@@ -201,15 +201,45 @@ jQuery(function($) {
 		}
 	});
 
+	window.LineCommentBubblesCommitView = Backbone.View.extend({
+		render: function() {
+			this.$('tbody tr th:odd').hover(
+				//Hover in
+				function(event) {
+					var $th = $(this),
+						item = $th[0],
+						line = $.inArray(item, $('tbody tr th:odd')) + 1,
+						revision = CodeComments.revision;
+
+					$th.prepend('<a style="" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
+					$('a.bubble').click(function(e) {
+							e.preventDefault();
+							AddCommentDialog.open(LineComments, line);
+						})
+						.css({width: $th.width(), height: $th.height(), 'text-align': 'center'})
+						.find('span').css('margin-left', ($th.width() - 16) / 2);
+				},
+				//Hover out
+				function() {
+					var $th = $(this);
+					$('a.bubble', $th).remove();
+					$('a', $th).show();
+				}
+			);
+		}
+	});
+
 	window.TopComments = new CommentsList();
 	window.LineComments = new CommentsList();
 	window.TopCommentsBlock = new TopCommentsView();
 	window.LineCommentsBlock = new LineCommentsView();
 	window.AddCommentDialog = new AddCommentDialogView();
-	window.LineCommentBubbles = new LineCommentBubblesView({el: $('table.code')});
+	window.LineCommentFileBubbles = new LineCommentBubblesFileView({el: $('table.code')});
+	window.LineCommentCommitBubbles = new LineCommentBubblesCommitView({el: $('table.trac-diff')});
 
 	$(CodeComments.selectorToInsertBefore).before(TopCommentsBlock.render().el);
 	LineCommentsBlock.render();
 	AddCommentDialog.render();
-	LineCommentBubbles.render();
+	LineCommentFileBubbles.render();
+	LineCommentCommitBubbles.render();
 });
