@@ -118,8 +118,6 @@ class JSDataForRequests(CodeComments):
         file_name = name + '.html'
         return to_unicode(open(self.get_template_dir() + '/js/' + file_name).read())
 
-
-
 class ListComments(CodeComments):
     implements(IRequestHandler)
 

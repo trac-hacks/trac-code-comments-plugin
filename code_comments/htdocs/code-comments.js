@@ -14,7 +14,6 @@ jQuery(function($) {
 		alert(errorText);
 	});
 
-
 	window.Comment = Backbone.Model.extend({
 	});
 
@@ -180,7 +179,6 @@ jQuery(function($) {
 			});
 		}
 	});
-
 
 	window.LineCommentBubblesFileView = Backbone.View.extend({
 		render: function() {
