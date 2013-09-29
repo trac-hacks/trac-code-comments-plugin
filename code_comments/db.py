@@ -34,6 +34,7 @@ def create_tables(env, db):
             cursor.execute(stmt)
     cursor.execute("INSERT into system values ('code_comments_schema_version', %s)",
                         str(db_version))
+
 # Upgrades
 def upgrade_from_1_to_2(env, db):
     pass
@@ -41,7 +42,6 @@ def upgrade_from_1_to_2(env, db):
 upgrade_map = {
         2: upgrade_from_1_to_2
     }
-
 
 class CodeCommentsSetup(Component):
     """Component that deals with database setup and upgrades."""
