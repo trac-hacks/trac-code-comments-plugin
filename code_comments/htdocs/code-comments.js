@@ -183,11 +183,11 @@ jQuery(function($) {
 	window.LineCommentBubblesView = Backbone.View.extend({
 		render: function() {
 			if ("changeset" === CodeComments.page) {
-				this.$('tbody tr th:odd').hover(
+				this.$('tbody tr th:odd').not('.comments').hover(
 					function(event) {
 						var $th = $(this),
 							item = $th[0],
-							line = $.inArray(item, $('tbody tr th:odd')) + 1,
+							line = $.inArray(item, $('tbody tr th:odd').not('.comments')) + 1,
 							revision = CodeComments.revision;
 
 						$th.prepend('<a style="" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
