@@ -30,6 +30,8 @@ in context, below the line in question.
 
 * Comments on changesets – useful when doing code reviews of incoming commits.
 
+* Inline comments on changesets - comment on a specific line of the changeset.
+
 * Comments on attachment pages – useful when reviewing patches.
 
 * Wiki Markup – you can use the standard Trac wiki markup inside your
