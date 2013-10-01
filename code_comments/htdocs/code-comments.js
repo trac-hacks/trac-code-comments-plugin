@@ -91,11 +91,10 @@ jQuery(function($) {
 		addOne: function(comment) {
 			var line = comment.get('line');
 			if (!this.viewPerLine[line]) {
-				var template = _.template(CodeComments.templates.comments_for_a_line_commit);
-				if ('browser' === CodeComments.page)
-					template = _.template(CodeComments.templates.comments_for_a_line_file);
+				// get the parent <tr>
 				var $tr = ($("th#L"+line).parent().length > 0) ? $("th#L"+line).parent() : $($('td.l')[line - 1]).parent();
-				this.viewPerLine[line] = new CommentsForALineView({template: template});
+
+				this.viewPerLine[line] = new CommentsForALineView();
 				$tr.after(this.viewPerLine[line].render().el).addClass('with-comments');
 			}
 			this.viewPerLine[line].addOne(comment);
@@ -112,13 +111,16 @@ jQuery(function($) {
 		tagName: 'tr',
 		className: 'comments',
 		initialize: function(attrs) {
-			this.options = attrs; // The template is passed as an argument now, and is stored in this.options.template instead of this.template
+			if ("browser" === CodeComments.page)
+				this.template = _.template(CodeComments.templates.comments_for_a_line_file);
+			else if ("changeset" === CodeComments.page)
+				this.template = _.template(CodeComments.templates.comments_for_a_line_commit);
 		},
 		events: {
 			'click button': 'showAddCommentDialog'
 		},
 		render: function() {
-			$(this.el).html(this.options.template());
+			$(this.el).html(this.template());
 			this.$('button').button();
 			return this;
 		},
