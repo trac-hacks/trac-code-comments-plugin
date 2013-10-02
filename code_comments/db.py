@@ -16,6 +16,7 @@ schema = {
         Column('revision', type='int'),
         Column('line', type='int'),
         Column('author'),
+        Column('page'),
         Column('time', type='int'),
         Index(['path']),
         Index(['author']),
