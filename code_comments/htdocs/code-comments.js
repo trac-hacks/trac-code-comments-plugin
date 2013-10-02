@@ -57,7 +57,7 @@ jQuery(function($) {
 		render: function() {
 			$(this.el).html(this.template());
 			this.$('button').button();
-			TopComments.fetch({data: {path: CodeComments.path, revision: CodeComments.revision, line: 0}});
+			TopComments.fetch({data: {path: CodeComments.path, revision: CodeComments.revision, line: 0, page: CodeComments.page}});
 			return this;
 		},
 
@@ -85,7 +85,10 @@ jQuery(function($) {
 			this.viewPerLine = {};
 		},
 		render: function() {
-			LineComments.fetch({data: {path: CodeComments.path, revision: CodeComments.revision, line__gt: 0}});
+			if ("browser" === CodeComments.page)
+				LineComments.fetch({data: {path: CodeComments.path, revision: CodeComments.revision, line__gt: 0, page: CodeComments.page}});
+			else if("changeset" === CodeComments.page)
+				LineComments.fetch({data: {revision: CodeComments.revision, line__gt: 0, page: CodeComments.page}});
 			//TODO: + links
 		},
 		addOne: function(comment) {
@@ -157,6 +160,8 @@ jQuery(function($) {
 			this.$el.dialog('open').dialog({title: title});
 		},
 		close: function() {
+			if ("changeset" === CodeComments.page)
+				CodeComments.path = ""
 			this.$el.dialog('close');
 		},
 		createComment: function(e) {
@@ -170,7 +175,9 @@ jQuery(function($) {
 					self.$el.dialog('close');
 				}
 			};
-			this.collection.create({text: text, author: CodeComments.username, path: CodeComments.path, revision: CodeComments.revision, line: line}, options);
+			this.collection.create({text: text, author: CodeComments.username, path: CodeComments.path, revision: CodeComments.revision, line: line, page: CodeComments.page}, options);
+			if ("changeset" === CodeComments.page)
+				CodeComments.path = ""
 		},
 		previewThrottled: $.throttle(1500, function(e) { return this.preview(e); }),
 		preview: function(e) {
@@ -190,11 +197,13 @@ jQuery(function($) {
 						var $th = $(this),
 							item = $th[0],
 							line = $.inArray(item, $('tbody tr th:odd').not('.comments')) + 1,
-							revision = CodeComments.revision;
+							revision = CodeComments.revision,
+							file = $th.parents('li').find('h2>a:first').text();
 
 						$th.prepend('<a style="" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
 						$('a.bubble').click(function(e) {
 								e.preventDefault();
+								CodeComments.path = file;
 								AddCommentDialog.open(LineComments, line);
 							})
 							.css({width: $th.width(), height: $th.height(), 'text-align': 'center'})
