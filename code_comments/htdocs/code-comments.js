@@ -192,6 +192,7 @@ jQuery(function($) {
 	window.LineCommentBubblesView = Backbone.View.extend({
 		render: function() {
 			if ("changeset" === CodeComments.page) {
+				var currentLine;
 				this.$('tbody tr th:odd').not('.comments').hover(
 					function(event) {
 						var $th = $(this),
@@ -199,6 +200,9 @@ jQuery(function($) {
 							line = $.inArray(item, $('tbody tr th:odd').not('.comments')) + 1,
 							revision = CodeComments.revision,
 							file = $th.parents('li').find('h2>a:first').text();
+
+						currentLine = $th.html();
+						$th.html("");
 
 						$th.prepend('<a style="" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
 						$('a.bubble').click(function(e) {
@@ -211,8 +215,8 @@ jQuery(function($) {
 					},
 					function() {
 						var $th = $(this);
+						$th.html(currentLine);
 						$('a.bubble', $th).remove();
-						$('a', $th).show();
 					}
 				);
 			}else if("browser" === CodeComments.page) {
