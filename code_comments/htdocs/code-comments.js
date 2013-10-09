@@ -95,7 +95,7 @@ jQuery(function($) {
 			var line = comment.get('line');
 			if (!this.viewPerLine[line]) {
 				// get the parent <tr>
-				var $tr = ($("th#L"+line).parent().length > 0) ? $("th#L"+line).parent() : $($('td.l')[line - 1]).parent();
+				var $tr = ($("th#L"+line).parent().length > 0) ? $("th#L"+line).parent() : $($('td.l, td.r')[line - 1]).parent();
 
 				this.viewPerLine[line] = new CommentsForALineView();
 				$tr.after(this.viewPerLine[line].render().el).addClass('with-comments');
