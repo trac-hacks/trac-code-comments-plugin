@@ -85,10 +85,18 @@ jQuery(function($) {
 			this.viewPerLine = {};
 		},
 		render: function() {
+			var params = {
+				data: {
+					revision: CodeComments.revision,
+					line__gt: 0,
+					page: CodeComments.page
+				}
+			}
+
 			if ("browser" === CodeComments.page)
-				LineComments.fetch({data: {path: CodeComments.path, revision: CodeComments.revision, line__gt: 0, page: CodeComments.page}});
-			else if("changeset" === CodeComments.page)
-				LineComments.fetch({data: {revision: CodeComments.revision, line__gt: 0, page: CodeComments.page}});
+				params.data.path = CodeComments.path;
+
+			LineComments.fetch(params);
 			//TODO: + links
 		},
 		addOne: function(comment) {
@@ -114,9 +122,9 @@ jQuery(function($) {
 		tagName: 'tr',
 		className: 'comments',
 		initialize: function(attrs) {
-			if ("browser" === CodeComments.page)
-				this.template = _.template(CodeComments.templates.comments_for_a_line_file);
-			else if ("changeset" === CodeComments.page)
+			this.template = _.template(CodeComments.templates.comments_for_a_line_file);
+
+			if ("changeset" === CodeComments.page)
 				this.template = _.template(CodeComments.templates.comments_for_a_line_commit);
 		},
 		events: {
@@ -188,54 +196,33 @@ jQuery(function($) {
 
 	window.LineCommentBubblesView = Backbone.View.extend({
 		render: function() {
-			if ("changeset" === CodeComments.page) {
-				var currentLine;
-				this.$('tbody tr th:odd').not('.comments').hover(
-					function(event) {
-						var $th = $(this),
-							item = $th[0],
-							line = $.inArray(item, $('tbody tr th:odd').not('.comments')) + 1,
-							revision = CodeComments.revision,
-							file = $th.parents('li').find('h2>a:first').text();
+			var callbackMouseover = function(event) {
+				var $th = ($('th', this).length) ? $('th', this) : $(this),
+					item = $th[0],
+					line = ("browser" === CodeComments.page) ? $('a', $th).attr('href').replace('#L', '') : $.inArray(item, $('tbody tr th:odd').not('.comments')) + 1,
+					revision = CodeComments.revision,
+					file = $th.parents('li').find('h2>a:first').text();
 
-						currentLine = $th.html();
-						$th.html("");
+				$('a', $th).css('display', 'none');
 
-						$th.prepend('<a style="" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
-						$('a.bubble').click(function(e) {
-								e.preventDefault();
-								AddCommentDialog.open(LineComments, line, file);
-							})
-							.css({width: $th.width(), height: $th.height(), 'text-align': 'center'})
-							.find('span').css('margin-left', ($th.width() - 16) / 2);
-					},
-					function() {
-						var $th = $(this);
-						$th.html(currentLine);
-						$('a.bubble', $th).remove();
-					}
-				);
-			}else if("browser" === CodeComments.page) {
-				this.$('tbody tr').not('.comments').hover(
-					function() {
-						var $th = $('th', this);
-						var line = $('a', $th).attr('href').replace('#L', '');
-						$('a', $th).css('display', 'none');
-						$th.prepend('<a style="" href="#L'+line+'" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
-						$('a.bubble').click(function(e) {
-								e.preventDefault();
-								AddCommentDialog.open(LineComments, line);
-							})
-							.css({width: $th.width(), height: $th.height(), 'text-align': 'center'})
-							.find('span').css('margin-left', ($th.width() - 16) / 2);
-					},
-					function() {
-						var $th = $('th', this);
-						$('a.bubble', $th).remove();
-						$('a', $th).show();
-					}
-				);
-			}
+				$th.prepend('<a style="" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
+
+				$('a.bubble').click(function(e) {
+					e.preventDefault();
+					AddCommentDialog.open(LineComments, line, file);
+				})
+				.css({width: $th.width(), height: $th.height(), 'text-align': 'center'})
+				.find('span').css('margin-left', ($th.width() - 16) / 2);
+			};
+			var callbackMouseout = function(event) {
+				var $th = $('th', this).length ? $('th', this) : $(this);
+				$('a.bubble', $th).remove();
+				$('a', $th).show();
+			};
+
+			this.$('.trac-diff tbody tr th:odd').not('.comments').hover(callbackMouseover, callbackMouseout);
+			this.$('.code tbody tr').not('.comments').hover(callbackMouseover, callbackMouseout);
+			//console.log(this.$('.trac-diff tbody tr th:odd'));
 		}
 	});
 
@@ -244,12 +231,10 @@ jQuery(function($) {
 	window.TopCommentsBlock = new TopCommentsView();
 	window.LineCommentsBlock = new LineCommentsView();
 	window.AddCommentDialog = new AddCommentDialogView();
-	window.LineCommentFileBubbles = new LineCommentBubblesView({el: $('table.code')});
-	window.LineCommentCommitBubbles = new LineCommentBubblesView({el: $('table.trac-diff')});
+	window.LineCommentBubbles = new LineCommentBubblesView({el: $('#preview, .diff .entries')});
 
 	$(CodeComments.selectorToInsertBefore).before(TopCommentsBlock.render().el);
 	LineCommentsBlock.render();
 	AddCommentDialog.render();
-	LineCommentFileBubbles.render();
-	LineCommentCommitBubbles.render();
+	LineCommentBubbles.render();
 });
