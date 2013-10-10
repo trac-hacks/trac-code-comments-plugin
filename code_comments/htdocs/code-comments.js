@@ -222,7 +222,6 @@ jQuery(function($) {
 
 			this.$('.trac-diff tbody tr th:odd').not('.comments').hover(callbackMouseover, callbackMouseout);
 			this.$('.code tbody tr').not('.comments').hover(callbackMouseover, callbackMouseout);
-			//console.log(this.$('.trac-diff tbody tr th:odd'));
 		}
 	});
 
