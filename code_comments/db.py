@@ -49,14 +49,14 @@ def upgrade_from_1_to_2(env, db):
     def convert_comments(db):
         comments = {}
         cursor = db.cursor()
-        cursor.execute("SELECT * FROM code_comments")
+        cursor.execute("SELECT id, path FROM code_comments")
         comments = cursor.fetchall()
         # options:
         # 1: comment on file (path != "" && path != "attachment")
         # 2: comment on changeset (path == "")
         # 3: comment on attachment (path == "attachment")
         for comment in comments:
-            path = comment[3]
+            path = comment[1]
             is_comment_to_attachment = path.startswith("attachment")
             is_comment_to_file = not is_comment_to_attachment and path != ""
             is_comment_to_changeset = path == ""
