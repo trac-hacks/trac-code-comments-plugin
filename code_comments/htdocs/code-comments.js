@@ -77,6 +77,34 @@ jQuery(function($) {
 
 	});
 
+	window.ChangesetCommentsView = Backbone.View.extend({
+		id: 'commit-comments',
+
+		template: _.template(CodeComments.templates.changeset_comments_block),
+
+		initialize: function () {
+			ChangesetComments.bind('add',   this.addOne, this);
+			ChangesetComments.bind('reset', this.addAll, this);
+		},
+
+		render: function(){
+			$(this.el).html(this.template());
+			ChangesetComments.fetch({data: {path: CodeComments.path, revision: CodeComments.revision, page: 'changeset'}})
+		},
+
+		addOne: function (comment) {
+			var view = new CommentView({model: comment});
+			this.$("ul.changeset-comments").append(view.render().el);
+		},
+
+		addAll: function () {
+			var view = this;
+			ChangesetComments.each(function(comment) {
+				view.addOne.call(view, comment);
+			});
+		},
+	});
+
 	window.LineCommentsView = Backbone.View.extend({
 		id: 'preview',
 		initialize: function() {
@@ -227,7 +255,9 @@ jQuery(function($) {
 
 	window.TopComments = new CommentsList();
 	window.LineComments = new CommentsList();
+	window.ChangesetComments = new CommentsList();
 	window.TopCommentsBlock = new TopCommentsView();
+	window.ChangesetCommentsBlock = new ChangesetCommentsView();
 	window.LineCommentsBlock = new LineCommentsView();
 	window.AddCommentDialog = new AddCommentDialogView();
 	window.LineCommentBubbles = new LineCommentBubblesView({el: $('#preview, .diff .entries')});
@@ -236,4 +266,8 @@ jQuery(function($) {
 	LineCommentsBlock.render();
 	AddCommentDialog.render();
 	LineCommentBubbles.render();
+
+	// Show the changeset comments block only when in the browser screen
+	if ("browser" === CodeComments.page)
+		$(CodeComments.selectorToInsertBefore).before(ChangesetCommentsBlock.render().el);
 });
