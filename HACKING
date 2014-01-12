@@ -2,30 +2,33 @@ YOU WANT TO CONTRIBUTE BUT YOU DON'T KNOW HOW? NO MORE SUCH EXCUSES
 
 0. Install Trac
 
-On Mac OS X this is as easy as:
+In most cases this can be done via easy_install:
 
- # easy_install Trac
+	 # easy_install Trac==0.12
+
+If you run into problems, see Trac documentation [1][2].
+
+You will also need to install the Subversion python bindings.  Some systems have packages for it (e.g. python-subversion on Debian)[3], but on OSX this means compiling them from source[4].
 
 1. Create a test Trac install somewhere:
 
- $ trac-admin <trac-name> initenv
+	$ trac-admin <trac-name> initenv
 
 The default offered values are good.
 
-This will create a <trac-name> directory with the Trac install in the
-current directory.
+This will create a <trac-name> directory with the Trac install in the current directory.
 
 2. Create a local SVN repo:
 
- $ svnadmin create <repo-name>
+	$ svnadmin create <repo-name>
 
 3. Checkout the repo and add a dummy file:
 
- $ svn co file://<full-path-to-svn-repo> # including leading slash, e.g. file:///home/username/svn-repo/
+	$ svn co file://<full-path-to-svn-repo> # including leading slash, e.g. file:///home/username/svn-repo/
 
 4. Add the repo in the trac.ini:
 
- $ $EDITOR <trac-name>/conf/trac.ini
+	$ $EDITOR <trac-name>/conf/trac.ini
 
 Change:
 
@@ -34,26 +37,37 @@ repository_type = svn
 
 5. Create htpasswd file for Trac auth:
 
- $ htpasswd -c <auth-file-name> <desired-username>
+	$ htpasswd -c <auth-file-name> <desired-username>
 
 Remember the file location.
 
 6. Add yourself as admin:
  
- $ $ trac-admin <trac-name> permission add <username> TRAC_ADMIN
+	$ trac-admin <trac-name> permission add <username> TRAC_ADMIN
 
 6. Run trac server:
 
- $ tracd -s -r --port 8000 --basic-auth='<trac-name>,<full-path-to-auth-file-name>,<whatever-you-want>' <path-to-trac-folder> # see http://trac.edgewall.org/wiki/TracStandalone
+	$ tracd -s -r --port 8000 --basic-auth='<trac-name>,<full-path-to-auth-file-name>,<whatever-you-want>' <path-to-trac-folder> # see http://trac.edgewall.org/wiki/TracStandalone
 
 You should now have a working vanilla Trac at http://localhost:8000/, where you can log in and be an admin.
 
-7. Checkout the plugin in R/W mode
+7. Checkout the plugin in R/W mode:
 
- $ git clone git@github.com:Automattic/vip-trac-code-comments.git
+	$ git clone git@github.com:Automattic/vip-trac-code-comments.git
 
-8. Deploy the plugin in development mode
+8. From the plugin directory, deploy the plugin in development mode:
 
- $ python setup.py develop -mxd <path-to-trac>/plugins
+	$ python setup.py develop -mxd <path-to-trac>/plugins
 
-9. Go to the Admin section in Trac, then Plugins and enable all the components of the TracCodeComments plugin and also the CodeComments macro
+9. Restart Trac.  Then in the Admin section in Trac, go to Plugins and enable all the components of the TracCodeComments plugin and also the CodeComments macro.
+
+10. For debugging, you probably also want to enable logging in Trac by setting the log_type option to "file" in trac.ini.
+
+
+
+# Footnotes
+
+[1] http://trac.edgewall.org/wiki/0.12/TracInstall
+[2] http://trac.edgewall.org/wiki/TracDev/DevelopmentEnvironmentSetup
+[3] http://trac.edgewall.org/wiki/TracSubversion#GettingSubversion
+[4] http://stackoverflow.com/questions/14538468/how-to-install-python-subversion-bindings-needed-by-hg-convert-on-mac-os-x-10-8/16950786#16950786
