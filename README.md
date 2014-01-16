@@ -10,7 +10,7 @@ This plugin allows you to leave comments on top of files, changesets, and
 attachments. Once you've added all of your comments, you can send them to
 tickets. These include links to these comments and their description.
 
-It's Github, in your Trac.
+It's GitHub, in your Trac.
 
 Installation
 ------------
@@ -55,23 +55,23 @@ Contributing
 
 We'd love your help!
 
-If you are a developer, feel free to fork the project here, on github and
+If you are a developer, feel free to fork the project here on GitHub, and
 submit a pull request with your changes.
 
 If you are a designer and have UI suggestions, [open an issue](https://github.com/Automattic/trac-code-comments-plugin/issues), and we'll make sure to address your concerns.
 
-If you want to help with copy, or just wanna say how great or sucky we are
+If you want to help with copy, or just wanna say how great or awful we are,
 [creating an issue](https://github.com/Automattic/trac-code-comments-plugin/issues) is the way to go.
 
-You can find help with setting up a local development environment in the [`HACKING`](https://github.com/Automattic/trac-code-comments-plugin/blob/master/HACKING) file in this repostitory.
+You can find help with setting up a local development environment in the [`HACKING`](https://github.com/Automattic/trac-code-comments-plugin/blob/master/HACKING) file in this repository.
 
 Roadmap
 -------
 
 Nobody can predict the future, but here are some features on the roadmap:
 
-* Line-level comments for changesets and diff atatchments, too
-* E-mail notifictaions
+* Line-level comments for changesets and diff attachments, too
+* E-mail notifications
 
 License
 -------
