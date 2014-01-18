@@ -77,7 +77,7 @@ class JSDataForRequests(CodeComments):
         }
 
         original_return_value = template, data, content_type
-        if req.path_info.startswith('/changeset/'):
+        if req.path_info.startswith('/changeset'):
             js_data.update(self.changeset_js_data(req, data))
         elif req.path_info.startswith('/browser'):
             js_data.update(self.browser_js_data(req, data))
