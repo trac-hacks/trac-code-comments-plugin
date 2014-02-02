@@ -216,9 +216,15 @@ jQuery(function($) {
 								event.target.innerHTML;
 				}
 
+				if ( "changeset" === CodeComments.page ) {
+					if ( $('span.toggle', $th ).length == 0 ) {
+						item.innerHTML = '<span class="toggle">' + item.innerHTML + '</span>';
+					}
+					$('.toggle', $th).css('display', 'none');
+				}
 				$('a', $th).css('display', 'none');
 
-				$th.prepend('<a style="" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
+				$th.prepend('<a style="" href="#L' + line + '" class="bubble"><span style="height:14px;" class="ui-icon ui-icon-comment"></span></a>');
 
 				$('a.bubble').click(function(e) {
 					e.preventDefault();
@@ -231,6 +237,7 @@ jQuery(function($) {
 				var $th = $('th', this).length ? $('th', this) : $(this);
 				$('a.bubble', $th).remove();
 				$('a', $th).show();
+				$('.toggle', $th).show();
 			};
 
 			this.$('.trac-diff tbody tr th:odd').not('.comments').hover(callbackMouseover, callbackMouseout);
