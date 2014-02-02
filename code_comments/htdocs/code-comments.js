@@ -165,7 +165,13 @@ jQuery(function($) {
 			this.line = line;
 			this.collection = collection;
 			this.path = ("" === CodeComments.path) ? arguments[2]: CodeComments.path;
-			var title = 'Add comment for ' + (this.line? 'line '+this.line + ' of ' : '') + this.path + '@' + CodeComments.revision;
+			var title = 'Add comment for ';
+			if( typeof this.path === 'undefined' ) {
+				title += (this.line? 'line ' + this.line + ' of ' : '') + 'Changeset ' + CodeComments.revision;
+			}
+			else {
+				title += (this.line? 'line ' + this.line + ' of ' : '') + this.path + '@' + CodeComments.revision;
+			}
 			this.$el.dialog('open').dialog({title: title});
 		},
 		close: function() {
