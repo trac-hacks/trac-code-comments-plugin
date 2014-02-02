@@ -82,7 +82,7 @@ class Comment:
             return self.attachment_link_text()
 
         # except the two specials cases of changesets (revision-only)
-        # and arrachments (path-only), we must always have them both
+        # and attachments (path-only), we must always have them both
         assert self.path and self.revision
 
         link_text = self.path + '@' + str(self.revision)
