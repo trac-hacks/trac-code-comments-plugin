@@ -38,6 +38,7 @@ class Comment:
         self.req = req
         if self._empty('version'):
             self.version = VERSION
+        self.path = ''
         self.html = format_to_html(self.req, self.env, self.text)
         email = self.email_map().get(self.author, 'baba@baba.net')
         self.email_md5 = md5_hexdigest(email)
