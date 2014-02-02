@@ -161,16 +161,17 @@ jQuery(function($) {
 			this.$('button.add-comment').button();
 			return this;
 		},
-		open: function(collection, line) {
+		open: function(collection, line, file, displayLine) {
+			displayLine = displayLine ? displayLine : line;
 			this.line = line;
 			this.collection = collection;
 			this.path = ("" === CodeComments.path) ? arguments[2]: CodeComments.path;
 			var title = 'Add comment for ';
 			if( typeof this.path === 'undefined' ) {
-				title += (this.line? 'line ' + this.line + ' of ' : '') + 'Changeset ' + CodeComments.revision;
+				title += (displayLine? 'line ' + displayLine + ' of ' : '') + 'Changeset ' + CodeComments.revision;
 			}
 			else {
-				title += (this.line? 'line ' + this.line + ' of ' : '') + this.path + '@' + CodeComments.revision;
+				title += (displayLine? 'line ' + displayLine + ' of ' : '') + this.path + '@' + CodeComments.revision;
 			}
 			this.$el.dialog('open').dialog({title: title});
 		},
@@ -209,13 +210,17 @@ jQuery(function($) {
 					revision = CodeComments.revision,
 					file = $th.parents('li').find('h2>a:first').text();
 
+				var displayLine = event.target.innerHTML == '&nbsp;' ?
+							$(event.target).prev('th')[0].innerHTML + ' (deleted)' :
+							event.target.innerHTML;
+
 				$('a', $th).css('display', 'none');
 
 				$th.prepend('<a style="" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
 
 				$('a.bubble').click(function(e) {
 					e.preventDefault();
-					AddCommentDialog.open(LineComments, line, file);
+					AddCommentDialog.open(LineComments, line, file, displayLine);
 				})
 				.css({width: $th.width(), height: $th.height(), 'text-align': 'center'})
 				.find('span').css('margin-left', ($th.width() - 16) / 2);
