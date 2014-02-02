@@ -104,9 +104,8 @@ class Comment:
         return 'source:' + self.link_text()
 
     def attachment_info(self):
-        info = {'is': False, 'ticket': None, 'filename': None}
-        info['is'] = self.path.startswith('attachment:')
-        if not info['is']:
+        info = {'ticket': None, 'filename': None}
+        if not self.path.startswith('attachment'):
             return info
         match = re.match(r'attachment:/ticket/(\d+)/(.*)', self.path)
         if not match:
