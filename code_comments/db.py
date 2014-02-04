@@ -4,7 +4,7 @@ from trac.env import IEnvironmentSetupParticipant
 from trac.db.api import DatabaseManager
 
 # Database version identifier for upgrades.
-db_version = 1
+db_version = 3
 
 # Database schema
 schema = {
@@ -13,10 +13,11 @@ schema = {
         Column('version', type='int'),
         Column('text'),
         Column('path'),
-        Column('revision', type='int'),
+        Column('revision'),
         Column('line', type='int'),
         Column('author'),
         Column('time', type='int'),
+        Column('repository'),
         Index(['path']),
         Index(['author']),
     ],
@@ -36,10 +37,30 @@ def create_tables(env, db):
                         str(db_version))
 # Upgrades
 def upgrade_from_1_to_2(env, db):
-    pass
+    columns = [c.name for c in schema['code_comments'].columns]
+    cursor = db.cursor()
+    values = cursor.execute('PRAGMA INDEX_LIST(`code_comments`)')
+    indexes = values.fetchall()
+    for index in indexes:
+        if index[1].startswith('code_comments'):
+            cursor.execute('DROP INDEX IF EXISTS %s' % index[1])
+    values = cursor.execute('SELECT %s FROM code_comments' % ','.join(columns))
+    lines = values.fetchall()
+    cursor.execute('ALTER TABLE code_comments RENAME TO tmp_code_comments')
+    for stmt in to_sql(env, schema['code_comments']):
+        cursor.execute(stmt)
+    for line in lines:
+        ins = 'INSERT INTO code_comments (%s) VALUES (%s)' % (','.join(columns), ','.join(['\'%s\'' % str(v).replace('\'','\'\'') for v in line]))
+        cursor.execute(ins)
+    cursor.execute('DROP TABLE tmp_code_comments')
+
+def upgrade_from_2_to_3(env, db):
+    cursor = db.cursor()
+    cursor.execute('ALTER TABLE code_comments ADD COLUMN repository text')
 
 upgrade_map = {
-        2: upgrade_from_1_to_2
+        2: upgrade_from_1_to_2,
+        3: upgrade_from_2_to_3,
     }
 
 

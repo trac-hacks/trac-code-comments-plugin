@@ -1,6 +1,7 @@
 import re
 import copy
 from trac.core import *
+from trac.perm import IPermissionRequestor
 from trac.web.chrome import INavigationContributor, ITemplateProvider, add_script, add_script_data, add_stylesheet, add_notice, add_link
 from trac.web.main import IRequestHandler, IRequestFilter
 from trac.util import Markup
@@ -19,7 +20,7 @@ class CodeComments(Component):
     implements(ITemplateProvider, IRequestFilter)
 
     href = 'code-comments'
-
+ 
     # ITemplateProvider methods
     def get_templates_dirs(self):
         return [self.get_template_dir()]
@@ -41,14 +42,17 @@ class CodeComments(Component):
         return template, data, content_type
 
 class MainNavigation(CodeComments):
-    implements(INavigationContributor)
+    implements(INavigationContributor, IPermissionRequestor)
+
+    def get_permission_actions(self):
+        return ['CODE_COMMENTS_LIST']
 
     # INavigationContributor methods
     def get_active_navigation_item(self, req):
         return self.href
 
     def get_navigation_items(self, req):
-        if 'TRAC_ADMIN' in req.perm:
+        if 'CODE_COMMENTS_LIST' in req.perm:
             yield 'mainnav', 'code-comments', Markup('<a href="%s">Code Comments</a>' % (
                      req.href(self.href) ) )
 
@@ -73,7 +77,7 @@ class JSDataForRequests(CodeComments):
             'templates': self.templates_js_data(),
             'active_comment_id': req.args.get('codecomment'),
             'username': req.authname,
-            'is_admin': 'TRAC_ADMIN' in req.perm,
+            'is_admin': 'CODE_COMMENTS_LIST' in req.perm,
         }
 
         original_return_value = template, data, content_type
@@ -105,10 +109,10 @@ class JSDataForRequests(CodeComments):
         return data
 
     def changeset_js_data(self, req, data):
-        return {'page': 'changeset', 'revision': data['new_rev'], 'path': '', 'selectorToInsertBefore': 'div.diff:first'}
+        return {'page': 'changeset', 'repository': data['reponame'], 'revision': data['new_rev'], 'path': '', 'selectorToInsertBefore': 'div.diff:first'}
 
     def browser_js_data(self, req, data):
-        return {'page': 'browser', 'revision': data['rev'], 'path': data['path'], 'selectorToInsertBefore': 'table#info'}
+        return {'page': 'browser', 'repository': data['reponame'], 'revision': data['rev'], 'path': data['path'], 'selectorToInsertBefore': 'table#info'}
 
     def attachment_js_data(self, req, data):
         path = req.path_info.replace('/attachment/', 'attachment:/')
@@ -130,7 +134,7 @@ class ListComments(CodeComments):
         return req.path_info == '/' + self.href
 
     def process_request(self, req):
-        req.perm.require('TRAC_ADMIN')
+        req.perm.require('CODE_COMMENTS_LIST')
 
         self.data = {}
         self.args = {}
@@ -146,7 +150,7 @@ class ListComments(CodeComments):
         self.comments = Comments(req, self.env);
         self.data['comments'] = self.comments.search(self.args, self.order, self.per_page, self.page, self.order_by)
         self.data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
-        self.data['can_delete'] = 'TRAC_ADMIN' in req.perm
+        self.data['can_delete'] = 'CODE_COMMENTS_LIST' in req.perm
         self.data['paginator'] = self.get_paginator()
         self.data['current_sorting_method'] = self.order_by
         self.data['current_order'] = self.order
@@ -219,7 +223,7 @@ class DeleteCommentForm(CodeComments):
         return req.path_info == '/' + self.href
 
     def process_request(self, req):
-        req.perm.require('TRAC_ADMIN')
+        req.perm.require('CODE_COMMENTS_LIST')
         if 'GET' == req.method:
             return self.form(req)
         else:
