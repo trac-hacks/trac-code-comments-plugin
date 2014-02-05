@@ -42,11 +42,11 @@ class Comment:
         email = self.email_map().get(self.author, 'baba@baba.net')
         self.email_md5 = md5_hexdigest(email)
         attachment_info = self.attachment_info()
-        self.is_comment_to_attachment = attachment_info['is']
+        self.is_comment_to_attachment = self.page == "attachment"
         self.attachment_ticket = attachment_info['ticket']
         self.attachment_filename = attachment_info['filename']
-        self.is_comment_to_changeset = self.revision and not self.path
-        self.is_comment_to_file = self.revision and self.path
+        self.is_comment_to_changeset = self.page == "changeset"
+        self.is_comment_to_file = self.page == "browser"
 
     def _empty(self, column_name):
         return not hasattr(self, column_name) or not getattr(self, column_name)

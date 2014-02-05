@@ -55,7 +55,7 @@ class MainNavigation(CodeComments):
 class JSDataForRequests(CodeComments):
     implements(IRequestFilter)
 
-    js_templates = ['top-comments-block', 'comment', 'add-comment-dialog', 'line-comment', 'comments-for-a-line',]
+    js_templates = ['top-comments-block', 'comment', 'add-comment-dialog', 'line-comment', 'comments-for-a-line-file', 'comments-for-a-line-commit']
 
     # IRequestFilter methods
     def pre_process_request(self, req, handler):
@@ -117,8 +117,6 @@ class JSDataForRequests(CodeComments):
     def template_js_data(self, name):
         file_name = name + '.html'
         return to_unicode(open(self.get_template_dir() + '/js/' + file_name).read())
-
-
 
 class ListComments(CodeComments):
     implements(IRequestHandler)
