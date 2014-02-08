@@ -203,6 +203,11 @@ jQuery(function($) {
 
 	window.LineCommentBubblesView = Backbone.View.extend({
 		render: function() {
+			// add toggle spans to THs so we can hide/show their contents on mouseover
+			$('.trac-diff tbody tr th:odd').not('.comments').each( function(i, elem) {
+				elem.innerHTML = '<span class="toggle">' + elem.innerHTML + '</span>';
+			});
+
 			var callbackMouseover = function(event) {
 				var $th = ($('th', this).length) ? $('th', this) : $(this),
 					item = $th[0],
@@ -234,9 +239,6 @@ jQuery(function($) {
 					$(event.target).prev('th')[0].innerHTML + ' (deleted)' :
 					event.target.innerHTML;
 
-				if ( $('span.toggle', $th ).length == 0 ) {
-					item.innerHTML = '<span class="toggle">' + item.innerHTML + '</span>';
-				}
 				$('.toggle', $th).css('display', 'none');
 
 				$th.prepend('<a style="" href="#L' + line + '" class="bubble"><span style="height:14px;" class="ui-icon ui-icon-comment"></span></a>');
