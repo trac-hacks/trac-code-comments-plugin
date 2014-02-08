@@ -206,23 +206,38 @@ jQuery(function($) {
 			var callbackMouseover = function(event) {
 				var $th = ($('th', this).length) ? $('th', this) : $(this),
 					item = $th[0],
-					line = ("browser" === CodeComments.page) ? $('a', $th).attr('href').replace('#L', '') : $.inArray(item, $('tbody tr th:odd').not('.comments')) + 1,
+					line = $('a', $th).attr('href').replace('#L', ''),
 					revision = CodeComments.revision,
 					file = $th.parents('li').find('h2>a:first').text();
 
-				if ( "changeset" === CodeComments.page ) {
-					var displayLine = ! $(event.target).text().trim() ?
-								$(event.target).prev('th')[0].innerHTML + ' (deleted)' :
-								event.target.innerHTML;
-				}
-
-				if ( "changeset" === CodeComments.page ) {
-					if ( $('span.toggle', $th ).length == 0 ) {
-						item.innerHTML = '<span class="toggle">' + item.innerHTML + '</span>';
-					}
-					$('.toggle', $th).css('display', 'none');
-				}
 				$('a', $th).css('display', 'none');
+
+				$th.prepend('<a style="" href="#L' + line + '" class="bubble"><span style="" class="ui-icon ui-icon-comment"></span></a>');
+
+				$('a.bubble').click(function(e) {
+					e.preventDefault();
+					AddCommentDialog.open(LineComments, line, file);
+				})
+				.css({width: $th.width(), height: $th.height(), 'text-align': 'center'})
+				.find('span').css('margin-left', ($th.width() - 16) / 2);
+			};
+
+			// special mouseovers for the changeset line view
+			var changesetCallbackMouseover = function(event) {
+				var $th = ($('th', this).length) ? $('th', this) : $(this),
+					item = $th[0],
+					line = $.inArray(item, $('tbody tr th:odd').not('.comments')) + 1,
+					revision = CodeComments.revision,
+					file = $th.parents('li').find('h2>a:first').text();
+
+				var displayLine = ! $(event.target).text().trim() ?
+					$(event.target).prev('th')[0].innerHTML + ' (deleted)' :
+					event.target.innerHTML;
+
+				if ( $('span.toggle', $th ).length == 0 ) {
+					item.innerHTML = '<span class="toggle">' + item.innerHTML + '</span>';
+				}
+				$('.toggle', $th).css('display', 'none');
 
 				$th.prepend('<a style="" href="#L' + line + '" class="bubble"><span style="height:14px;" class="ui-icon ui-icon-comment"></span></a>');
 
@@ -233,6 +248,7 @@ jQuery(function($) {
 				.css({width: $th.width(), height: $th.height(), 'text-align': 'center'})
 				.find('span').css('margin-left', ($th.width() - 16) / 2);
 			};
+
 			var callbackMouseout = function(event) {
 				var $th = $('th', this).length ? $('th', this) : $(this);
 				$('a.bubble', $th).remove();
@@ -240,7 +256,7 @@ jQuery(function($) {
 				$('.toggle', $th).show();
 			};
 
-			this.$('.trac-diff tbody tr th:odd').not('.comments').hover(callbackMouseover, callbackMouseout);
+			this.$('.trac-diff tbody tr th:odd').not('.comments').hover(changesetCallbackMouseover, callbackMouseout);
 			this.$('.code tbody tr').not('.comments').hover(callbackMouseover, callbackMouseout);
 		}
 	});
