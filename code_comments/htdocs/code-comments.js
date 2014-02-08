@@ -211,7 +211,7 @@ jQuery(function($) {
 					file = $th.parents('li').find('h2>a:first').text();
 
 				if ( "changeset" === CodeComments.page ) {
-					var displayLine = event.target.innerHTML == '&nbsp;' ?
+					var displayLine = ! $(event.target).text().trim() ?
 								$(event.target).prev('th')[0].innerHTML + ' (deleted)' :
 								event.target.innerHTML;
 				}
