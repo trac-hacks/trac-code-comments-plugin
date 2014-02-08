@@ -220,7 +220,7 @@ jQuery(function($) {
 
 				$('a', $th).css('display', 'none');
 
-				$th.prepend('<a style="" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
+				$th.prepend('<a title="Comment on this line" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
 
 				$('a.bubble').click(function(e) {
 					e.preventDefault();
@@ -244,7 +244,7 @@ jQuery(function($) {
 
 				$('.toggle', $th).css('display', 'none');
 
-				$th.prepend('<a style="" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
+				$th.prepend('<a title="Comment on this line" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
 
 				$('a.bubble').click(function(e) {
 					e.preventDefault();
