@@ -103,6 +103,17 @@ jQuery(function($) {
 			};
 
 			LineComments.fetch(params);
+
+			/* TODO: There must be a better way. */
+			_.defer( function() {
+				setTimeout( function() {
+					var anchor_id = window.location.hash;
+					if ( '' != anchor_id && $( anchor_id ).offset() ) {
+						var new_position = $( anchor_id ).offset(); 
+						window.scrollTo( new_position.left, new_position.top ); 
+					}			
+				}, 300 );
+			} );
 			//TODO: + links
 		},
 		addOne: function(comment) {
