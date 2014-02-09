@@ -161,19 +161,21 @@ jQuery(function($) {
 			this.$('button.add-comment').button();
 			return this;
 		},
-		open: function(collection, line, file, displayLine) {
-			displayLine = displayLine ? displayLine : line;
+		open: function( collection, line, file, displayLine ) {
+			this.displayLine = displayLine || line;
 			this.line = line;
 			this.collection = collection;
-			this.path = ("" === CodeComments.path) ? arguments[2]: CodeComments.path;
+			this.path = ( '' === CodeComments.path ) ? file : CodeComments.path;
 			var title = 'Add comment for ';
 			if( '' === this.path || typeof this.path === 'undefined' ) {
-				title += (displayLine? 'line ' + displayLine + ' of ' : '') + 'Changeset ' + CodeComments.revision;
+				title += ( this.displayLine ? 'line ' + this.displayLine + ' of ' : '' )
+				      + 'Changeset ' + CodeComments.revision;
 			}
 			else {
-				title += (displayLine? 'line ' + displayLine + ' of ' : '') + this.path + '@' + CodeComments.revision;
+				title += ( this.displayLine ? 'line ' + this.displayLine + ' of ' : '' )
+				      + this.path + '@' + CodeComments.revision;
 			}
-			this.$el.dialog('open').dialog({title: title});
+			this.$el.dialog( 'open' ).dialog( { title: title } );
 		},
 		close: function() {
 			this.$el.dialog('close');
