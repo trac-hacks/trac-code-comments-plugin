@@ -84,3 +84,6 @@ table.code tr:hover td,
 .trac-diff tbody tr {
 	height: 17px;
 }
+a.bubble span.ui-icon {
+	margin: -2px auto 0;
+}

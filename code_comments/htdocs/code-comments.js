@@ -203,59 +203,41 @@ jQuery(function($) {
 	});
 
 	window.LineCommentBubblesView = Backbone.View.extend({
+		tableSelectors: 'table.code tbody tr, table.trac-diff tbody tr',
+
 		render: function() {
-			// changeset view: add toggle spans to THs so we can hide/show their contents
-			$( 'table.trac-diff tbody tr th' ).not( '.comments' ).each( function( i, elem ) {
-				elem.innerHTML = '<span class="toggle">' + elem.innerHTML + '</span>';
-			} );
+			var $tableRows = $( this.tableSelectors ).not( '.comments' );
+
+			// wrap TH contents in spans so we can hide/show them
+			$( 'th', $tableRows ).each( function( i, elem ) {
+				elem.innerHTML = '<span>' + elem.innerHTML + '</span>';
+			});
 
 			var callbackMouseover = function( event ) {
-				var $th = ( $( 'th', this ).length ) ? $( 'th', this ) : $( this ),
-					line = $( 'a', $th ).attr( 'href' ).replace( '#L', '' ),
-					file = $th.parents( 'li' ).find( 'h2>a:first' ).text();
-
-				$( 'a', $th ).css( 'display', 'none' );
-
-				$th.prepend( '<a title="Comment on this line" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>' );
-
-				$( 'a.bubble' ).click( function( e ) {
-					e.preventDefault();
-					AddCommentDialog.open( LineComments, line, file );
-				} )
-				.css( { width: $th.width(), height: $th.height(), 'text-align': 'center' } )
-				.find( 'span' ).css( 'margin-left', ( $th.width() - 16 ) / 2 );
-			};
-
-			// special mouseovers for the changeset line view
-			var changesetCallbackMouseover = function( event ) {
 				var $th = ( $( 'th', this ).length) ? $( 'th', this ) : $( this ),
-					item = $th[1],
-					line = $.inArray( item, $( 'table.trac-diff tbody tr th:odd' ).not( '.comments' ) ) + 1,
-					file = $th.parents( 'li' ).find( 'h2>a:first' ).text();
+					$item = $th.last(),
+					file = $item.parents( 'li' ).find( 'h2>a:first' ).text(),
+					line = $.inArray( this, $tableRows ) + 1;
 
-				var displayLine = $( item ).text().trim() || $( $th[0] ).text() + ' (deleted)';
+				var displayLine = $item.text().trim() || $th.first().text() + ' (deleted)';
 
-				$( 'span.toggle', item ).css( 'display', 'none' );
+				$item.children().css( 'display', 'none' );
 
-				$( item ).prepend( '<a title="Comment on this line" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>' );
+				$item.prepend( '<a title="Comment on this line" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>' );
 
 				$( 'a.bubble' ).click( function( e ) {
 					e.preventDefault();
 					AddCommentDialog.open( LineComments, line, file, displayLine );
-				})
-				.css( { width: $th.width(), height: $th.height(), 'text-align': 'center' } )
-				.find( 'span' ).css( 'margin-left', ( $th.width() - 16 ) / 2 );
+				} );
 			};
 
 			var callbackMouseout = function( event ) {
 				var $th = $( 'th', this ).length ? $( 'th', this ) : $( this );
 				$( 'a.bubble', $th ).remove();
-				$( 'a', $th ).css( 'display', '' );
-				$( 'span.toggle', $th ).css( 'display', '' );
+				$th.children().css( 'display', '' );
 			};
 
-			this.$( 'table.trac-diff tbody tr' ).not( '.comments' ).hover( changesetCallbackMouseover, callbackMouseout );
-			this.$( 'table.code tbody tr' ).not( '.comments' ).hover( callbackMouseover, callbackMouseout );
+			$tableRows.hover( callbackMouseover, callbackMouseout );
 		}
 	});
 
