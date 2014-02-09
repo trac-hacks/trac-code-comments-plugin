@@ -121,17 +121,16 @@ jQuery(function($) {
 	window.CommentsForALineView = Backbone.View.extend({
 		tagName: 'tr',
 		className: 'comments',
+		templateData: {},
 		initialize: function(attrs) {
-			this.template = _.template(CodeComments.templates.comments_for_a_line_file);
-
-			if ("changeset" === CodeComments.page)
-				this.template = _.template(CodeComments.templates.comments_for_a_line_commit);
+			this.template = _.template( CodeComments.templates.comments_for_a_line );
+			this.templateData.colspan = ( 'changeset' === CodeComments.page ) ? 2 : 1;
 		},
 		events: {
 			'click button': 'showAddCommentDialog'
 		},
 		render: function() {
-			$(this.el).html(this.template());
+			$( this.el ).html( this.template( this.templateData ) );
 			this.$('button').button();
 			return this;
 		},
