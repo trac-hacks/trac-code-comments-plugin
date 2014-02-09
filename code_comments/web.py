@@ -74,6 +74,7 @@ class JSDataForRequests(CodeComments):
             'active_comment_id': req.args.get('codecomment'),
             'username': req.authname,
             'is_admin': 'TRAC_ADMIN' in req.perm,
+            'tableSelectors': 'table.code tbody tr, table.trac-diff tbody tr',
         }
 
         original_return_value = template, data, content_type

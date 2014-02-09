@@ -108,10 +108,12 @@ jQuery(function($) {
 		addOne: function(comment) {
 			var line = comment.get('line');
 			if (!this.viewPerLine[line]) {
-				// get the parent <tr>
-				var $tr = ($("th#L"+line).parent().length > 0) ? $("th#L"+line).parent() : $($('td.l, td.r')[line - 1]).parent();
-
 				this.viewPerLine[line] = new CommentsForALineView();
+
+				// get the parent <tr>
+				var $tableRows = $( CodeComments.tableSelectors ).not( '.comments' );
+				var $tr = $( $tableRows[ line-1 ] );
+
 				$tr.after(this.viewPerLine[line].render().el).addClass('with-comments');
 			}
 			this.viewPerLine[line].addOne(comment);
@@ -209,10 +211,8 @@ jQuery(function($) {
 	});
 
 	window.LineCommentBubblesView = Backbone.View.extend({
-		tableSelectors: 'table.code tbody tr, table.trac-diff tbody tr',
-
 		render: function() {
-			var $tableRows = $( this.tableSelectors ).not( '.comments' );
+			var $tableRows = $( CodeComments.tableSelectors ).not( '.comments' );
 
 			// wrap TH contents in spans so we can hide/show them
 			$( 'th', $tableRows ).each( function( i, elem ) {
