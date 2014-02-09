@@ -69,8 +69,17 @@ tr.with-comments {
 	background-color: #FFFFE2;
 	border-bottom: 1px solid #998;
 }
-tr.comments {
+tr.comments td {
 	border-bottom: 1px solid #998;
+}
+/* fixes .with-comments bottom borders on changeset view */
+.diff table.inline tbody.mod tr.with-comments td.r,
+.diff table.inline tbody.add tr.with-comments td.r {
+	border-bottom-width: 1px;
+}
+.diff table.inline tbody.mod tr.with-comments td.l,
+.diff table.inline tbody.rem tr.with-comments td.l {
+	border-bottom-width: 1px;
 }
 
 table.code tr,
