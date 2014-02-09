@@ -208,9 +208,6 @@ jQuery(function($) {
 				elem.innerHTML = '<span class="toggle">' + elem.innerHTML + '</span>';
 			});
 
-			// increase the row height on changeset view so we have room for the comment icon
-			$('.trac-diff tbody tr').css('height', '17px');
-
 			var callbackMouseover = function(event) {
 				var $th = ($('th', this).length) ? $('th', this) : $(this),
 					item = $th[0],
@@ -242,7 +239,7 @@ jQuery(function($) {
 					$(event.target).prev('th')[0].innerHTML + ' (deleted)' :
 					event.target.innerHTML;
 
-				$('.toggle', $th).css('display', 'none');
+				$( '.toggle', item ).hide();
 
 				$th.prepend('<a title="Comment on this line" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
 

@@ -75,6 +75,12 @@ tr.comments {
 table.code tr {
 	height: 17px;
 }
-table.code tr:hover td {
+table.code tr:hover td,
+#content table.trac-diff tbody tr:hover td
+{
 	background-color: #FFFFCA;
+}
+
+.trac-diff tbody tr {
+	height: 17px;
 }
