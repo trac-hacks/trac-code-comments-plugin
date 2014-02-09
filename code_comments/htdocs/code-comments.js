@@ -167,7 +167,7 @@ jQuery(function($) {
 			this.collection = collection;
 			this.path = ("" === CodeComments.path) ? arguments[2]: CodeComments.path;
 			var title = 'Add comment for ';
-			if( typeof this.path === 'undefined' ) {
+			if( '' === this.path || typeof this.path === 'undefined' ) {
 				title += (displayLine? 'line ' + displayLine + ' of ' : '') + 'Changeset ' + CodeComments.revision;
 			}
 			else {
@@ -203,16 +203,14 @@ jQuery(function($) {
 
 	window.LineCommentBubblesView = Backbone.View.extend({
 		render: function() {
-			// add toggle spans to THs so we can hide/show their contents on mouseover
-			$('.trac-diff tbody tr th:odd').not('.comments').each( function(i, elem) {
+			// changeset view: add toggle spans to THs so we can hide/show their contents
+			$( '.trac-diff tbody tr th').not('.comments').each( function( i, elem ) {
 				elem.innerHTML = '<span class="toggle">' + elem.innerHTML + '</span>';
 			});
 
 			var callbackMouseover = function(event) {
 				var $th = ($('th', this).length) ? $('th', this) : $(this),
-					item = $th[0],
 					line = $('a', $th).attr('href').replace('#L', ''),
-					revision = CodeComments.revision,
 					file = $th.parents('li').find('h2>a:first').text();
 
 				$('a', $th).css('display', 'none');
@@ -230,22 +228,18 @@ jQuery(function($) {
 			// special mouseovers for the changeset line view
 			var changesetCallbackMouseover = function(event) {
 				var $th = ($('th', this).length) ? $('th', this) : $(this),
-					item = $th[0],
-					line = $.inArray(item, $('tbody tr th:odd').not('.comments')) + 1,
-					revision = CodeComments.revision,
-					file = $th.parents('li').find('h2>a:first').text();
+					item = $th[1],
+					line = $.inArray(item, $('tbody tr th:odd').not('.comments')) + 1;
 
-				var displayLine = ! $(event.target).text().trim() ?
-					$(event.target).prev('th')[0].innerHTML + ' (deleted)' :
-					event.target.innerHTML;
+				var displayLine = $( item ).text().trim() || $( $th[0] ).text() + ' (deleted)';
 
 				$( '.toggle', item ).hide();
 
-				$th.prepend('<a title="Comment on this line" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
+				$( item ).prepend( '<a title="Comment on this line" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>' );
 
 				$('a.bubble').click(function(e) {
 					e.preventDefault();
-					AddCommentDialog.open(LineComments, line, file, displayLine);
+					AddCommentDialog.open(LineComments, line, '', displayLine);
 				})
 				.css({width: $th.width(), height: $th.height(), 'text-align': 'center'})
 				.find('span').css('margin-left', ($th.width() - 16) / 2);
@@ -258,7 +252,7 @@ jQuery(function($) {
 				$('.toggle', $th).show();
 			};
 
-			this.$('.trac-diff tbody tr th:odd').not('.comments').hover(changesetCallbackMouseover, callbackMouseout);
+			this.$('.trac-diff tbody tr').not('.comments').hover(changesetCallbackMouseover, callbackMouseout);
 			this.$('.code tbody tr').not('.comments').hover(callbackMouseover, callbackMouseout);
 		}
 	});
