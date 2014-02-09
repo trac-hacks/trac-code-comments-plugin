@@ -57,7 +57,15 @@ jQuery(function($) {
 		render: function() {
 			$(this.el).html(this.template());
 			this.$('button').button();
-			TopComments.fetch({data: {path: CodeComments.path, revision: CodeComments.revision, line: 0, page: CodeComments.page}});
+			var params = {
+				data: {
+					path: CodeComments.path,
+					revision: CodeComments.revision,
+					line: 0,
+					page: CodeComments.page,
+				}
+			};
+			TopComments.fetch( params );
 			return this;
 		},
 
@@ -87,14 +95,12 @@ jQuery(function($) {
 		render: function() {
 			var params = {
 				data: {
+					path: CodeComments.path || undefined,
 					revision: CodeComments.revision,
 					line__gt: 0,
-					page: CodeComments.page
+					page: CodeComments.page,
 				}
-			}
-
-			if ("browser" === CodeComments.page)
-				params.data.path = CodeComments.path;
+			};
 
 			LineComments.fetch(params);
 			//TODO: + links
@@ -121,9 +127,9 @@ jQuery(function($) {
 	window.CommentsForALineView = Backbone.View.extend({
 		tagName: 'tr',
 		className: 'comments',
+		template: _.template(CodeComments.templates.comments_for_a_line),
 		templateData: {},
 		initialize: function(attrs) {
-			this.template = _.template( CodeComments.templates.comments_for_a_line );
 			this.templateData.colspan = ( 'changeset' === CodeComments.page ) ? 2 : 1;
 		},
 		events: {

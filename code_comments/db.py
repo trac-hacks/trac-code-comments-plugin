@@ -40,16 +40,16 @@ def create_tables(env, db):
 def upgrade_from_1_to_2(env, db):
     # Add the new column "page"
     @env.with_transaction()
-    def add_page_column(db):
+    def add_page_column( db ):
         cursor = db.cursor()
-        cursor.execute("ALTER TABLE code_comments ADD COLUMN page TEXT")
+        cursor.execute( 'ALTER TABLE code_comments ADD COLUMN page TEXT' )
 
     # Convert all the current comments to the new schema
     @env.with_transaction()
-    def convert_comments(db):
+    def convert_comments( db ):
         comments = {}
         cursor = db.cursor()
-        cursor.execute("SELECT id, path FROM code_comments")
+        cursor.execute( 'SELECT id, path FROM code_comments' )
         comments = cursor.fetchall()
         # options:
         # 1: comment on file (path != "" && path != "attachment")
@@ -57,21 +57,21 @@ def upgrade_from_1_to_2(env, db):
         # 3: comment on attachment (path == "attachment")
         for comment in comments:
             path = comment[1]
-            is_comment_to_attachment = path.startswith("attachment")
-            is_comment_to_file = not is_comment_to_attachment and path != ""
-            is_comment_to_changeset = path == ""
+            is_comment_to_attachment = path.startswith( 'attachment' )
+            is_comment_to_file = not is_comment_to_attachment and '' != path
+            is_comment_to_changeset = '' == path
             cursor = db.cursor()
-            update = "UPDATE code_comments SET page={0} WHERE id={1}"
-            sql = ""
+            update = 'UPDATE code_comments SET page={0} WHERE id={1}'
+            sql = ''
 
             if is_comment_to_changeset:
-                sql = update.format("'changeset'", str(comment[0]))
+                sql = update.format( "'changeset'", str( comment[0] ) )
             elif is_comment_to_attachment:
-                sql = update.format("'attachment'", str(comment[0]))
+                sql = update.format( "'attachment'", str(comment[0] ) )
             elif is_comment_to_file:
-                sql = update.format("'browser'", str(comment[0]))
+                sql = update.format( "'browser'", str(comment[0] ) )
 
-            cursor.execute(sql)
+            cursor.execute( sql )
 
 upgrade_map = {
         2: upgrade_from_1_to_2

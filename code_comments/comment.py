@@ -38,17 +38,17 @@ class Comment:
         self.req = req
         if self._empty('version'):
             self.version = VERSION
-        if self._empty('path'):
+        if self._empty( 'path' ):
             self.path = ''
         self.html = format_to_html(self.req, self.env, self.text)
         email = self.email_map().get(self.author, 'baba@baba.net')
         self.email_md5 = md5_hexdigest(email)
         attachment_info = self.attachment_info()
-        self.is_comment_to_attachment = self.page == "attachment"
+        self.is_comment_to_attachment = 'attachment' == self.page
         self.attachment_ticket = attachment_info['ticket']
         self.attachment_filename = attachment_info['filename']
-        self.is_comment_to_changeset = self.page == "changeset"
-        self.is_comment_to_file = self.page == "browser"
+        self.is_comment_to_changeset = 'changeset' == self.page
+        self.is_comment_to_file = 'browser' == self.page
 
     def _empty(self, column_name):
         return not hasattr(self, column_name) or not getattr(self, column_name)
@@ -106,8 +106,8 @@ class Comment:
         return 'source:' + self.link_text()
 
     def attachment_info(self):
-        info = {'ticket': None, 'filename': None}
-        if not self.path.startswith('attachment'):
+        info = { 'ticket': None, 'filename': None }
+        if not self.path.startswith( 'attachment' ):
             return info
         match = re.match(r'attachment:/ticket/(\d+)/(.*)', self.path)
         if not match:

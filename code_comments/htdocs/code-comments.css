@@ -72,18 +72,18 @@ tr.with-comments {
 tr.comments {
 	border-bottom: 1px solid #998;
 }
-table.code tr {
-	height: 17px;
-}
-table.code tr:hover td,
-#content table.trac-diff tbody tr:hover td
-{
-	background-color: #FFFFCA;
-}
 
+table.code tr,
 .trac-diff tbody tr {
 	height: 17px;
 }
+
+table.code tr:hover td,
+#content table.trac-diff tbody tr:hover td {
+	background-color: #FFFFCA;
+}
+
 a.bubble span.ui-icon {
+	/* this centers the icon horizontally and vertically */
 	margin: -2px auto 0;
 }
