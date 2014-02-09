@@ -167,9 +167,9 @@ jQuery(function($) {
 			this.collection = collection;
 			this.path = ( '' === CodeComments.path ) ? file : CodeComments.path;
 			var title = 'Add comment for ';
-			if( '' === this.path || typeof this.path === 'undefined' ) {
-				title += ( this.displayLine ? 'line ' + this.displayLine + ' of ' : '' )
-				      + 'Changeset ' + CodeComments.revision;
+			if( '' === CodeComments.path || typeof CodeComments.path === 'undefined' ) {
+				title += ( this.displayLine ? 'line ' + this.displayLine + ' of ' + file + ' in ' : '' )
+				      + 'Changeset '  + CodeComments.revision;
 			}
 			else {
 				title += ( this.displayLine ? 'line ' + this.displayLine + ' of ' : '' )
@@ -231,7 +231,8 @@ jQuery(function($) {
 			var changesetCallbackMouseover = function( event ) {
 				var $th = ( $( 'th', this ).length) ? $( 'th', this ) : $( this ),
 					item = $th[1],
-					line = $.inArray( item, $( 'table.trac-diff tbody tr th:odd' ).not( '.comments' ) ) + 1;
+					line = $.inArray( item, $( 'table.trac-diff tbody tr th:odd' ).not( '.comments' ) ) + 1,
+					file = $th.parents( 'li' ).find( 'h2>a:first' ).text();
 
 				var displayLine = $( item ).text().trim() || $( $th[0] ).text() + ' (deleted)';
 
@@ -241,7 +242,7 @@ jQuery(function($) {
 
 				$( 'a.bubble' ).click( function( e ) {
 					e.preventDefault();
-					AddCommentDialog.open( LineComments, line, '', displayLine );
+					AddCommentDialog.open( LineComments, line, file, displayLine );
 				})
 				.css( { width: $th.width(), height: $th.height(), 'text-align': 'center' } )
 				.find( 'span' ).css( 'margin-left', ( $th.width() - 16 ) / 2 );
