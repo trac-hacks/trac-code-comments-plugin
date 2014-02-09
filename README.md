@@ -72,7 +72,7 @@ Roadmap
 
 Nobody can predict the future, but here are some features on the roadmap:
 
-* Line-level comments for changesets and diff attachments, too
+* Line-level comments for diff attachments, too
 * E-mail notifications
 
 License
