@@ -80,16 +80,11 @@ class Comment:
 
     def link_text(self):
         if self.is_comment_to_changeset:
-            if self.path:
-                # comment is on a specific line of the changeset
-                return 'Changeset @%d#L%d (in %s)' % ( self.revision, self.line, self.path )
-            else:
-                # comment is on the changeset as a whole
-                return 'Changeset @%s' % self.revision
+            return self.changeset_link_text()
         if self.is_comment_to_attachment:
             return self.attachment_link_text()
 
-        # except the two specials cases of changesets (revision-only)
+        # except the two special cases of changesets (revision-only)
         # and attachments (path-only), we must always have them both
         assert self.path and self.revision
 
@@ -97,6 +92,14 @@ class Comment:
         if self.line:
             link_text += '#L' + str(self.line)
         return link_text
+
+    def changeset_link_text(self):
+        if self.path:
+            # comment is on a specific line of the changeset
+            return 'Changeset @%d#L%d (in %s)' % ( self.revision, self.line, self.path )
+        else:
+            # comment is on the changeset as a whole
+            return 'Changeset @%s' % self.revision
 
     def attachment_link_text(self):
         return '#%s: %s' % (self.attachment_ticket, self.attachment_filename)
