@@ -180,7 +180,7 @@
 		},
 		render: function() {
 			this.$el.html(this.template({formatting_help_url: CodeComments.formatting_help_url}))
-				.dialog({autoOpen: false, title: 'Add Comment'});
+				.dialog({ autoOpen: false, title: 'Add Comment', close: this.close });
 			this.$('button.add-comment').button();
 			return this;
 		},
@@ -206,7 +206,7 @@
 			return title;
 		},
 		close: function() {
-			this.$el.dialog('close');
+			$( 'button.ui-state-focus' ).blur();
 		},
 		createComment: function(e) {
 			var self = this;
