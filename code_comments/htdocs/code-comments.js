@@ -15,6 +15,8 @@
 		alert(errorText);
 	});
 
+	CodeComments.$tableRows = $( CodeComments.tableSelectors ).not( '.comments' );
+
 	window.Comment = Backbone.Model.extend({
 	});
 
@@ -112,17 +114,13 @@
 					}
 				}, 30 );  // slight pause allows DOM updates to complete
 			} );
-
-			//TODO: + links
 		},
 		addOne: function(comment) {
 			var line = comment.get('line');
 			if (!this.viewPerLine[line]) {
 				this.viewPerLine[line] = new CommentsForALineView();
 
-				// get the parent <tr>
-				var $tableRows = $( CodeComments.tableSelectors ).not( '.comments' );
-				var $tr = $( $tableRows[ line-1 ] );
+				var $tr = $( CodeComments.$tableRows[ line-1 ] );
 
 				$tr.after(this.viewPerLine[line].render().el).addClass('with-comments');
 			}
@@ -158,7 +156,15 @@
 			this.$("ul.comments").append(view.render().el);
 		},
 		showAddCommentDialog: function() {
-			AddCommentDialog.open(LineComments, this.line);
+			var $parentRow = $( this.el ).prev()[0];
+			var $th = ( $( 'th', $parentRow ).length) ? $( 'th', $parentRow ) : $parentRow,
+				$item = $th.last(),
+				file = $item.parents( 'li' ).find( 'h2>a:first' ).text(),
+				line = $.inArray( $parentRow, CodeComments.$tableRows ) + 1;
+
+			var displayLine = $item.text().trim() || $th.first().text() + ' (deleted)';
+
+			AddCommentDialog.open( LineComments, this.line, file, displayLine );
 		}
 	});
 
@@ -179,20 +185,25 @@
 			return this;
 		},
 		open: function( collection, line, file, displayLine ) {
-			this.displayLine = displayLine || line;
 			this.line = line;
 			this.collection = collection;
+			var title = this.buildDialogTitle( line, file, displayLine );
+			this.$el.dialog( 'open' ).dialog( { title: title } );
+		},
+		buildDialogTitle: function( line, file, displayLine ) {
+			displayLine = displayLine || line;
 			this.path = ( '' === CodeComments.path ) ? file : CodeComments.path;
+
 			var title = 'Add comment for ';
 			if( '' === CodeComments.path || typeof CodeComments.path === 'undefined' ) {
-				title += ( this.displayLine ? 'line ' + this.displayLine + ' of ' + file + ' in ' : '' )
+				title += ( displayLine ? 'line ' + displayLine + ' of ' + file + ' in ' : '' )
 				      + 'Changeset '  + CodeComments.revision;
 			}
 			else {
-				title += ( this.displayLine ? 'line ' + this.displayLine + ' of ' : '' )
+				title += ( displayLine ? 'line ' + displayLine + ' of ' : '' )
 				      + this.path + '@' + CodeComments.revision;
 			}
-			this.$el.dialog( 'open' ).dialog( { title: title } );
+			return title;
 		},
 		close: function() {
 			this.$el.dialog('close');
@@ -222,10 +233,8 @@
 
 	window.LineCommentBubblesView = Backbone.View.extend({
 		render: function() {
-			var $tableRows = $( CodeComments.tableSelectors ).not( '.comments' );
-
 			// wrap TH contents in spans so we can hide/show them
-			$( 'th', $tableRows ).each( function( i, elem ) {
+			$( 'th', CodeComments.$tableRows ).each( function( i, elem ) {
 				elem.innerHTML = '<span>' + elem.innerHTML + '</span>';
 			});
 
@@ -233,7 +242,7 @@
 				var $th = ( $( 'th', this ).length) ? $( 'th', this ) : $( this ),
 					$item = $th.last(),
 					file = $item.parents( 'li' ).find( 'h2>a:first' ).text(),
-					line = $.inArray( this, $tableRows ) + 1;
+					line = $.inArray( this, CodeComments.$tableRows ) + 1;
 
 				var displayLine = $item.text().trim() || $th.first().text() + ' (deleted)';
 
@@ -253,7 +262,7 @@
 				$th.children().css( 'display', '' );
 			};
 
-			$tableRows.hover( callbackMouseover, callbackMouseout );
+			CodeComments.$tableRows.hover( callbackMouseover, callbackMouseout );
 		}
 	});
 
