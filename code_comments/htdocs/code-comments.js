@@ -1,4 +1,5 @@
-jQuery(function($) {
+(function($) { $(function() {
+	var jQuery = $;  // just in case something uses jQuery() instead of $()
 	var _ = window.underscore;
 	$(document).ajaxError( function(e, xhr, options){
 		var errorText = xhr.statusText;
@@ -102,18 +103,16 @@ jQuery(function($) {
 				}
 			};
 
-			LineComments.fetch(params);
-
-			/* TODO: There must be a better way. */
-			_.defer( function() {
-				setTimeout( function() {
-					var anchor_id = window.location.hash;
+			LineComments.fetch( params ).complete( function() {
+				window.setTimeout( function() {
+					var anchor_id = '#comment-' + CodeComments.active_comment_id;
 					if ( '' != anchor_id && $( anchor_id ).offset() ) {
 						var new_position = $( anchor_id ).offset(); 
 						window.scrollTo( new_position.left, new_position.top ); 
-					}			
-				}, 300 );
+					}
+				}, 30 );  // slight pause allows DOM updates to complete
 			} );
+
 			//TODO: + links
 		},
 		addOne: function(comment) {
@@ -269,4 +268,4 @@ jQuery(function($) {
 	LineCommentsBlock.render();
 	AddCommentDialog.render();
 	LineCommentBubbles.render();
-});
+}); }( jQuery.noConflict( true ) ) );
