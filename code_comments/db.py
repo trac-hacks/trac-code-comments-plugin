@@ -17,7 +17,7 @@ schema = {
         Column('line', type='int'),
         Column('author'),
         Column('time', type='int'),
-        Column('page'),
+        Column('type'),
         Index(['path']),
         Index(['author']),
     ],
@@ -38,11 +38,11 @@ def create_tables(env, db):
 
 # Upgrades
 def upgrade_from_1_to_2(env, db):
-    # Add the new column "page"
+    # Add the new column "type"
     @env.with_transaction()
-    def add_page_column( db ):
+    def add_type_column( db ):
         cursor = db.cursor()
-        cursor.execute( 'ALTER TABLE code_comments ADD COLUMN page TEXT' )
+        cursor.execute( 'ALTER TABLE code_comments ADD COLUMN type TEXT' )
 
     # Convert all the current comments to the new schema
     @env.with_transaction()
@@ -61,7 +61,7 @@ def upgrade_from_1_to_2(env, db):
             is_comment_to_file = not is_comment_to_attachment and '' != path
             is_comment_to_changeset = '' == path
             cursor = db.cursor()
-            update = 'UPDATE code_comments SET page={0} WHERE id={1}'
+            update = 'UPDATE code_comments SET type={0} WHERE id={1}'
             sql = ''
 
             if is_comment_to_changeset:

@@ -65,7 +65,7 @@
 					path: CodeComments.path,
 					revision: CodeComments.revision,
 					line: 0,
-					page: CodeComments.page,
+					type: CodeComments.type,
 				}
 			};
 			TopComments.fetch( params );
@@ -101,7 +101,7 @@
 					path: CodeComments.path || undefined,
 					revision: CodeComments.revision,
 					line__gt: 0,
-					page: CodeComments.page,
+					type: CodeComments.type,
 				}
 			};
 
@@ -140,7 +140,7 @@
 		template: _.template(CodeComments.templates.comments_for_a_line),
 		templateData: {},
 		initialize: function(attrs) {
-			this.templateData.colspan = ( 'changeset' === CodeComments.page ) ? 2 : 1;
+			this.templateData.colspan = ( 'changeset' === CodeComments.type ) ? 2 : 1;
 		},
 		events: {
 			'click button': 'showAddCommentDialog'
@@ -219,7 +219,7 @@
 					self.$el.dialog('close');
 				}
 			};
-			this.collection.create({text: text, author: CodeComments.username, path: this.path, revision: CodeComments.revision, line: line, page: CodeComments.page}, options);
+			this.collection.create({text: text, author: CodeComments.username, path: this.path, revision: CodeComments.revision, line: line, type: CodeComments.type}, options);
 		},
 		previewThrottled: $.throttle(1500, function(e) { return this.preview(e); }),
 		preview: function(e) {
