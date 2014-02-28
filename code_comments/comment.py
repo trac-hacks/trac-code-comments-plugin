@@ -93,11 +93,9 @@ class Comment:
         return link_text
 
     def changeset_link_text(self):
-        if self.path:
-            # comment is on a specific line of the changeset
+        if 0 != self.line:
             return 'Changeset @%d#L%d (in %s)' % ( self.revision, self.line, self.path )
         else:
-            # comment is on the changeset as a whole
             return 'Changeset @%s' % self.revision
 
     def attachment_link_text(self):
