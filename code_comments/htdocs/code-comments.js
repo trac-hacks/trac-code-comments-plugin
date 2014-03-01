@@ -15,8 +15,6 @@
 		alert(errorText);
 	});
 
-	CodeComments.$tableRows = $( CodeComments.tableSelectors ).not( '.comments' );
-
 	window.Comment = Backbone.Model.extend({
 	});
 
@@ -114,8 +112,7 @@
 			if (!this.viewPerLine[line]) {
 				this.viewPerLine[line] = new CommentsForALineView( { line: line } );
 
-				var $tr = $( CodeComments.$tableRows[ line-1 ] );
-
+				var $tr = $( Rows.getTrByLineNumber( line ) );
 				$tr.after(this.viewPerLine[line].render().el).addClass('with-comments');
 			}
 			this.viewPerLine[line].addOne(comment);
@@ -132,16 +129,14 @@
 		tagName: 'tr',
 		className: 'comments',
 		template: _.template(CodeComments.templates.comments_for_a_line),
-		templateData: {},
 		initialize: function(attrs) {
 			this.line = attrs.line;
-			this.templateData.colspan = ( 'changeset' === CodeComments.page ) ? 2 : 1;
 		},
 		events: {
 			'click button': 'showAddCommentDialog'
 		},
 		render: function() {
-			$( this.el ).html( this.template( this.templateData ) );
+			$( this.el ).html( this.template( { colspan: Rows.getNumberOfTHsPerRow() } ) );
 			this.$('button').button();
 			return this;
 		},
@@ -228,11 +223,6 @@
 
 	window.LineCommentBubblesView = Backbone.View.extend({
 		render: function() {
-			// wrap TH contents in spans so we can hide/show them
-			$( 'th', CodeComments.$tableRows ).each( function( i, elem ) {
-				elem.innerHTML = '<span>' + elem.innerHTML + '</span>';
-			});
-
 			var callbackMouseover = function( event ) {
 				var $th = ( $( 'th', this ).length) ? $( 'th', this ) : $( this ),
 					$item = $th.last(),
@@ -256,7 +246,7 @@
 				$th.children().css( 'display', '' );
 			};
 
-			CodeComments.$tableRows.hover( callbackMouseover, callbackMouseout );
+			Rows.hover( callbackMouseover, callbackMouseout );
 		}
 	});
 
@@ -294,9 +284,11 @@
 	window.LineCommentsBlock = new LineCommentsView();
 	window.AddCommentDialog = new AddCommentDialogView();
 	window.LineCommentBubbles = new LineCommentBubblesView({el: $('#preview, .diff .entries')});
+	window.Rows = new RowsView( { tableSelector: 'table.code tbody, table.trac-diff tbody' } );
 
 	$(CodeComments.selectorToInsertBefore).before(TopCommentsBlock.render().el);
 	LineCommentsBlock.render();
 	AddCommentDialog.render();
 	LineCommentBubbles.render();
+	Rows.render();
 }); }( jQuery.noConflict( true ) ) );
