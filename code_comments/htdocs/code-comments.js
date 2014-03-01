@@ -1,6 +1,6 @@
 (function($) { $(function() {
-	var jQuery = $;  // just in case something uses jQuery() instead of $()
-	var _ = window.underscore;
+	var _ = window.underscore,
+		jQuery = $;  // just in case something uses jQuery() instead of $()
 	$(document).ajaxError( function(e, xhr, options){
 		var errorText = xhr.statusText;
 		if (-1 == xhr.responseText.indexOf('<html')) {
@@ -156,13 +156,12 @@
 			this.$("ul.comments").append(view.render().el);
 		},
 		showAddCommentDialog: function() {
-			var $parentRow = $( this.el ).prev()[0];
-			var $th = ( $( 'th', $parentRow ).length) ? $( 'th', $parentRow ) : $parentRow,
+			var $parentRow = $( this.el ).prev()[0],
+				$th = ( $( 'th', $parentRow ).length) ? $( 'th', $parentRow ) : $parentRow,
 				$item = $th.last(),
 				file = $item.parents( 'li' ).find( 'h2>a:first' ).text(),
-				line = $.inArray( $parentRow, CodeComments.$tableRows ) + 1;
-
-			var displayLine = $item.text().trim() || $th.first().text() + ' (deleted)';
+				line = $.inArray( $parentRow, CodeComments.$tableRows ) + 1,
+				displayLine = $item.text().trim() || $th.first().text() + ' (deleted)';
 
 			AddCommentDialog.open( LineComments, this.line, file, displayLine );
 		}
@@ -185,9 +184,9 @@
 			return this;
 		},
 		open: function( collection, line, file, displayLine ) {
+			var title = this.buildDialogTitle( line, file, displayLine );
 			this.line = line;
 			this.collection = collection;
-			var title = this.buildDialogTitle( line, file, displayLine );
 			this.$el.dialog( 'open' ).dialog( { title: title } );
 		},
 		buildDialogTitle: function( line, file, displayLine ) {
@@ -242,9 +241,8 @@
 				var $th = ( $( 'th', this ).length) ? $( 'th', this ) : $( this ),
 					$item = $th.last(),
 					file = $item.parents( 'li' ).find( 'h2>a:first' ).text(),
-					line = $.inArray( this, CodeComments.$tableRows ) + 1;
-
-				var displayLine = $item.text().trim() || $th.first().text() + ' (deleted)';
+					line = $.inArray( this, CodeComments.$tableRows ) + 1,
+					displayLine = $item.text().trim() || $th.first().text() + ' (deleted)';
 
 				$item.children().css( 'display', 'none' );
 
