@@ -26,18 +26,16 @@
 		comparator: function(comment) {
 			return comment.get('time');
 		},
-		fetchComments: function( commentsToFetch ) {
-			var lineQuery = ( 'line' == commentsToFetch ) ? 'line__gt' : 'line',
-				params = {
-					data: {
-						path: CodeComments.path || undefined,
-						revision: CodeComments.revision,
-						type: CodeComments.page,
-					}
-				};
-			params.data[lineQuery] = 0;
-
-			return this.fetch( params );
+		defaultFetchParams: {
+			path: CodeComments.path || undefined,
+			revision: CodeComments.revision,
+			type: CodeComments.page
+		},
+		fetchTopComments: function() {
+			return this.fetch( { data: _.extend( { line: 0 }, this.defaultFetchParams ) } );
+		},
+		fetchLineComments: function() {
+			return this.fetch( { data: _.extend( { line__gt: 0 }, this.defaultFetchParams ) } );
 		}
 	});
 
@@ -81,7 +79,7 @@
 		render: function() {
 			$(this.el).html(this.template());
 			this.$('button').button();
-			TopComments.fetchComments();
+			TopComments.fetchTopComments();
 			return this;
 		},
 
@@ -109,7 +107,7 @@
 			this.viewPerLine = {};
 		},
 		render: function() {
-			LineComments.fetchComments( 'line' );
+			LineComments.fetchLineComments();
 		},
 		addOne: function(comment) {
 			var line = comment.get('line');
