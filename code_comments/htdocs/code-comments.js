@@ -25,6 +25,19 @@
 		url: CodeComments.comments_rest_url,
 		comparator: function(comment) {
 			return comment.get('time');
+		},
+		fetchComments: function( commentsToFetch ) {
+			var lineQuery = ( 'line' == commentsToFetch ) ? 'line__gt' : 'line',
+				params = {
+					data: {
+						path: CodeComments.path || undefined,
+						revision: CodeComments.revision,
+						type: CodeComments.type,
+					}
+				};
+			params.data[lineQuery] = 0;
+
+			return this.fetch( params );
 		}
 	});
 
@@ -60,15 +73,7 @@
 		render: function() {
 			$(this.el).html(this.template());
 			this.$('button').button();
-			var params = {
-				data: {
-					path: CodeComments.path,
-					revision: CodeComments.revision,
-					line: 0,
-					type: CodeComments.type,
-				}
-			};
-			TopComments.fetch( params );
+			TopComments.fetchComments();
 			return this;
 		},
 
@@ -96,16 +101,7 @@
 			this.viewPerLine = {};
 		},
 		render: function() {
-			var params = {
-				data: {
-					path: CodeComments.path || undefined,
-					revision: CodeComments.revision,
-					line__gt: 0,
-					type: CodeComments.type,
-				}
-			};
-
-			LineComments.fetch( params ).complete( function() {
+			LineComments.fetchComments( 'line' ).complete( function() {
 				window.setTimeout( function() {
 					var anchor_id = '#comment-' + CodeComments.active_comment_id;
 					if ( '' != anchor_id && $( anchor_id ).offset() ) {
