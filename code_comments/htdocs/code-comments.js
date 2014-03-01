@@ -178,15 +178,14 @@
 			return this;
 		},
 		open: function( collection, line, file, displayLine ) {
-			var title = this.buildDialogTitle( line, file, displayLine );
+			this.path = ( '' === CodeComments.path ) ? file : CodeComments.path;
 			this.line = line;
 			this.collection = collection;
+			var title = this.buildDialogTitle( line, file, displayLine );
 			this.$el.dialog( 'open' ).dialog( { title: title } );
 		},
 		buildDialogTitle: function( line, file, displayLine ) {
 			displayLine = displayLine || line;
-			this.path = ( '' === CodeComments.path ) ? file : CodeComments.path;
-
 			var title = 'Add comment for ';
 			if( '' === CodeComments.path || typeof CodeComments.path === 'undefined' ) {
 				title += ( displayLine ? 'line ' + displayLine + ' of ' + file + ' in ' : '' )
