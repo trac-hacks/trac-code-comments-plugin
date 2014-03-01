@@ -112,7 +112,7 @@
 		addOne: function(comment) {
 			var line = comment.get('line');
 			if (!this.viewPerLine[line]) {
-				this.viewPerLine[line] = new CommentsForALineView();
+				this.viewPerLine[line] = new CommentsForALineView( { line: line } );
 
 				var $tr = $( CodeComments.$tableRows[ line-1 ] );
 
@@ -134,6 +134,7 @@
 		template: _.template(CodeComments.templates.comments_for_a_line),
 		templateData: {},
 		initialize: function(attrs) {
+			this.line = attrs.line;
 			this.templateData.colspan = ( 'changeset' === CodeComments.page ) ? 2 : 1;
 		},
 		events: {
@@ -145,8 +146,10 @@
 			return this;
 		},
 		addOne: function(comment) {
+			if ( comment.get( 'line' ) != this.line ) {
+				throw 'Trying to add a comment with line ' + comment.get( 'line' ) + ' into a view for line ' + this.line;
+			}
 			var view = new CommentView({model: comment});
-			this.line = comment.get('line');
 			view.appendTo( $( "ul.comments" ) );
 		},
 		showAddCommentDialog: function() {
