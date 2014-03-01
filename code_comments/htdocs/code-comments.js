@@ -260,6 +260,34 @@
 		}
 	});
 
+	window.RowsView = Backbone.View.extend( {
+		initialize: function( atts ) {
+			this.$el = $( this.el );
+			this.$rows = $( 'tr', atts.tableSelector );
+		},
+		render: function() {
+			// wrap TH content in spans so we can hide/show them
+			this.wrapTHsInSpans();
+		},
+		getLineByTR: function( tr ) {
+			return $.inArray( tr, this.$rows ) + 1;
+		},
+		getTrByLineNumber: function( line ) {
+			return this.$rows[line - 1];
+		},
+		wrapTHsInSpans: function() {
+			$( 'th', this.$rows ).each( function( i, elem ) {
+				elem.innerHTML = '<span>' + elem.innerHTML + '</span>';
+			});
+		},
+		hover: function( enter, leave ) {
+			return this.$rows.hover( enter, leave );
+		},
+		getNumberOfTHsPerRow: function() {
+			return this.$rows.eq( 0 ).find( 'th' ).length;
+		}
+	} );
+
 	window.TopComments = new CommentsList();
 	window.LineComments = new CommentsList();
 	window.TopCommentsBlock = new TopCommentsView();
