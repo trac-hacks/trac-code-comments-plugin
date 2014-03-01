@@ -231,9 +231,8 @@
 			};
 
 			var callbackMouseout = function( event ) {
-				var tr = $( 'th', this ).length? this : $( this ).parent().get( 0 ),
-					row = new RowView( { el: tr } );
-				$( 'a.bubble', tr ).remove();
+				$( 'a.bubble', this ).remove();
+				var row = new RowView( { el: this } );
 				row.bringBackOriginalLineNumberCellContent();
 			};
 
