@@ -32,7 +32,7 @@
 					data: {
 						path: CodeComments.path || undefined,
 						revision: CodeComments.revision,
-						type: CodeComments.type,
+						type: CodeComments.page,
 					}
 				};
 			params.data[lineQuery] = 0;
@@ -136,7 +136,7 @@
 		template: _.template(CodeComments.templates.comments_for_a_line),
 		templateData: {},
 		initialize: function(attrs) {
-			this.templateData.colspan = ( 'changeset' === CodeComments.type ) ? 2 : 1;
+			this.templateData.colspan = ( 'changeset' === CodeComments.page ) ? 2 : 1;
 		},
 		events: {
 			'click button': 'showAddCommentDialog'
@@ -214,7 +214,7 @@
 					self.$el.dialog('close');
 				}
 			};
-			this.collection.create({text: text, author: CodeComments.username, path: this.path, revision: CodeComments.revision, line: line, type: CodeComments.type}, options);
+			this.collection.create({text: text, author: CodeComments.username, path: this.path, revision: CodeComments.revision, line: line, type: CodeComments.page}, options);
 		},
 		previewThrottled: $.throttle(1500, function(e) { return this.preview(e); }),
 		preview: function(e) {
