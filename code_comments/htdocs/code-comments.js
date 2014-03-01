@@ -148,14 +148,8 @@
 			view.appendTo( this.$( "ul.comments" ) );
 		},
 		showAddCommentDialog: function() {
-			var $parentRow = $( this.el ).prev()[0],
-				$th = ( $( 'th', $parentRow ).length) ? $( 'th', $parentRow ) : $parentRow,
-				$item = $th.last(),
-				file = $item.parents( 'li' ).find( 'h2>a:first' ).text(),
-				line = $.inArray( $parentRow, CodeComments.$tableRows ) + 1,
-				displayLine = $item.text().trim() || $th.first().text() + ' (deleted)';
-
-			AddCommentDialog.open( LineComments, this.line, file, displayLine );
+			row = new RowView( { el: $( this.el ).prev().get( 0 ) } );
+			AddCommentDialog.open( LineComments, this.line, row.getFile(), row.getDisplayLine() );
 		}
 	});
 
@@ -224,15 +218,11 @@
 	window.LineCommentBubblesView = Backbone.View.extend({
 		render: function() {
 			var callbackMouseover = function( event ) {
-				var $th = ( $( 'th', this ).length) ? $( 'th', this ) : $( this ),
-					$item = $th.last(),
-					file = $item.parents( 'li' ).find( 'h2>a:first' ).text(),
-					line = $.inArray( this, CodeComments.$tableRows ) + 1,
-					displayLine = $item.text().trim() || $th.first().text() + ' (deleted)';
-
-				$item.children().css( 'display', 'none' );
-
-				$item.prepend( '<a title="Comment on this line" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>' );
+				var row = new RowView( { el: this } ),
+					file = row.getFile(),
+					line = row.getLineNumber(),
+					displayLine = row.getDisplayLine();
+				row.replaceLineNumberCellContent( '<a title="Comment on this line" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>' );
 
 				$( 'a.bubble' ).click( function( e ) {
 					e.preventDefault();
@@ -241,9 +231,10 @@
 			};
 
 			var callbackMouseout = function( event ) {
-				var $th = $( 'th', this ).length ? $( 'th', this ) : $( this );
-				$( 'a.bubble', $th ).remove();
-				$th.children().css( 'display', '' );
+				var tr = $( 'th', this ).length? this : $( this ).parent().get( 0 ),
+					row = new RowView( { el: tr } );
+				$( 'a.bubble', tr ).remove();
+				row.bringBackOriginalLineNumberCellContent();
 			};
 
 			Rows.hover( callbackMouseover, callbackMouseout );
@@ -275,6 +266,30 @@
 		},
 		getNumberOfTHsPerRow: function() {
 			return this.$rows.eq( 0 ).find( 'th' ).length;
+		}
+	} );
+
+	window.RowView = Backbone.View.extend( {
+		initialize: function( atts ) {
+			this.$th = this.$( 'th' );
+			this.$lineNumberCell = this.$th.last();
+			this.$el = $( this.el );
+		},
+		replaceLineNumberCellContent: function( html ) {
+			this.$lineNumberCell.children().css( 'display', 'none' );
+			this.$lineNumberCell.prepend( html );
+		},
+		bringBackOriginalLineNumberCellContent: function() {
+			this.$lineNumberCell.children().css( 'display', '' );
+		},
+		getFile: function() {
+			return this.$el.parents( 'li' ).find( 'h2>a:first' ).text();
+		},
+		getLineNumber: function() {
+			return Rows.getLineByTR( this.el );
+		},
+		getDisplayLine: function() {
+			return this.$lineNumberCell.text().trim() || this.$th.first().text() + ' (deleted)';
 		}
 	} );
 
