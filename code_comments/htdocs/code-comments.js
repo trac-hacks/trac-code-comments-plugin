@@ -83,7 +83,7 @@
 
 		addOne: function(comment) {
 			var view = new CommentView({model: comment});
-			view.appendTo( $( "ul.comments" ) );
+			view.appendTo( this.$( "ul.comments" ) );
 		},
 		addAll: function() {
 			var view = this;
@@ -145,7 +145,7 @@
 				throw 'Trying to add a comment with line ' + comment.get( 'line' ) + ' into a view for line ' + this.line;
 			}
 			var view = new CommentView({model: comment});
-			view.appendTo( $( "ul.comments" ) );
+			view.appendTo( this.$( "ul.comments" ) );
 		},
 		showAddCommentDialog: function() {
 			var $parentRow = $( this.el ).prev()[0],
