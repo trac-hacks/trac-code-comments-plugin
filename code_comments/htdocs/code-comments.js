@@ -1,5 +1,6 @@
-jQuery(function($) {
-	var _ = window.underscore;
+(function($) { $(function() {
+	var _ = window.underscore,
+		jQuery = $;  // just in case something uses jQuery() instead of $()
 	$(document).ajaxError( function(e, xhr, options){
 		var errorText = xhr.statusText;
 		if (-1 == xhr.responseText.indexOf('<html')) {
@@ -14,6 +15,7 @@ jQuery(function($) {
 		alert(errorText);
 	});
 
+	CodeComments.$tableRows = $( CodeComments.tableSelectors ).not( '.comments' );
 
 	window.Comment = Backbone.Model.extend({
 	});
@@ -23,6 +25,19 @@ jQuery(function($) {
 		url: CodeComments.comments_rest_url,
 		comparator: function(comment) {
 			return comment.get('time');
+		},
+		fetchComments: function( commentsToFetch ) {
+			var lineQuery = ( 'line' == commentsToFetch ) ? 'line__gt' : 'line',
+				params = {
+					data: {
+						path: CodeComments.path || undefined,
+						revision: CodeComments.revision,
+						type: CodeComments.type,
+					}
+				};
+			params.data[lineQuery] = 0;
+
+			return this.fetch( params );
 		}
 	});
 
@@ -58,7 +73,7 @@ jQuery(function($) {
 		render: function() {
 			$(this.el).html(this.template());
 			this.$('button').button();
-			TopComments.fetch({data: {path: CodeComments.path, revision: CodeComments.revision, line: 0}});
+			TopComments.fetchComments();
 			return this;
 		},
 
@@ -86,14 +101,23 @@ jQuery(function($) {
 			this.viewPerLine = {};
 		},
 		render: function() {
-			LineComments.fetch({data: {path: CodeComments.path, revision: CodeComments.revision, line__gt: 0}});
-			//TODO: + links
+			LineComments.fetchComments( 'line' ).complete( function() {
+				window.setTimeout( function() {
+					var anchor_id = '#comment-' + CodeComments.active_comment_id;
+					if ( '' != anchor_id && $( anchor_id ).offset() ) {
+						var new_position = $( anchor_id ).offset(); 
+						window.scrollTo( new_position.left, new_position.top ); 
+					}
+				}, 30 );  // slight pause allows DOM updates to complete
+			} );
 		},
 		addOne: function(comment) {
 			var line = comment.get('line');
 			if (!this.viewPerLine[line]) {
 				this.viewPerLine[line] = new CommentsForALineView();
-				var $tr = $("th#L"+line).parent();
+
+				var $tr = $( CodeComments.$tableRows[ line-1 ] );
+
 				$tr.after(this.viewPerLine[line].render().el).addClass('with-comments');
 			}
 			this.viewPerLine[line].addOne(comment);
@@ -110,11 +134,15 @@ jQuery(function($) {
 		tagName: 'tr',
 		className: 'comments',
 		template: _.template(CodeComments.templates.comments_for_a_line),
+		templateData: {},
+		initialize: function(attrs) {
+			this.templateData.colspan = ( 'changeset' === CodeComments.type ) ? 2 : 1;
+		},
 		events: {
 			'click button': 'showAddCommentDialog'
 		},
 		render: function() {
-			$(this.el).html(this.template());
+			$( this.el ).html( this.template( this.templateData ) );
 			this.$('button').button();
 			return this;
 		},
@@ -124,7 +152,14 @@ jQuery(function($) {
 			this.$("ul.comments").append(view.render().el);
 		},
 		showAddCommentDialog: function() {
-			AddCommentDialog.open(LineComments, this.line);
+			var $parentRow = $( this.el ).prev()[0],
+				$th = ( $( 'th', $parentRow ).length) ? $( 'th', $parentRow ) : $parentRow,
+				$item = $th.last(),
+				file = $item.parents( 'li' ).find( 'h2>a:first' ).text(),
+				line = $.inArray( $parentRow, CodeComments.$tableRows ) + 1,
+				displayLine = $item.text().trim() || $th.first().text() + ' (deleted)';
+
+			AddCommentDialog.open( LineComments, this.line, file, displayLine );
 		}
 	});
 
@@ -140,18 +175,33 @@ jQuery(function($) {
 		},
 		render: function() {
 			this.$el.html(this.template({formatting_help_url: CodeComments.formatting_help_url}))
-				.dialog({autoOpen: false, title: 'Add Comment'});
+				.dialog({ autoOpen: false, title: 'Add Comment', close: this.close });
 			this.$('button.add-comment').button();
 			return this;
 		},
-		open: function(collection, line) {
+		open: function( collection, line, file, displayLine ) {
+			var title = this.buildDialogTitle( line, file, displayLine );
 			this.line = line;
 			this.collection = collection;
-			var title = 'Add comment for ' + (this.line? 'line '+this.line + ' of ' : '') + CodeComments.path + '@' + CodeComments.revision;
-			this.$el.dialog('open').dialog({title: title});
+			this.$el.dialog( 'open' ).dialog( { title: title } );
+		},
+		buildDialogTitle: function( line, file, displayLine ) {
+			displayLine = displayLine || line;
+			this.path = ( '' === CodeComments.path ) ? file : CodeComments.path;
+
+			var title = 'Add comment for ';
+			if( '' === CodeComments.path || typeof CodeComments.path === 'undefined' ) {
+				title += ( displayLine ? 'line ' + displayLine + ' of ' + file + ' in ' : '' )
+				      + 'Changeset '  + CodeComments.revision;
+			}
+			else {
+				title += ( displayLine ? 'line ' + displayLine + ' of ' : '' )
+				      + this.path + '@' + CodeComments.revision;
+			}
+			return title;
 		},
 		close: function() {
-			this.$el.dialog('close');
+			$( 'button.ui-state-focus' ).blur();
 		},
 		createComment: function(e) {
 			var self = this;
@@ -164,7 +214,7 @@ jQuery(function($) {
 					self.$el.dialog('close');
 				}
 			};
-			this.collection.create({text: text, author: CodeComments.username, path: CodeComments.path, revision: CodeComments.revision, line: line}, options);
+			this.collection.create({text: text, author: CodeComments.username, path: this.path, revision: CodeComments.revision, line: line, type: CodeComments.type}, options);
 		},
 		previewThrottled: $.throttle(1500, function(e) { return this.preview(e); }),
 		preview: function(e) {
@@ -176,28 +226,37 @@ jQuery(function($) {
 		}
 	});
 
-
 	window.LineCommentBubblesView = Backbone.View.extend({
 		render: function() {
-			this.$('tbody tr').not('.comments').hover(
-				function() {
-					var $th = $('th', this);
-					var line = $('a', $th).attr('href').replace('#L', '');
-					$('a', $th).css('display', 'none');
-					$th.prepend('<a style="" href="#L'+line+'" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>');
-					$('a.bubble').click(function(e) {
-							e.preventDefault();
-							AddCommentDialog.open(LineComments, line);
-						})
-						.css({width: $th.width(), height: $th.height(), 'text-align': 'center'})
-						.find('span').css('margin-left', ($th.width() - 16) / 2);
-				},
-				function() {
-					var $th = $('th', this);
-					$('a.bubble', $th).remove();
-					$('a', $th).show();
-				}
-			);
+			// wrap TH contents in spans so we can hide/show them
+			$( 'th', CodeComments.$tableRows ).each( function( i, elem ) {
+				elem.innerHTML = '<span>' + elem.innerHTML + '</span>';
+			});
+
+			var callbackMouseover = function( event ) {
+				var $th = ( $( 'th', this ).length) ? $( 'th', this ) : $( this ),
+					$item = $th.last(),
+					file = $item.parents( 'li' ).find( 'h2>a:first' ).text(),
+					line = $.inArray( this, CodeComments.$tableRows ) + 1,
+					displayLine = $item.text().trim() || $th.first().text() + ' (deleted)';
+
+				$item.children().css( 'display', 'none' );
+
+				$item.prepend( '<a title="Comment on this line" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>' );
+
+				$( 'a.bubble' ).click( function( e ) {
+					e.preventDefault();
+					AddCommentDialog.open( LineComments, line, file, displayLine );
+				} );
+			};
+
+			var callbackMouseout = function( event ) {
+				var $th = $( 'th', this ).length ? $( 'th', this ) : $( this );
+				$( 'a.bubble', $th ).remove();
+				$th.children().css( 'display', '' );
+			};
+
+			CodeComments.$tableRows.hover( callbackMouseover, callbackMouseout );
 		}
 	});
 
@@ -206,10 +265,10 @@ jQuery(function($) {
 	window.TopCommentsBlock = new TopCommentsView();
 	window.LineCommentsBlock = new LineCommentsView();
 	window.AddCommentDialog = new AddCommentDialogView();
-	window.LineCommentBubbles = new LineCommentBubblesView({el: $('table.code')});
+	window.LineCommentBubbles = new LineCommentBubblesView({el: $('#preview, .diff .entries')});
 
 	$(CodeComments.selectorToInsertBefore).before(TopCommentsBlock.render().el);
 	LineCommentsBlock.render();
 	AddCommentDialog.render();
 	LineCommentBubbles.render();
-});
+}); }( jQuery.noConflict( true ) ) );

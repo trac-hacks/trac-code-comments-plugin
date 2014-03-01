@@ -38,15 +38,17 @@ class Comment:
         self.req = req
         if self._empty('version'):
             self.version = VERSION
+        if self._empty( 'path' ):
+            self.path = ''
         self.html = format_to_html(self.req, self.env, self.text)
         email = self.email_map().get(self.author, 'baba@baba.net')
         self.email_md5 = md5_hexdigest(email)
         attachment_info = self.attachment_info()
-        self.is_comment_to_attachment = attachment_info['is']
+        self.is_comment_to_attachment = 'attachment' == self.type
         self.attachment_ticket = attachment_info['ticket']
         self.attachment_filename = attachment_info['filename']
-        self.is_comment_to_changeset = self.revision and not self.path
-        self.is_comment_to_file = self.revision and self.path
+        self.is_comment_to_changeset = 'changeset' == self.type
+        self.is_comment_to_file = 'browser' == self.type
 
     def _empty(self, column_name):
         return not hasattr(self, column_name) or not getattr(self, column_name)
@@ -71,24 +73,30 @@ class Comment:
             href = self.req.href.changeset(self.revision, codecomment=self.id)
         elif self.is_comment_to_attachment:
             href = self.req.href('/attachment/ticket/%d/%s' % (self.attachment_ticket, self.attachment_filename), codecomment=self.id)
-        if self.line:
+        if self.line and not self.is_comment_to_changeset:
             href += '#L' + str(self.line)
         return href
 
     def link_text(self):
-        if self.revision and not self.path:
-            return '[%s]' % self.revision
-        if self.path.startswith('attachment:'):
+        if self.is_comment_to_changeset:
+            return self.changeset_link_text()
+        if self.is_comment_to_attachment:
             return self.attachment_link_text()
 
-        # except the two specials cases of changesets (revision-only)
-        # and arrachments (path-only), we must always have them both
+        # except the two special cases of changesets (revision-only)
+        # and attachments (path-only), we must always have them both
         assert self.path and self.revision
 
         link_text = self.path + '@' + str(self.revision)
         if self.line:
             link_text += '#L' + str(self.line)
         return link_text
+
+    def changeset_link_text(self):
+        if 0 != self.line:
+            return 'Changeset @%d#L%d (in %s)' % ( self.revision, self.line, self.path )
+        else:
+            return 'Changeset @%s' % self.revision
 
     def attachment_link_text(self):
         return '#%s: %s' % (self.attachment_ticket, self.attachment_filename)
@@ -99,9 +107,8 @@ class Comment:
         return 'source:' + self.link_text()
 
     def attachment_info(self):
-        info = {'is': False, 'ticket': None, 'filename': None}
-        info['is'] = self.path.startswith('attachment:')
-        if not info['is']:
+        info = { 'ticket': None, 'filename': None }
+        if not self.path.startswith( 'attachment' ):
             return info
         match = re.match(r'attachment:/ticket/(\d+)/(.*)', self.path)
         if not match:

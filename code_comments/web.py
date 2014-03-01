@@ -74,10 +74,11 @@ class JSDataForRequests(CodeComments):
             'active_comment_id': req.args.get('codecomment'),
             'username': req.authname,
             'is_admin': 'TRAC_ADMIN' in req.perm,
+            'tableSelectors': 'table.code tbody tr, table.trac-diff tbody tr',
         }
 
         original_return_value = template, data, content_type
-        if req.path_info.startswith('/changeset/'):
+        if req.path_info.startswith('/changeset'):
             js_data.update(self.changeset_js_data(req, data))
         elif req.path_info.startswith('/browser'):
             js_data.update(self.browser_js_data(req, data))
@@ -86,6 +87,7 @@ class JSDataForRequests(CodeComments):
         else:
             return original_return_value
 
+        add_script(req, 'code-comments/jquery-1.5.min.js')
         add_script(req, 'code-comments/json2.js')
         add_script(req, 'code-comments/underscore-min.js')
         add_script(req, 'code-comments/backbone-min.js')
@@ -117,8 +119,6 @@ class JSDataForRequests(CodeComments):
     def template_js_data(self, name):
         file_name = name + '.html'
         return to_unicode(open(self.get_template_dir() + '/js/' + file_name).read())
-
-
 
 class ListComments(CodeComments):
     implements(IRequestHandler)

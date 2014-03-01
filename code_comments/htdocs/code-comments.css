@@ -69,12 +69,30 @@ tr.with-comments {
 	background-color: #FFFFE2;
 	border-bottom: 1px solid #998;
 }
-tr.comments {
+tr.comments td {
 	border-bottom: 1px solid #998;
 }
-table.code tr {
+/* fixes .with-comments bottom borders on changeset view */
+.diff table.inline tbody.mod tr.with-comments td.r,
+.diff table.inline tbody.add tr.with-comments td.r {
+	border-bottom-width: 1px;
+}
+.diff table.inline tbody.mod tr.with-comments td.l,
+.diff table.inline tbody.rem tr.with-comments td.l {
+	border-bottom-width: 1px;
+}
+
+table.code tr,
+.trac-diff tbody tr {
 	height: 17px;
 }
-table.code tr:hover td {
+
+table.code tr:hover td,
+#content table.trac-diff tbody tr:hover td {
 	background-color: #FFFFCA;
+}
+
+a.bubble span.ui-icon {
+	/* this centers the icon horizontally and vertically */
+	margin: -2px auto 0;
 }
