@@ -46,14 +46,22 @@
 		template:  _.template(CodeComments.templates.comment),
 		initialize: function() {
 			this.model.bind('change', this.render, this);
+			this.is_active = this.model.id == CodeComments.active_comment_id;
 		},
 		render: function() {
 			$(this.el).html(this.template(_.extend(this.model.toJSON(), {
 				delete_url: CodeComments.delete_url,
-				active: this.model.id == CodeComments.active_comment_id,
+				active: this.is_active,
 				can_delete: CodeComments.is_admin
 			})));
 			return this;
+		},
+		appendTo: function($el) {
+			$el.append( this.render().el );
+			if ( this.is_active ) {
+				var comment_offset = $(this.el).offset();
+				window.scrollTo( comment_offset.left, comment_offset.top );
+			}
 		}
 	});
 
@@ -79,7 +87,7 @@
 
 		addOne: function(comment) {
 			var view = new CommentView({model: comment});
-			this.$("ul.comments").append(view.render().el);
+			view.appendTo( $( "ul.comments" ) );
 		},
 		addAll: function() {
 			var view = this;
@@ -101,15 +109,7 @@
 			this.viewPerLine = {};
 		},
 		render: function() {
-			LineComments.fetchComments( 'line' ).complete( function() {
-				window.setTimeout( function() {
-					var anchor_id = '#comment-' + CodeComments.active_comment_id;
-					if ( '' != anchor_id && $( anchor_id ).offset() ) {
-						var new_position = $( anchor_id ).offset(); 
-						window.scrollTo( new_position.left, new_position.top ); 
-					}
-				}, 30 );  // slight pause allows DOM updates to complete
-			} );
+			LineComments.fetchComments( 'line' );
 		},
 		addOne: function(comment) {
 			var line = comment.get('line');
@@ -149,7 +149,7 @@
 		addOne: function(comment) {
 			var view = new CommentView({model: comment});
 			this.line = comment.get('line');
-			this.$("ul.comments").append(view.render().el);
+			view.appendTo( $( "ul.comments" ) );
 		},
 		showAddCommentDialog: function() {
 			var $parentRow = $( this.el ).prev()[0],
