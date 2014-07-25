@@ -204,7 +204,7 @@ var underscore = _.noConflict();
 					self.$('textarea').val('');
 					self.$el.dialog('close');
 				},
-                wait: true
+				wait: true
 			};
 			this.collection.create({text: text, author: CodeComments.username, path: this.path, revision: CodeComments.revision, line: line, type: CodeComments.page}, options);
 		},
