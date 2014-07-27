@@ -167,7 +167,11 @@ var underscore = _.noConflict();
 		},
 		render: function() {
 			this.$el.html(this.template({formatting_help_url: CodeComments.formatting_help_url}))
-				.dialog({ autoOpen: false, title: 'Add Comment', close: this.close });
+				.dialog({ autoOpen: false, title: 'Add Comment', close: this.close, modal: true });
+			// Prevent keypresses in the dialog from being intercepted by other scripts
+			this.$el.keydown(function(e) {
+				event.stopPropagation();
+			});
 			this.$('button.add-comment').button();
 			return this;
 		},
