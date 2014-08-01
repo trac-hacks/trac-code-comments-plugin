@@ -6,10 +6,21 @@ setup(
     author_email='nikolay@automattic.com, tott@automattic.com',
     description='Tool for leaving inline code comments',
     packages=find_packages(exclude=['*.tests*']),
-    entry_points = {
+    entry_points={
         'trac.plugins': [
             'code_comments = code_comments',
+            'code_comments.api = code_comments.api',
+            'code_comments.notification = code_comments.notification',
         ],
     },
-    package_data = {'code_comments': ['templates/*.html', 'templates/js/*.html', 'htdocs/*.*','htdocs/jquery-ui/*.*', 'htdocs/jquery-ui/images/*.*', 'htdocs/sort/*.*']},
+    package_data={
+        'code_comments': [
+            'templates/*.html',
+            'templates/js/*.html',
+            'htdocs/*.*',
+            'htdocs/jquery-ui/*.*',
+            'htdocs/jquery-ui/images/*.*',
+            'htdocs/sort/*.*',
+        ],
+    },
 )

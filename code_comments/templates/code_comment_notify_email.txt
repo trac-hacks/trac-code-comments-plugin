@@ -1,0 +1,7 @@
+${comment.text}
+
+View the comment: ${project.url or abs_href()}${comment.href()}
+
+-- 
+${project.name} <${project.url or abs_href()}>
+${project.descr}
