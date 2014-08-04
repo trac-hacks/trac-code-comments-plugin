@@ -154,6 +154,7 @@ class CodeCommentNotifyEmail(NotifyEmail):
 
         self.data.update({
             "comment": comment,
+            "link": self.env.abs_href() + comment.href(),
         })
 
         projname = self.config.get("project", "name")
