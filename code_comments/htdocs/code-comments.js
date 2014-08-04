@@ -168,7 +168,10 @@ var underscore = _.noConflict();
 		render: function() {
 			this.$el.html(this.template({formatting_help_url: CodeComments.formatting_help_url}))
 				.dialog({ autoOpen: false, title: 'Add Comment', close: this.close, modal: true });
-			// Prevent keypresses in the dialog from being intercepted by other scripts
+			// As the textarea in our dialog is created after Trac's
+			// keyboard_nav.js has bound, we have to stop keydown events
+			// propoagating in order to avoid unexpected navigation while the
+			// user is typing their comment.
 			this.$el.keydown(function(e) {
 				event.stopPropagation();
 			});
