@@ -1,3 +1,5 @@
+var underscore = _.noConflict();
+
 (function($) { $(function() {
 	var _ = window.underscore,
 		jQuery = $;  // just in case something uses jQuery() instead of $()
@@ -201,7 +203,8 @@
 				success: function() {
 					self.$('textarea').val('');
 					self.$el.dialog('close');
-				}
+				},
+				wait: true
 			};
 			this.collection.create({text: text, author: CodeComments.username, path: this.path, revision: CodeComments.revision, line: line, type: CodeComments.page}, options);
 		},

@@ -86,7 +86,7 @@ class JSDataForRequests(CodeComments):
         else:
             return original_return_value
 
-        add_script(req, 'code-comments/jquery-1.5.min.js')
+        add_script(req, 'code-comments/jquery-1.11.1.min.js')
         add_script(req, 'code-comments/json2.js')
         add_script(req, 'code-comments/underscore-min.js')
         add_script(req, 'code-comments/backbone-min.js')
