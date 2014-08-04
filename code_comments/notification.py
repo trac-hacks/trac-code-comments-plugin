@@ -138,13 +138,18 @@ class CodeCommentNotifyEmail(NotifyEmail):
 
         return (torcpts, ccrcpts)
 
-    def notify(self, comment):
-        from_name = comment.author
-
-        # See if we can get a real name for the comment author
+    def _get_name(self, comment):
+        """
+        Get the real name of the user who made the comment. If it cannot be
+        determined, return their username.
+        """
         for username, name, email in self.env.get_known_users():
             if username == comment.author and name:
-                from_name = name
+                return name
+
+        return comment.author
+
+    def notify(self, comment):
 
         self.data.update({
             "comment": comment,
@@ -156,6 +161,7 @@ class CodeCommentNotifyEmail(NotifyEmail):
         # Temporarily switch the smtp_from_name setting so we can pretend
         # the mail came from the author of the comment
         try:
+            from_name = self._get_name(comment)
             self.env.log.debug("Changing smtp_from_name to %s" % from_name)
             old_setting = self.config['notification'].get('smtp_from_name')
             self.config.set('notification', 'smtp_from_name', from_name)
