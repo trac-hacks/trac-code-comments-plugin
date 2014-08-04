@@ -9,8 +9,6 @@ setup(
     entry_points={
         'trac.plugins': [
             'code_comments = code_comments',
-            'code_comments.api = code_comments.api',
-            'code_comments.notification = code_comments.notification',
         ],
     },
     package_data={
