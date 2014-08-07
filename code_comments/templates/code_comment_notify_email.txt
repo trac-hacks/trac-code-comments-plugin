@@ -1,0 +1,7 @@
+${comment.text}
+
+View the comment: ${comment_url}
+
+-- 
+${project.name} <${project_url}>
+${project.descr}

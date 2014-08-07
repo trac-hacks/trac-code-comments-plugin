@@ -18,6 +18,10 @@ Installation
 Pick an `.egg` file from the Downloads section and place it in the `plugins/`
 directory of your Trac install.
 
+Alternatively build your own egg by checking out the repository and running
+`python setup.py bdist_egg` in your working copy. Copy the resultant .egg to
+your `plugins` directory.
+
 Trac Code Comments plugin requres at least python 2.4 and runs on Trac 0.12.
 
 Features
@@ -46,6 +50,9 @@ ticket.
 
 * Comments/ticket cross-reference – to remember which comments are already in
 tickets and which are not.
+
+* Notifications – if you have configured Trac to email ticket notifications
+then comment notifications will just work!
 
 Screenshots
 -----------
