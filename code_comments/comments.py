@@ -119,8 +119,7 @@ class Comments:
             cursor.execute(sql, values)
             comment_id[0] = db.get_last_id(cursor, 'code_comments')
 
-        for listener in CodeCommentSystem(self.env).change_listeners:
-            listener.comment_created(
-                Comments(self.req, self.env).by_id(comment_id[0]))
+        CodeCommentSystem(self.env).comment_created(
+            Comments(self.req, self.env).by_id(comment_id[0]))
 
         return comment_id[0]
