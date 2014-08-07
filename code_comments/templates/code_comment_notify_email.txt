@@ -1,7 +1,7 @@
 ${comment.text}
 
-View the comment: ${link}
+View the comment: ${comment_url}
 
 -- 
-${project.name} <${project.url or abs_href()}>
+${project.name} <${project_url}>
 ${project.descr}
