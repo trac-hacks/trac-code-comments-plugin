@@ -133,9 +133,6 @@ class CodeCommentNotifyEmail(NotifyEmail):
         # Remove duplicates
         ccrcpts = ccrcpts.difference(torcpts)
 
-        self.env.log.debug("Will send notification to: %s" % torcpts)
-        self.env.log.debug("Will copy notification to: %s" % ccrcpts)
-
         return (torcpts, ccrcpts)
 
     def _get_author_name(self, comment):
