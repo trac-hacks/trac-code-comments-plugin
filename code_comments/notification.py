@@ -158,7 +158,11 @@ class CodeCommentNotifyEmail(NotifyEmail):
         projname = self.config.get("project", "name")
         subject = "Re: [%s] %s" % (projname, comment.link_text())
 
-        NotifyEmail.notify(self, comment, subject)
+        try:
+            NotifyEmail.notify(self, comment, subject)
+        except Exception, e:
+            self.env.log.error("Failure sending notification on creation of "
+                               "comment #%d: %s", comment.id, e)
 
     def send(self, torcpts, ccrcpts):
         """
