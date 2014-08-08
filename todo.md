@@ -23,7 +23,7 @@ Need to figure out how to handle blanket subscriptions.
 ## Subscriptions
 
 - [ ] model
-- [ ] db
+- [x] db
 - [ ] api - create, update, delete, query
 
 ## Listeners
