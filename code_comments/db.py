@@ -2,6 +2,7 @@ from trac.core import Component, implements
 from trac.db.schema import Table, Column, Index
 from trac.env import IEnvironmentSetupParticipant
 from trac.db.api import DatabaseManager
+from trac.versioncontrol import RepositoryManager
 
 # Database version identifier for upgrades.
 db_version = 3
@@ -22,14 +23,16 @@ schema = {
         Index(['author']),
     ],
     'code_comments_subscriptions': Table('code_comments_subscriptions',
-                                         key=('user', 'type', 'path',
+                                         key=('id', 'user', 'type', 'path',
                                               'repos', 'rev'))[
+        Column('id', auto_increment=True),
         Column('user'),
-        Column('usertype'),
+        Column('role'),
         Column('type'),
         Column('path'),
         Column('repos'),
         Column('rev'),
+        Column('notify'),
         Index(['user']),
         Index(['path']),
     ],
@@ -108,11 +111,16 @@ def upgrade_from_2_to_3(env, db):
         cursor.execute("SELECT type, id, filename, author FROM attachment")
         attachments = cursor.fetchall()
         for attachment in attachments:
-            path = "/{0}/{1}/{2}".format(*attachment)
-            sql = ("INSERT INTO code_comments_subscriptions VALUES "
-                   "('{3}', 'author', 'attachment', '{path}', '', '')"
-                   ).format(*attachment, path=path)
-            cursor.execute(sql)
+            sub = {
+                'user': attachment[3],
+                'role': 'author',
+                'type': 'attachment',
+                'path': "/{0}/{1}/{2}".format(*attachment),
+                'repos': '',
+                'rev': '',
+                'notify': 'always',
+            }
+            add_subscription(env, **sub)
 
     @env.with_transaction()
     def add_revision_subscriptions(db):
@@ -123,10 +131,77 @@ def upgrade_from_2_to_3(env, db):
         cursor.execute("SELECT repos, rev, author FROM revision")
         revisions = cursor.fetchall()
         for revision in revisions:
-            sql = ("INSERT INTO code_comments_subscriptions VALUES "
-                   "('{2}', 'author', 'revision', '', '{0}', '{1}')"
-                   ).format(*revision)
+            sub = {
+                'user': revision[2],
+                'role': 'author',
+                'type': 'revision',
+                'path': '',
+                'repos': revision[0],
+                'rev': revision[1],
+                'notify': 'always',
+            }
+            add_subscription(env, **sub)
+
+    @env.with_transaction()
+    def add_comment_subscriptions(db):
+        """
+        Create a subscription for all existing comments.
+        """
+        cursor = db.cursor()
+        cursor.execute("SELECT DISTINCT author, type, path, revision FROM "
+                       "code_comments")
+        comments = cursor.fetchall()
+        for comment in comments:
+            sub = {
+                'user': comment[0],
+                'role': 'commenter',
+                'type': comment[1],
+                'notify': 'always',
+            }
+
+            # Munge attachments
+            if sub['type'] == 'attachment':
+                sub['path'] = comment[2].split(':')[1]
+                sub['repos'] = ''
+                sub['rev'] = ''
+
+            # Munge changesets and browser
+            if sub['type'] == 'changeset' or sub['type'] == 'browser':
+                sub['type'] = 'revision'
+                sub['path'] = comment[2]
+                repo = RepositoryManager(env).get_repository(None)
+                try:
+                    sub['repos'] = repo.id
+                    sub['rev'] = repo.db_rev(int(comment[3]))
+                finally:
+                    repo.close()
+
+            add_subscription(env, **sub)
+
+
+def add_subscription(env, **kwargs):
+    """
+    Helper method for create a code comment subscription.
+    """
+    @env.with_transaction()
+    def do_add_subscription(db):
+        cursor = db.cursor()
+        # We need to avoid creating duplicate subscriptions here due to
+        # the transaction (duplicates will raise an IntegrityError)
+        query = ("SELECT COUNT(*) FROM code_comments_subscriptions WHERE "
+                 "user = '{user}' AND type = '{type}' AND path = '{path}' "
+                 "AND repos = '{repos}' AND rev = '{rev}' AND "
+                 "notify = '{notify}'").format(**kwargs)
+        cursor.execute(query)
+        already_subscribed = cursor.fetchone()[0]
+        if not already_subscribed:
+            sql = ("INSERT INTO code_comments_subscriptions ('user', "
+                   "'role', 'type', 'path', 'repos', 'rev', 'notify') "
+                   "VALUES ('{user}', '{role}', '{type}', '{path}', "
+                   "'{repos}', '{rev}', '{notify}')").format(**kwargs)
             cursor.execute(sql)
+            env.log.info(
+                "Subscribing {user} to {type} as {role}.".format(**kwargs))
 
 
 upgrade_map = {
