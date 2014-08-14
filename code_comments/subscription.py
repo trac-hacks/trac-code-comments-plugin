@@ -5,118 +5,137 @@ from trac.versioncontrol import RepositoryManager, NoSuchChangeset
 from code_comments.comments import Comments
 
 
-def create_subscription(env, user, role, type_, path, rev, repos=None,
-                        notify='always'):
+class Subscription(object):
     """
-    Create a code comment subscription for a given user.
-
-    :param str user: The user to subscribe
-    :param str role: The type of subscription: "author" or "commenter"
-    :param str_ type: What the subscription is to e.g., "attachment"
-    :param path: The path of the subscription
-    :type path: str or None
-    :param repos: The name of repository
-    :type repos: str or None
-    :param rev: The revision
-    :type repos: int or None
-    :param str notify: Whether the subscription issues a notification
-                    ("always") or not ("never")
-    :return: The id of the new subscription
-    :rtype: int
+    Representation of a code comment subscription.
     """
-    sub = {
-        'user': user,
-        'role': role,
-        'type': type_,
-        'path': path or '',
-        'notify': notify,
-    }
+    id = 0
+    user = ''
+    role = ''
+    type = ''
+    path = ''
+    rev = ''
+    repos = ''
+    notify = 'always'
 
-    if type_ in ('changeset', 'browser'):
-        _repo = RepositoryManager(env).get_repository(repos)
-        try:
-            sub['repos'] = _repo.reponame
-            if rev:
-                sub['rev'] = _repo.db_rev(rev)
-            else:
-                sub['rev'] = 'any'  # wildcard
-        finally:
-            _repo.close()
-    else:
-        sub['repos'] = ''
-        sub['rev'] = ''
+    def __init__(self, env, data=None):
+        if isinstance(data, dict):
+            self.__dict__ = data
+        self.env = env
 
-    @env.with_transaction()
-    def insert_subscription(db):
-        cursor = db.cursor()
-        select = ("SELECT id FROM code_comments_subscriptions WHERE "
-                  "user = '{user}' AND type = '{type}' AND "
-                  "path = '{path}' AND repos = '{repos}' AND "
-                  "rev = '{rev}' AND notify = '{notify}'").format(**sub)
-        cursor.execute(select)
-        subs = cursor.fetchall()
-        if len(subs) > 0:
-            # There shouldn't really ever be more than one result
-            env.log.debug(
-                'Subscription for {type} already exists'.format(**sub))
-            return subs[0]
-        else:
-            fields = ', '.join(sub.keys())
-            values_template = ', '.join(['%s'] * len(sub))
+    def insert(self, db=None):
+        """
+        Insert a new subscription.
+        """
+        @self.env.with_transaction(db)
+        def do_insert(db):
+            cursor = db.cursor()
             insert = ("INSERT INTO code_comments_subscriptions "
-                      "({0}) VALUES ({1})").format(fields, values_template)
-            cursor.execute(insert, sub.values())
-            env.log.debug(
-                'Subscription for {type} created'.format(**sub))
-            return db.get_last_id(cursor, 'code_comments_subscriptions')
+                      "(user, role, type, path, repos, rev, notify) "
+                      "VALUES (%s, %s, %s, %s, %s, %s, %s)")
+            values = (self.user, self.role, self.type, self.path, self.repos,
+                      self.rev, self.notify)
+            cursor.execute(insert, values)
+            self.id = db.get_last_id(cursor, 'code_comments_subscriptions')
 
-
-def create_subscription_from_changeset(env, changeset):
-    sub = {
-        'user': changeset.author,
-        'role': 'author',
-        'type_': 'changeset',
-        'path': None,
-        'repos': changeset.repos.reponame,
-        'rev': changeset.rev,
-        'notify': 'always',
-    }
-    create_subscription(env, **sub)
-
-
-def create_subscription_from_comment(env, comment):
-    sub = {
-        'user': comment.author,
-        'role': 'commenter',
-        'type_': comment.type,
-        'notify': 'always'
-    }
-
-    # Munge attachments
-    if comment.type == 'attachment':
-        sub['path'] = comment.path.split(':')[1]
-        sub['repos'] = None,
-        sub['rev'] = None
-
-    # Munge changesets and browser
-    if comment.type in ('changeset', 'browser'):
-        if comment.type == 'browser':
-            sub['path'] = comment.path
-        else:
-            sub['path'] = None
-        repo = RepositoryManager(env).get_repository(None)
+    @classmethod
+    def _from_row(cls, env, row):
+        """
+        Creates a subscription from a list (representing a database row).
+        """
         try:
-            sub['repos'] = repo.reponame
-            try:
-                _cs = repo.get_changeset(comment.revision)
-                sub['rev'] = _cs.rev
-            except NoSuchChangeset:
-                # Invalid changeset
-                return None
-        finally:
-            repo.close()
+            subscription = cls(env)
+            subscription.id = row[0]
+            subscription.user = row[1]
+            subscription.role = row[2]
+            subscription.type = row[3]
+            subscription.path = row[4]
+            subscription.repos = row[5]
+            subscription.rev = row[6]
+            subscription.notify = row[7]
+            return subscription
+        except IndexError:
+            # Invalid row
+            return None
 
-    return create_subscription(env, **sub)
+    @classmethod
+    def _from_dict(cls, env, dict_):
+        """
+        Creates a subscription from a dict.
+        """
+        cursor = env.get_read_db().cursor()
+        select = ("SELECT * FROM code_comments_subscriptions WHERE "
+                  "user=%s AND type=%s AND path=%s AND "
+                  "repos=%s AND rev=%s AND notify=%s"
+                  )
+        values = (dict_['user'], dict_['type'], dict_['path'], dict_['repos'],
+                  dict_['rev'], dict_['notify'])
+        cursor.execute(select, values)
+        row = cursor.fetchone()
+        if row:
+            env.log.debug(
+                'Subscription for {type} already exists'.format(**dict_))
+            return cls._from_row(env, row)
+        else:
+            env.log.debug(
+                'Subscription for {type} created'.format(**dict_))
+            subscription = cls(env, dict_)
+            subscription.insert()
+            return subscription
+
+    @classmethod
+    def from_changeset(cls, env, changeset):
+        """
+        Creates a subscription from a Changeset object.
+        """
+        sub = {
+            'user': changeset.author,
+            'role': 'author',
+            'type': 'changeset',
+            'path': '',
+            'repos': changeset.repos.reponame,
+            'rev': changeset.rev,
+            'notify': 'always',
+        }
+        return cls._from_dict(env, sub)
+
+    @classmethod
+    def from_comment(cls, env, comment):
+        """
+        Creates a subscription from a Comment object.
+        """
+        sub = {
+            'user': comment.author,
+            'role': 'commenter',
+            'type': comment.type,
+            'notify': 'always'
+        }
+
+        # Munge attachments
+        if comment.type == 'attachment':
+            sub['path'] = comment.path.split(':')[1]
+            sub['repos'] = ''
+            sub['rev'] = ''
+
+        # Munge changesets and browser
+        if comment.type in ('changeset', 'browser'):
+            if comment.type == 'browser':
+                sub['path'] = comment.path
+            else:
+                sub['path'] = ''
+            repo = RepositoryManager(env).get_repository(None)
+            try:
+                sub['repos'] = repo.reponame
+                try:
+                    _cs = repo.get_changeset(comment.revision)
+                    sub['rev'] = _cs.rev
+                except NoSuchChangeset:
+                    # Invalid changeset
+                    return None
+            finally:
+                repo.close()
+
+        return cls._from_dict(env, sub)
 
 
 class SubscriptionAdmin(Component):
@@ -143,13 +162,13 @@ class SubscriptionAdmin(Component):
             sub = {
                 'user': attachment[3],
                 'role': 'author',
-                'type_': 'attachment',
+                'type': 'attachment',
                 'path': "/{0}/{1}/{2}".format(*attachment),
-                'repos': None,
-                'rev': None,
+                'repos': '',
+                'rev': '',
                 'notify': 'always',
             }
-            create_subscription(self.env, **sub)
+            Subscription._from_dict(self.env, sub)
 
         # Create a subscription for all existing revisions
         rm = RepositoryManager(self.env)
@@ -159,7 +178,7 @@ class SubscriptionAdmin(Component):
             while _rev:
                 try:
                     _cs = repo.get_changeset(_rev)
-                    create_subscription_from_changeset(self.env, _cs)
+                    Subscription.from_changeset(self.env, _cs)
                 except NoSuchChangeset:
                     pass
                 _rev = repo.next_rev(_rev)
@@ -167,4 +186,4 @@ class SubscriptionAdmin(Component):
         # Create a subscription for all existing comments
         comments = Comments(None, self.env).all()
         for comment in comments:
-            create_subscription_from_comment(self.env, comment)
+            Subscription.from_comment(self.env, comment)
