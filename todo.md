@@ -22,9 +22,13 @@ Need to figure out how to handle blanket subscriptions.
 
 ## Subscriptions
 
-- [ ] model
+- [x] model
+ - [x] create
+ - [ ] update
+ - [ ] delete
+ - [ ] query
 - [x] db
-- [ ] api - create, update, delete, query
+- [ ] api
 
 ## Listeners
 

@@ -1,4 +1,5 @@
 from trac.admin import IAdminCommandProvider
+from trac.attachment import Attachment
 from trac.core import Component, implements
 from trac.versioncontrol import RepositoryManager, NoSuchChangeset
 
@@ -84,6 +85,26 @@ class Subscription(object):
             return subscription
 
     @classmethod
+    def from_attachment(cls, env, attachment):
+        """
+        Creates a subscription from an Attachment object.
+        """
+        _path = "/{0}/{1}/{2}".format(attachment.parent_realm,
+                                      attachment.parent_id,
+                                      attachment.filename)
+
+        sub = {
+            'user': attachment.author,
+            'role': 'author',
+            'type': 'attachment',
+            'path': _path,
+            'repos': '',
+            'rev': '',
+            'notify': 'always',
+        }
+        return cls._from_dict(env, sub)
+
+    @classmethod
     def from_changeset(cls, env, changeset):
         """
         Creates a subscription from a Changeset object.
@@ -156,19 +177,11 @@ class SubscriptionAdmin(Component):
     def _do_seed(self):
         # Create a subscription for all existing attachments
         cursor = self.env.get_read_db().cursor()
-        cursor.execute("SELECT type, id, filename, author FROM attachment")
-        attachments = cursor.fetchall()
-        for attachment in attachments:
-            sub = {
-                'user': attachment[3],
-                'role': 'author',
-                'type': 'attachment',
-                'path': "/{0}/{1}/{2}".format(*attachment),
-                'repos': '',
-                'rev': '',
-                'notify': 'always',
-            }
-            Subscription._from_dict(self.env, sub)
+        cursor.execute("SELECT DISTINCT type, id FROM attachment")
+        rows = cursor.fetchall()
+        for row in rows:
+            for attachment in Attachment.select(self.env, row[0], row[1]):
+                Subscription.from_attachment(self.env, attachment)
 
         # Create a subscription for all existing revisions
         rm = RepositoryManager(self.env)
