@@ -19,7 +19,7 @@ class Subscription(object):
     path = ''
     rev = ''
     repos = ''
-    notify = 'always'
+    notify = True
 
     def __init__(self, env, data=None):
         if isinstance(data, dict):
@@ -27,8 +27,10 @@ class Subscription(object):
         self.env = env
 
     @classmethod
-    def select(cls, env, args={}):
+    def select(cls, env, args={}, notify=None):
         select = 'SELECT * FROM code_comments_subscriptions'
+        if notify:
+            args['notify'] = bool(notify)
         if len(args) > 0:
             select += ' WHERE '
             criteria = []
@@ -36,6 +38,11 @@ class Subscription(object):
                 template = '{0}={1}'
                 if isinstance(value, str):
                     template = '{0}=\'{1}\''
+                if (isinstance(value, tuple) or isinstance(value, list)):
+                    template = '{0} IN (\'{1}\')'
+                    value = '\',\''.join(value)
+                if isinstance(value, bool):
+                    value = int(value)
                 criteria.append(template.format(key, value))
             select += ' AND '.join(criteria)
         cursor = env.get_read_db().cursor()
@@ -112,7 +119,7 @@ class Subscription(object):
             subscription.path = row[4]
             subscription.repos = row[5]
             subscription.rev = row[6]
-            subscription.notify = row[7]
+            subscription.notify = bool(row[7])
             return subscription
         except IndexError:
             # Invalid row
@@ -145,7 +152,7 @@ class Subscription(object):
 
     @classmethod
     def from_attachment(cls, env, attachment, user=None, role='author',
-                        notify='always'):
+                        notify=True):
         """
         Creates a subscription from an Attachment object.
         """
@@ -166,7 +173,7 @@ class Subscription(object):
 
     @classmethod
     def from_changeset(cls, env, changeset, user=None, role='author',
-                       notify='always'):
+                       notify=True):
         """
         Creates a subscription from a Changeset object.
         """
@@ -183,13 +190,13 @@ class Subscription(object):
 
     @classmethod
     def from_comment(cls, env, comment, user=None, role='commenter',
-                     notify='always'):
+                     notify=True):
         """
         Creates a subscription from a Comment object.
         """
         sub = {
             'user': user or comment.author,
-            'role': user,
+            'role': 'commenter',
             'type': comment.type,
             'notify': notify,
         }
@@ -221,7 +228,7 @@ class Subscription(object):
         return cls._from_dict(env, sub)
 
     @classmethod
-    def for_attachment(cls, env, attachment, path=None):
+    def for_attachment(cls, env, attachment, path=None, notify=None):
         """
         Returns all subscriptions for an attachment. The path can be
         overridden.
@@ -234,10 +241,10 @@ class Subscription(object):
             'type': 'attachment',
             'path': _path,
         }
-        return cls.select(env, args)
+        return cls.select(env, args, notify)
 
     @classmethod
-    def for_changeset(cls, env, changeset):
+    def for_changeset(cls, env, changeset, notify=None):
         """
         Returns all subscriptions for an changeset.
         """
@@ -246,7 +253,28 @@ class Subscription(object):
             'repos': changeset.repos.reponame,
             'rev': changeset.rev,
         }
-        return cls.select(env, args)
+        return cls.select(env, args, notify)
+
+    @classmethod
+    def for_comment(cls, env, comment, notify=None):
+        """
+        Return all subscriptions for a comment.
+        """
+        args = {}
+        if comment.type == 'attachment':
+            args['type'] = comment.type
+            args['path'] = comment.path.split(':')[1]
+
+        if comment.type == 'changeset':
+            args['type'] = comment.type
+            args['rev'] = str(comment.revision)
+
+        if comment.type == 'browser':
+            args['type'] = ('browser', 'changeset')
+            args['path'] = (comment.path, '')
+            args['rev'] = str(comment.revision)
+
+        return cls.select(env, args, notify)
 
 
 class SubscriptionAdmin(Component):

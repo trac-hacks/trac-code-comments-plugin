@@ -31,7 +31,7 @@ schema = {
         Column('path'),
         Column('repos'),
         Column('rev'),
-        Column('notify'),
+        Column('notify', type='bool'),
         Index(['user']),
         Index(['path']),
     ],
