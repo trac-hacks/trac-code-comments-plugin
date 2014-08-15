@@ -70,6 +70,9 @@ tickets and which are not.
 * Notifications – if you have configured Trac to email ticket notifications
 then comment notifications will just work!
 
+ * Subscriptions – Authors of changesets and attachments, and anyone who
+creates a comment are subscribed to notifications of comments; to have changeset authors automatically subscribed, your repositories must be configured for [synchronisation](http://trac.edgewall.org/wiki/TracRepositoryAdmin#Synchronization) with Trac
+
 Screenshots
 -----------
 

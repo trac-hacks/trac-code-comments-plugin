@@ -32,9 +32,9 @@ Need to figure out how to handle blanket subscriptions.
 
 ## Listeners
 
-- [ ] comments_created - create a subscription for the comment author
-- [ ] attachment_added - create a subscription for the attachment author
+- [x] comments_created - create a subscription for the comment author
+- [x] attachment_added - create a subscription for the attachment author
 - [ ] attachment_deleted - remove all subscriptions for the attachment (should we also remove all comments?)
 - [ ] attachment_reparented - update all subscriptions for the attachment
-- [ ] changeset_added - create a subscription for the changeset author
+- [x] changeset_added - create a subscription for the changeset author
 - [ ] changeset_modified - update the subscription (author?)

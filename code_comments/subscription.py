@@ -1,8 +1,10 @@
 from trac.admin import IAdminCommandProvider
-from trac.attachment import Attachment
+from trac.attachment import Attachment, IAttachmentChangeListener
 from trac.core import Component, implements
-from trac.versioncontrol import RepositoryManager, NoSuchChangeset
+from trac.versioncontrol import (
+    RepositoryManager, NoSuchChangeset, IRepositoryChangeListener)
 
+from code_comments.api import ICodeCommentChangeListener
 from code_comments.comments import Comments
 
 
@@ -200,3 +202,27 @@ class SubscriptionAdmin(Component):
         comments = Comments(None, self.env).all()
         for comment in comments:
             Subscription.from_comment(self.env, comment)
+
+
+class SubscriptionListeners(Component):
+    """
+    Automatically creates subscriptions for attachments, changesets, and
+    comments.
+    """
+    implements(IAttachmentChangeListener, IRepositoryChangeListener,
+               ICodeCommentChangeListener)
+
+    # IAttachmentChangeListener methods
+
+    def attachment_added(self, attachment):
+        Subscription.from_attachment(self.env, attachment)
+
+    # IRepositoryChangeListener methods
+
+    def changeset_added(self, repos, changeset):
+        Subscription.from_changeset(self.env, changeset)
+
+    # ICodeCommentChangeListener methods
+
+    def comment_created(self, comment):
+        Subscription.from_comment(self.env, comment)
