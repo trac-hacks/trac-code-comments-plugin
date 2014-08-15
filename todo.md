@@ -24,9 +24,9 @@ Need to figure out how to handle blanket subscriptions.
 
 - [x] model
  - [x] create
- - [ ] update
- - [ ] delete
- - [ ] query
+ - [x] update
+ - [x] delete
+ - [x] query
 - [x] db
 - [ ] api
 
@@ -34,7 +34,7 @@ Need to figure out how to handle blanket subscriptions.
 
 - [x] comments_created - create a subscription for the comment author
 - [x] attachment_added - create a subscription for the attachment author
-- [ ] attachment_deleted - remove all subscriptions for the attachment (should we also remove all comments?)
-- [ ] attachment_reparented - update all subscriptions for the attachment
+- [x] attachment_deleted - remove all subscriptions for the attachment (should we also remove all comments?)
+- [x] attachment_reparented - update all subscriptions for the attachment
 - [x] changeset_added - create a subscription for the changeset author
-- [ ] changeset_modified - update the subscription (author?)
+- [x] changeset_modified - update the subscription (author?)
