@@ -26,8 +26,25 @@ class Subscription(object):
             self.__dict__ = data
         self.env = env
 
+    def __str__(self):
+        """
+        Returns a user friendly string representation.
+        """
+        template = "{0} as {1} for {2} {3}"
+        if self.type == "changeset":
+            _identifier = self.rev
+        elif self.type == "browser":
+            _identifier = "{0} @ {1}".format(self.path, self.rev)
+        else:
+            _identifier = self.path
+
+        return template.format(self.user, self.role, self.type, _identifier)
+
     @classmethod
     def select(cls, env, args={}, notify=None):
+        """
+        Retrieve existing subscription(s).
+        """
         select = 'SELECT * FROM code_comments_subscriptions'
         if notify:
             args['notify'] = bool(notify)
@@ -36,7 +53,7 @@ class Subscription(object):
             criteria = []
             for key, value in args.iteritems():
                 template = '{0}={1}'
-                if isinstance(value, str):
+                if isinstance(value, str) or isinstance(value, unicode):
                     template = '{0}=\'{1}\''
                 if (isinstance(value, tuple) or isinstance(value, list)):
                     template = '{0} IN (\'{1}\')'
@@ -130,25 +147,37 @@ class Subscription(object):
         """
         Creates a subscription from a dict.
         """
-        cursor = env.get_read_db().cursor()
-        select = ("SELECT * FROM code_comments_subscriptions WHERE "
-                  "user=%s AND type=%s AND path=%s AND "
-                  "repos=%s AND rev=%s AND notify=%s"
-                  )
-        values = (dict_['user'], dict_['type'], dict_['path'], dict_['repos'],
-                  dict_['rev'], dict_['notify'])
-        cursor.execute(select, values)
-        row = cursor.fetchone()
-        if row:
-            env.log.debug(
-                'Subscription for {type} already exists'.format(**dict_))
-            return cls._from_row(env, row)
-        else:
-            env.log.debug(
-                'Subscription for {type} created'.format(**dict_))
+        subscription = None
+
+        # Look for existing subscriptions
+        args = {
+            'user': dict_['user'],
+            'type': dict_['type'],
+            'path': dict_['path'],
+            'repos': dict_['repos'],
+            'rev': dict_['rev'],
+        }
+        subscriptions = cls.select(env, args)
+
+        # Only return the first one
+        for _subscription in subscriptions:
+            if subscription is None:
+                subscription = _subscription
+                env.log.debug(
+                    'Subscription already exists: %s', str(subscription))
+            else:
+                # The unique constraint on the table should prevent this ever
+                # occurring
+                env.log.debug('Multiple subscriptions found!')
+
+        # Create a new subscription if we didn't find one
+        if subscription is None:
             subscription = cls(env, dict_)
             subscription.insert()
-            return subscription
+            env.log.debug(
+                'Subscription created: %s', str(subscription))
+
+        return subscription
 
     @classmethod
     def from_attachment(cls, env, attachment, user=None, role='author',

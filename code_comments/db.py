@@ -50,7 +50,7 @@ def create_tables(env, db):
         for stmt in to_sql(env, schema[table_name]):
             cursor.execute(stmt)
     cursor.execute(
-        "insert into system values ('code_comments_schema_version', %s)",
+        "INSERT INTO system VALUES ('code_comments_schema_version', %s)",
         str(db_version))
 
 
