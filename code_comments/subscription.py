@@ -53,7 +53,7 @@ class Subscription(object):
             criteria = []
             for key, value in args.iteritems():
                 template = '{0}={1}'
-                if isinstance(value, str) or isinstance(value, unicode):
+                if isinstance(value, basestring):
                     template = '{0}=\'{1}\''
                 if (isinstance(value, tuple) or isinstance(value, list)):
                     template = '{0} IN (\'{1}\')'
@@ -163,19 +163,20 @@ class Subscription(object):
         for _subscription in subscriptions:
             if subscription is None:
                 subscription = _subscription
-                env.log.debug(
-                    'Subscription already exists: %s', str(subscription))
+                env.log.debug('Subscription already exists: [%d] %s',
+                              subscription.id, subscription)
             else:
                 # The unique constraint on the table should prevent this ever
                 # occurring
-                env.log.debug('Multiple subscriptions found!')
+                env.log.debug('Multiple subscriptions found: [%d] %s',
+                              subscription.id, subscription)
 
         # Create a new subscription if we didn't find one
         if subscription is None:
             subscription = cls(env, dict_)
             subscription.insert()
-            env.log.debug(
-                'Subscription created: %s', str(subscription))
+            env.log.debug('Subscription created: [%d] %s',
+                          subscription.id, subscription)
 
         return subscription
 
