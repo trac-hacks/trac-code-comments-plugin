@@ -14,7 +14,6 @@ class Subscription(object):
     """
     id = 0
     user = ''
-    role = ''
     type = ''
     path = ''
     rev = ''
@@ -30,7 +29,7 @@ class Subscription(object):
         """
         Returns a user friendly string representation.
         """
-        template = "{0} as {1} for {2} {3}"
+        template = "{0} for {1} {2}"
         if self.type == "changeset":
             _identifier = self.rev
         elif self.type == "browser":
@@ -38,7 +37,7 @@ class Subscription(object):
         else:
             _identifier = self.path
 
-        return template.format(self.user, self.role, self.type, _identifier)
+        return template.format(self.user, self.type, _identifier)
 
     @classmethod
     def select(cls, env, args={}, notify=None):
@@ -79,10 +78,10 @@ class Subscription(object):
             def do_insert(db):
                 cursor = db.cursor()
                 insert = ("INSERT INTO code_comments_subscriptions "
-                          "(user, role, type, path, repos, rev, notify) "
-                          "VALUES (%s, %s, %s, %s, %s, %s, %s)")
-                values = (self.user, self.role, self.type, self.path,
-                          self.repos, self.rev, self.notify)
+                          "(user, type, path, repos, rev, notify) "
+                          "VALUES (%s, %s, %s, %s, %s, %s)")
+                values = (self.user, self.type, self.path, self.repos,
+                          self.rev, self.notify)
                 cursor.execute(insert, values)
                 self.id = db.get_last_id(cursor, 'code_comments_subscriptions')
                 return True
@@ -99,10 +98,10 @@ class Subscription(object):
             def do_update(db):
                 cursor = db.cursor()
                 update = ("UPDATE code_comments_subscriptions SET "
-                          "user=%s, role=%s, type=%s, path=%s, repos=%s, "
-                          "rev=%s, notify=%s WHERE id=%s")
-                values = (self.user, self.role, self.type, self.path,
-                          self.repos, self.rev, self.notify, self.id)
+                          "user=%s, type=%s, path=%s, repos=%s, rev=%s, "
+                          "notify=%s WHERE id=%s")
+                values = (self.user, self.type, self.path, self.repos,
+                          self.rev, self.notify, self.id)
                 try:
                     cursor.execute(update, values)
                 except db.IntegrityError:
@@ -131,12 +130,11 @@ class Subscription(object):
             subscription = cls(env)
             subscription.id = int(row[0])
             subscription.user = row[1]
-            subscription.role = row[2]
-            subscription.type = row[3]
-            subscription.path = row[4]
-            subscription.repos = row[5]
-            subscription.rev = row[6]
-            subscription.notify = bool(row[7])
+            subscription.type = row[2]
+            subscription.path = row[3]
+            subscription.repos = row[4]
+            subscription.rev = row[5]
+            subscription.notify = bool(row[6])
             return subscription
         except IndexError:
             # Invalid row
@@ -163,26 +161,25 @@ class Subscription(object):
         for _subscription in subscriptions:
             if subscription is None:
                 subscription = _subscription
-                env.log.debug('Subscription already exists: [%d] %s',
-                              subscription.id, subscription)
+                env.log.info('Subscription already exists: [%d] %s',
+                             subscription.id, subscription)
             else:
                 # The unique constraint on the table should prevent this ever
                 # occurring
-                env.log.debug('Multiple subscriptions found: [%d] %s',
-                              subscription.id, subscription)
+                env.log.warning('Multiple subscriptions found: [%d] %s',
+                                subscription.id, subscription)
 
         # Create a new subscription if we didn't find one
         if subscription is None:
             subscription = cls(env, dict_)
             subscription.insert()
-            env.log.debug('Subscription created: [%d] %s',
-                          subscription.id, subscription)
+            env.log.info('Subscription created: [%d] %s',
+                         subscription.id, subscription)
 
         return subscription
 
     @classmethod
-    def from_attachment(cls, env, attachment, user=None, role='author',
-                        notify=True):
+    def from_attachment(cls, env, attachment, user=None, notify=True):
         """
         Creates a subscription from an Attachment object.
         """
@@ -192,7 +189,6 @@ class Subscription(object):
 
         sub = {
             'user': user or attachment.author,
-            'role': role,
             'type': 'attachment',
             'path': _path,
             'repos': '',
@@ -202,14 +198,12 @@ class Subscription(object):
         return cls._from_dict(env, sub)
 
     @classmethod
-    def from_changeset(cls, env, changeset, user=None, role='author',
-                       notify=True):
+    def from_changeset(cls, env, changeset, user=None, notify=True):
         """
         Creates a subscription from a Changeset object.
         """
         sub = {
             'user': user or changeset.author,
-            'role': role,
             'type': 'changeset',
             'path': '',
             'repos': changeset.repos.reponame,
@@ -219,14 +213,12 @@ class Subscription(object):
         return cls._from_dict(env, sub)
 
     @classmethod
-    def from_comment(cls, env, comment, user=None, role='commenter',
-                     notify=True):
+    def from_comment(cls, env, comment, user=None, notify=True):
         """
         Creates a subscription from a Comment object.
         """
         sub = {
             'user': user or comment.author,
-            'role': 'commenter',
             'type': comment.type,
             'notify': notify,
         }
@@ -388,21 +380,9 @@ class SubscriptionListeners(Component):
         Subscription.from_changeset(self.env, changeset)
 
     def changeset_modified(self, repos, changeset, old_changeset):
-        # Handle existing subscriptions
         if changeset.author != old_changeset.author:
-            for subscription in Subscription.for_changeset(self.env,
-                                                           changeset):
-                if (subscription.user == old_changeset.author and
-                        subscription.role == 'author'):
-                    subscription.role = 'subscriber'
-
-                if subscription.user == changeset.author:
-                    subscription.role = 'author'
-
-                subscription.update()
-
-        # Create a new author subscription
-        Subscription.from_changeset(self.env, changeset)
+            # Create a new author subscription
+            Subscription.from_changeset(self.env, changeset)
 
     # ICodeCommentChangeListener methods
 

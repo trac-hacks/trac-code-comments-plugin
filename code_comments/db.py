@@ -26,7 +26,6 @@ schema = {
                                               'repos', 'rev'))[
         Column('id', auto_increment=True),
         Column('user'),
-        Column('role'),
         Column('type'),
         Column('path'),
         Column('repos'),

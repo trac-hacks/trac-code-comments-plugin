@@ -53,21 +53,17 @@ class CodeCommentNotifyEmail(NotifyEmail):
         Current scheme is as follows:
 
          * For the first comment in a given location, the notification is sent
-         'to' the author of the resource being commented on, and 'copied'
-         to any other subscribers to that resource
+         to any subscribers to that resource
          * For any further comments in a given location, the notification is
-         sent 'to' the author of the last comment in that location, and
-         the author of the resource and 'copied' to any other subscribers
+         sent to the author of the last comment in that location, and any other
+         subscribers for that resource
         """
         torcpts = set()
         ccrcpts = set()
 
         for subscription in Subscription.for_comment(self.env, comment,
                                                      notify=True):
-            if subscription.role == 'author':
-                torcpts.add(subscription.user)
-            else:
-                ccrcpts.add(subscription.user)
+            torcpts.add(subscription.user)
 
         # Is this a reply, or a new comment?
         thread = self._get_comment_thread(comment)
