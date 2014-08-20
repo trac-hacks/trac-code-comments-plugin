@@ -6,6 +6,8 @@ from trac.mimeview.api import Context
 from time import strftime, localtime
 from code_comments import db
 from trac.util import Markup
+from trac.web.href import Href
+from trac.test import EnvironmentStub, Mock, MockPerm
 
 try:
     import json
@@ -162,5 +164,6 @@ class CommentJSONEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, o)
 
 def format_to_html(req, env, text):
+    req = Mock(href=Href('/'), abs_href=Href('http://www.example.com/'), authname='anonymous', perm=MockPerm(), args={})
     context = Context.from_request(req)
     return trac.wiki.formatter.format_to_html(env, context, text)
