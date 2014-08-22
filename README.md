@@ -24,6 +24,22 @@ your `plugins` directory.
 
 Trac Code Comments plugin requres at least python 2.4 and runs on Trac 0.12.
 
+Enable all the modules through the admin web UI or by editing `trac.ini`.
+
+
+Upgrading
+---------
+
+Install the latest version of the plugin (as above).
+
+Run `trac-admin <path-to-environment> upgrade` to update the database.
+
+Enable any new modules through the admin web UI or by editing `trac.ini`.
+
+Run `trac-admin <path-to-environment> subscription seed` to create
+subsriptionfor existing attachments, changesets and comments.
+
+
 Features
 --------
 
@@ -53,6 +69,9 @@ tickets and which are not.
 
 * Notifications – if you have configured Trac to email ticket notifications
 then comment notifications will just work!
+
+ * Subscriptions – Authors of changesets and attachments, and anyone who
+creates a comment are subscribed to notifications of comments; to have changeset authors automatically subscribed, your repositories must be configured for [synchronisation](http://trac.edgewall.org/wiki/TracRepositoryAdmin#Synchronization) with Trac
 
 Screenshots
 -----------
