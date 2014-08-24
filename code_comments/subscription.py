@@ -1,8 +1,15 @@
+import json
+import re
+
 from trac.admin import IAdminCommandProvider
 from trac.attachment import Attachment, IAttachmentChangeListener
 from trac.core import Component, implements
 from trac.versioncontrol import (
     RepositoryManager, NoSuchChangeset, IRepositoryChangeListener)
+from trac.web.api import HTTPNotFound, IRequestHandler, ITemplateStreamFilter
+
+from genshi.builder import tag
+from genshi.filters import Transformer
 
 from code_comments.api import ICodeCommentChangeListener
 from code_comments.comments import Comments
@@ -45,8 +52,10 @@ class Subscription(object):
         Retrieve existing subscription(s).
         """
         select = 'SELECT * FROM code_comments_subscriptions'
+
         if notify:
             args['notify'] = bool(notify)
+
         if len(args) > 0:
             select += ' WHERE '
             criteria = []
@@ -61,6 +70,7 @@ class Subscription(object):
                     value = int(value)
                 criteria.append(template.format(key, value))
             select += ' AND '.join(criteria)
+
         cursor = env.get_read_db().cursor()
         cursor.execute(select)
         for row in cursor:
@@ -141,9 +151,9 @@ class Subscription(object):
             return None
 
     @classmethod
-    def _from_dict(cls, env, dict_):
+    def _from_dict(cls, env, dict_, create=True):
         """
-        Creates a subscription from a dict.
+        Retrieves or (optionally) creates a subscription from a dict.
         """
         subscription = None
 
@@ -161,7 +171,7 @@ class Subscription(object):
         for _subscription in subscriptions:
             if subscription is None:
                 subscription = _subscription
-                env.log.info('Subscription already exists: [%d] %s',
+                env.log.info('Subscription found: [%d] %s',
                              subscription.id, subscription)
             else:
                 # The unique constraint on the table should prevent this ever
@@ -169,8 +179,8 @@ class Subscription(object):
                 env.log.warning('Multiple subscriptions found: [%d] %s',
                                 subscription.id, subscription)
 
-        # Create a new subscription if we didn't find one
-        if subscription is None:
+        # (Optionally) create a new subscription if we didn't find one
+        if subscription is None and create:
             subscription = cls(env, dict_)
             subscription.insert()
             env.log.info('Subscription created: [%d] %s',
@@ -298,6 +308,53 @@ class Subscription(object):
 
         return cls.select(env, args, notify)
 
+    @classmethod
+    def for_request(cls, env, req, create=False):
+        """
+        Return a **single** subscription for a HTTP request.
+        """
+        reponame = req.args.get('reponame')
+        rm = RepositoryManager(env)
+        repos = rm.get_repository(reponame)
+
+        path = req.args.get('path') or ''
+        rev = req.args.get('rev') or repos.youngest_rev
+
+        dict_ = {
+            'user': req.authname,
+            'type': req.args.get('realm'),
+            'path': '',
+            'rev': '',
+            'repos': '',
+        }
+
+        if dict_['type'] == 'attachment':
+            dict_['path'] = path
+
+        if dict_['type'] == 'changeset':
+            dict_['rev'] = path[1:]
+            dict_['repos'] = repos.reponame
+
+        if dict_['type'] == 'browser':
+            if len(path) == 0:
+                dict_['path'] = '/'
+            else:
+                dict_['path'] = path[1:]
+            dict_['rev'] = rev
+            dict_['repos'] = repos.reponame
+
+        return cls._from_dict(env, dict_, create=create)
+
+
+class SubscriptionJSONEncoder(json.JSONEncoder):
+    """
+    JSON Encoder for a Subscription object.
+    """
+    def default(self, o):
+        data = o.__dict__.copy()
+        del data['env']
+        return data
+
 
 class SubscriptionAdmin(Component):
     """
@@ -388,3 +445,72 @@ class SubscriptionListeners(Component):
 
     def comment_created(self, comment):
         Subscription.from_comment(self.env, comment)
+
+
+class SubscriptionModule(Component):
+    implements(IRequestHandler, ITemplateStreamFilter)
+
+    # IRequestHandler methods
+
+    def match_request(self, req):
+        match = re.match(r'\/subscription\/(\w+)(\/?.*)$', req.path_info)
+        if match:
+            if match.group(1):
+                req.args['realm'] = match.group(1)
+            if match.group(2):
+                req.args['path'] = match.group(2)
+            return True
+
+    def process_request(self, req):
+        if req.method == 'POST':
+            return self._do_POST(req)
+        elif req.method == 'PUT':
+            return self._do_PUT(req)
+        return self._do_GET(req)
+
+    # ITemplateStreamFilter methods
+
+    def filter_stream(self, req, method, filename, stream, data):
+        if re.match(r'^/(changeset|browser|attachment).*', req.path_info):
+            filter = Transformer('//h1')
+            stream |= filter.before(self._subscription_button())
+        return stream
+
+    # Internal methods
+
+    def _do_GET(self, req):
+        subscription = Subscription.for_request(self.env, req)
+        if subscription is None:
+            raise HTTPNotFound('Subscription to /%s%s for %s not found',
+                               req.args.get('realm'), req.args.get('path'),
+                               req.authname)
+        req.send(json.dumps(subscription, cls=SubscriptionJSONEncoder),
+                 'application/json')
+
+    def _do_POST(self, req):
+        subscription = Subscription.for_request(self.env, req, create=True)
+        status = 201
+        req.send(json.dumps(subscription, cls=SubscriptionJSONEncoder),
+                 'application/json', status)
+
+    def _do_PUT(self, req):
+        subscription = Subscription.for_request(self.env, req)
+        if subscription is None:
+            raise HTTPNotFound('Subscription to /%s%s for %s not found',
+                               req.args.get('realm'), req.args.get('path'),
+                               req.authname)
+        content = req.read()
+        if len(content) > 0:
+            data = json.loads(content)
+            subscription.notify = data['notify']
+            subscription.update()
+        req.send(json.dumps(subscription, cls=SubscriptionJSONEncoder),
+                 'application/json')
+
+    def _subscription_button(self):
+        """
+        Generates a (disabled) button to connect JavaScript to.
+        """
+        return tag.button('Subscribe', id_='subscribe', disabled=True,
+                          title=('Code comment subscriptions require '
+                                 'JavaScript to be enabled'))

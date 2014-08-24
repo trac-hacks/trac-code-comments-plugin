@@ -2,6 +2,8 @@ ${comment.text}
 
 View the comment: ${comment_url}
 
+To unsubscribe from future notifications, click the link above and use the "Unsubscribe" button.
+
 -- 
 ${project.name} <${project_url}>
 ${project.descr}
