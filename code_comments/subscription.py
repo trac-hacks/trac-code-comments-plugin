@@ -481,9 +481,7 @@ class SubscriptionModule(Component):
     def _do_GET(self, req):
         subscription = Subscription.for_request(self.env, req)
         if subscription is None:
-            raise HTTPNotFound('Subscription to /%s%s for %s not found',
-                               req.args.get('realm'), req.args.get('path'),
-                               req.authname)
+            req.send('', 'application/json', 204)
         req.send(json.dumps(subscription, cls=SubscriptionJSONEncoder),
                  'application/json')
 
