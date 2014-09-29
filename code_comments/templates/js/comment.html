@@ -1,14 +1,12 @@
 <a id="comment-<%= id %>"></a>
 <div class="meta">
     <img class="gravatar" src="http://0.gravatar.com/avatar/<%= email_md5 %>?size=20" width="20" height="20" alt="gravatar for <%= author %>" />
-    <span class="author"><%= author %></span> @ <span class="time"><%= formatted_date %></span>
-    •
-    <a href="<%= permalink %>">#<%= id %></a>
+	<span class="author"><%= author %></span> <a class="time" href="<%= permalink %>"><%= formatted_date %></a>
     <% if (can_delete) { %>
     <a href="<%= delete_url %>?id=<%= id %>" class="delete">Delete</a>
     <% } %>
 
 </div>
-<div class="text <%= active? 'active' : ''%>">
+<div class="text">
 <%= html %>
 </div>
