@@ -55,7 +55,7 @@ class MainNavigation(CodeComments):
 class JSDataForRequests(CodeComments):
     implements(IRequestFilter)
 
-    js_templates = ['top-comments-block', 'comment', 'add-comment-dialog', 'line-comment', 'comments-for-a-line',]
+    js_templates = ['page-comments-block', 'comment', 'add-comment-dialog', 'line-comment', 'comments-for-a-line',]
 
     # IRequestFilter methods
     def pre_process_request(self, req, handler):
@@ -106,14 +106,14 @@ class JSDataForRequests(CodeComments):
         return data
 
     def changeset_js_data(self, req, data):
-        return {'page': 'changeset', 'revision': data['new_rev'], 'path': '', 'selectorToInsertBefore': 'div.diff:first'}
+        return {'page': 'changeset', 'revision': data['new_rev'], 'path': '', 'selectorToInsertAfter': 'div.diff div.diff:last'}
 
     def browser_js_data(self, req, data):
-        return {'page': 'browser', 'revision': data['rev'], 'path': data['path'], 'selectorToInsertBefore': 'table#info, table#dirlist'}
+        return {'page': 'browser', 'revision': data['rev'], 'path': data['path'], 'selectorToInsertAfter': 'table.code'}
 
     def attachment_js_data(self, req, data):
         path = req.path_info.replace('/attachment/', 'attachment:/')
-        return {'page': 'attachment', 'revision': 0, 'path': path, 'selectorToInsertBefore': 'table#info'}
+        return {'page': 'attachment', 'revision': 0, 'path': path, 'selectorToInsertAfter': 'div#preview'}
 
     def template_js_data(self, name):
         file_name = name + '.html'

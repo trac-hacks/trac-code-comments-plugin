@@ -31,7 +31,7 @@ var underscore = _.noConflict();
 			revision: CodeComments.revision,
 			type: CodeComments.page
 		},
-		fetchTopComments: function() {
+		fetchPageComments: function() {
 			return this.fetch( { data: _.extend( { line: 0 }, this.defaultFetchParams ) } );
 		},
 		fetchLineComments: function() {
@@ -63,23 +63,23 @@ var underscore = _.noConflict();
 		}
 	});
 
-	window.TopCommentsView = Backbone.View.extend({
-		id: 'top-comments',
+	window.PageCommentsView = Backbone.View.extend({
+		id: 'page-comments',
 
-		template:  _.template(CodeComments.templates.top_comments_block),
+		template:  _.template(CodeComments.templates.page_comments_block),
 		events: {
 			'click button': 'showAddCommentDialog'
 		},
 
 		initialize: function() {
-			TopComments.bind('add',   this.addOne, this);
-			TopComments.bind('reset', this.addAll, this);
+			PageComments.bind('add',   this.addOne, this);
+			PageComments.bind('reset', this.addAll, this);
 		},
 
 		render: function() {
 			$(this.el).html(this.template());
 			this.$('button').button();
-			TopComments.fetchTopComments();
+			PageComments.fetchPageComments();
 			return this;
 		},
 
@@ -89,12 +89,12 @@ var underscore = _.noConflict();
 		},
 		addAll: function() {
 			var view = this;
-			TopComments.each(function(comment) {
+			PageComments.each(function(comment) {
 				view.addOne.call(view, comment);
 			});
 		},
 		showAddCommentDialog: function(e) {
-			AddCommentDialog.open(TopComments);
+			AddCommentDialog.open(PageComments);
 		}
 
 	});
@@ -302,15 +302,15 @@ var underscore = _.noConflict();
 		}
 	} );
 
-	window.TopComments = new CommentsList();
+	window.PageComments = new CommentsList();
 	window.LineComments = new CommentsList();
-	window.TopCommentsBlock = new TopCommentsView();
+	window.PageCommentsBlock = new PageCommentsView();
 	window.LineCommentsBlock = new LineCommentsView();
 	window.AddCommentDialog = new AddCommentDialogView();
 	window.LineCommentBubbles = new LineCommentBubblesView({el: $('#preview, .diff .entries')});
 	window.Rows = new RowsView( { tableSelector: 'table.code tbody, table.trac-diff tbody' } );
 
-	$(CodeComments.selectorToInsertBefore).before(TopCommentsBlock.render().el);
+	$(CodeComments.selectorToInsertAfter).after(PageCommentsBlock.render().el);
 	LineCommentsBlock.render();
 	AddCommentDialog.render();
 	LineCommentBubbles.render();
