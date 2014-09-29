@@ -55,7 +55,7 @@ class MainNavigation(CodeComments):
 class JSDataForRequests(CodeComments):
     implements(IRequestFilter)
 
-    js_templates = ['page-comments-block', 'comment', 'add-comment-dialog', 'line-comment', 'comments-for-a-line',]
+    js_templates = ['page-comments-block', 'comment', 'add-comment-dialog', 'comment', 'comments-for-a-line',]
 
     # IRequestFilter methods
     def pre_process_request(self, req, handler):
