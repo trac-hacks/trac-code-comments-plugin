@@ -126,7 +126,7 @@ a.bubble span.ui-icon {
 /* Subscriptions */
 
 button#subscribe {
-    display: block;
-    float: right;
-    margin: 5px 0 5px 5px;
+	display: block;
+	float: right;
+	margin: 5px 0 5px 5px;
 }
