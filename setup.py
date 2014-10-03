@@ -14,6 +14,7 @@ setup(
     package_data={
         'code_comments': [
             'templates/*.html',
+            'templates/*.txt',
             'templates/js/*.html',
             'htdocs/*.*',
             'htdocs/jquery-ui/*.*',
