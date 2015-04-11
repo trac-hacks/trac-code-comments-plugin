@@ -315,4 +315,53 @@ var underscore = _.noConflict();
 	AddCommentDialog.render();
 	LineCommentBubbles.render();
 	Rows.render();
+
+	window.Subscription = Backbone.Model.extend({
+		url: '/subscription' + location.pathname,
+	});
+
+	window.SubscriptionView = Backbone.View.extend({
+		el: $('button#subscribe'),
+
+		initialize: function(){
+			_.bindAll(this, "render");
+			this.model.listenTo(this.model, 'change', this.render);
+			this.render();
+		},
+
+		events: {
+			"click": "doToggle"
+		},
+
+		render: function(){
+			if (this.model.get('notify') == true) {
+				var options = {
+					disabled: false,
+					label: 'Unsubscribe',
+					icons: {primary: 'ui-icon-check'}
+				};
+			    var title = 'You receive notifications for comments';
+			} else {
+				var options = {
+					disabled: false,
+					label: 'Subscribe',
+					icons: {primary: 'ui-icon-closethick'}
+				};
+				var title = 'You do not receive notifications for comments';
+			}
+			var button = $(this.$el).button(options);
+			button.prop('title', title);
+		},
+
+		doToggle: function( event ){
+			this.model.save({'notify': !this.model.get('notify')}, {wait: true});
+			if (this.model.isNew()) {
+				this.model.fetch();
+			}
+		}
+	});
+
+	window.subscription = new Subscription();
+	window.subscriptionView = new SubscriptionView({model: subscription});
+	subscription.fetch();
 }); }( jQuery.noConflict( true ) ) );

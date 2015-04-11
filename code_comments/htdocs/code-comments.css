@@ -122,3 +122,11 @@ a.bubble span.ui-icon {
 	padding: 10px;
 	border-top: 1px solid #f5f5f5;
 }
+
+/* Subscriptions */
+
+button#subscribe {
+	display: block;
+	float: right;
+	margin: 5px 0 5px 5px;
+}
