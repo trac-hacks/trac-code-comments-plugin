@@ -473,7 +473,7 @@ class SubscriptionModule(Component):
     def filter_stream(self, req, method, filename, stream, data):
         if re.match(r'^/(changeset|browser|attachment).*', req.path_info):
             filter = Transformer('//h1')
-            stream |= filter.before(self._subscription_button())
+            stream |= filter.before(self._subscription_button(req.path_info))
         return stream
 
     # Internal methods
@@ -505,10 +505,12 @@ class SubscriptionModule(Component):
         req.send(json.dumps(subscription, cls=SubscriptionJSONEncoder),
                  'application/json')
 
-    def _subscription_button(self):
+    def _subscription_button(self, path):
         """
         Generates a (disabled) button to connect JavaScript to.
         """
         return tag.button('Subscribe', id_='subscribe', disabled=True,
                           title=('Code comment subscriptions require '
-                                 'JavaScript to be enabled'))
+                                 'JavaScript to be enabled'),
+                          data_base_url=self.env.project_url or self.env.abs_href(),
+                          data_path=path)

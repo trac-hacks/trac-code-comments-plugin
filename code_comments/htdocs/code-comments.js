@@ -326,6 +326,7 @@ var underscore = _.noConflict();
 		initialize: function(){
 			_.bindAll(this, "render");
 			this.model.listenTo(this.model, 'change', this.render);
+			this.model.url = $(this.$el).data('baseUrl') + '/subscription' + $(this.$el).data('path');
 			this.render();
 		},
 
