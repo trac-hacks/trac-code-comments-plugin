@@ -364,5 +364,7 @@ var underscore = _.noConflict();
 
 	window.subscription = new Subscription();
 	window.subscriptionView = new SubscriptionView({model: subscription});
-	subscription.fetch();
+    if (subscriptionView.el) {
+        subscription.fetch();
+    }
 }); }( jQuery.noConflict( true ) ) );
