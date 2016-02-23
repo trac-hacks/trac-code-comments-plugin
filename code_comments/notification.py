@@ -1,3 +1,5 @@
+from urlparse import urlsplit
+
 from trac.config import BoolOption
 from trac.core import Component, implements
 from trac.notification import NotifyEmail
@@ -95,9 +97,15 @@ class CodeCommentNotifyEmail(NotifyEmail):
     def notify(self, comment):
         self.comment_author = self._get_author_name(comment)
 
+        comment_base = self.env.abs_href()
+        if self.env.abs_href.base:
+            split = urlsplit(self.env.abs_href.base)
+            if split.scheme and split.netloc:
+                comment_base = '%s://%s' % (split.scheme, split.netloc)
+
         self.data.update({
             "comment": comment,
-            "comment_url": self.env.abs_href() + comment.href(),
+            "comment_url": comment_base + comment.href(),
             "project_url": self.env.project_url or self.env.abs_href(),
         })
 
