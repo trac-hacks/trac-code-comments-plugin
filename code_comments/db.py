@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from trac.core import Component, implements
 from trac.db.schema import Table, Column, Index
 from trac.env import IEnvironmentSetupParticipant
@@ -132,19 +134,22 @@ class CodeCommentsSetup(Component):
         if current_ver == 0:
             create_tables(self.env, db)
         else:
-            while current_ver+1 <= db_version:
-                upgrade_map[current_ver+1](self.env, db)
+            while current_ver + 1 <= db_version:
+                upgrade_map[current_ver + 1](self.env, db)
                 current_ver += 1
             cursor = db.cursor()
-            cursor.execute(
-                "UPDATE system SET value=%s WHERE name='code_comments_schema_version'",
-                str(db_version))
+            cursor.execute("""
+                UPDATE system SET value=%s
+                WHERE name='code_comments_schema_version'
+                """, str(db_version))
 
     def _get_version(self, db):
         cursor = db.cursor()
         try:
-            sql = "SELECT value FROM system WHERE name='code_comments_schema_version'"
-            cursor.execute(sql)
+            cursor.execute("""
+                SELECT value FROM system
+                WHERE name='code_comments_schema_version'
+                """)
             for row in cursor:
                 return int(row[0])
             return 0

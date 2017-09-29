@@ -1,7 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import os.path
 from time import time
+
 from code_comments.api import CodeCommentSystem
 from code_comments.comment import Comment
+
 
 class Comments:
 
@@ -22,14 +26,21 @@ class Comments:
         }
 
     def get_all_paths(self, comments):
-        get_directory = lambda path: '/'.join(os.path.split(path)[0].split('/')[:self.FILTER_MAX_PATH_DEPTH])
-        return sorted(set([get_directory(comment.path) for comment in comments if get_directory(comment.path)]))
+        def get_directory(path):
+            parts = os.path.split(path)[0].split('/')
+            return '/'.join(parts[:self.FILTER_MAX_PATH_DEPTH])
+        paths = [
+            get_directory(comment.path)
+            for comment in comments if get_directory(comment.path)
+        ]
+        return sorted(set(paths))
 
     def get_all_comment_authors(self, comments):
         return sorted(list(set([comment.author for comment in comments])))
 
     def select(self, *query):
         result = {}
+
         @self.env.with_transaction()
         def get_comments(db):
             cursor = db.cursor()
@@ -37,13 +48,15 @@ class Comments:
             result['comments'] = cursor.fetchall()
         return [self.comment_from_row(row) for row in result['comments']]
 
-    def count(self, args = {}):
-        conditions_str, values = self.get_condition_str_and_corresponding_values(args)
+    def count(self, args={}):
+        conditions_str, values = \
+            self.get_condition_str_and_corresponding_values(args)
         where = ''
         if conditions_str:
-            where = 'WHERE '+conditions_str
+            where = 'WHERE ' + conditions_str
         query = 'SELECT COUNT(*) FROM code_comments ' + where
         result = {}
+
         @self.env.with_transaction()
         def get_comment_count(db):
             cursor = db.cursor()
@@ -58,22 +71,26 @@ class Comments:
         return self.select("SELECT * FROM code_comments WHERE id=%s", [id])[0]
 
     def assert_name(self, name):
-        if not name in Comment.columns:
+        if name not in Comment.columns:
             raise ValueError("Column '%s' doesn't exist." % name)
 
-    def search(self, args, order = 'ASC', per_page = None, page = 1, order_by = 'time'):
+    def search(self, args, order='ASC', per_page=None, page=1,
+               order_by='time'):
         if order_by not in self.valid_sorting_methods:
             order_by = 'time'
-        conditions_str, values = self.get_condition_str_and_corresponding_values(args)
+        conditions_str, values = \
+            self.get_condition_str_and_corresponding_values(args)
         where = ''
         limit = ''
         if conditions_str:
-            where = 'WHERE '+conditions_str
+            where = 'WHERE ' + conditions_str
         if order != 'ASC':
             order = 'DESC'
         if per_page:
-            limit = ' LIMIT %d OFFSET %d' % (per_page, (page - 1)*per_page)
-        return self.select('SELECT * FROM code_comments ' + where + ' ORDER BY ' + order_by + ' ' + order + limit, values)
+            limit = ' LIMIT %d OFFSET %d' % (per_page, (page - 1) * per_page)
+        return self.select('SELECT * FROM code_comments ' + where +
+                           ' ORDER BY ' + order_by + ' ' + order + limit,
+                           values)
 
     def get_condition_str_and_corresponding_values(self, args):
         conditions = []
@@ -88,7 +105,8 @@ class Comments:
                 name = name.replace('__lt', '')
                 conditions.append(name + ' < %s')
             elif name.endswith('__prefix'):
-                values.append(args[name].replace('%', '\\%').replace('_', '\\_') + '%')
+                values.append(
+                    args[name].replace('%', '\\%').replace('_', '\\_') + '%')
                 name = name.replace('__prefix', '')
                 conditions.append(name + ' LIKE %s')
             elif name.endswith('__in'):
@@ -96,10 +114,11 @@ class Comments:
                 name = name.replace('__in', '')
                 for item in items:
                     values.append(item)
-                conditions.append(name + ' IN (' + ','.join(['%s']*len(items)) + ')')
+                conditions.append(
+                    name + ' IN (' + ','.join(['%s'] * len(items)) + ')')
             else:
                 conditions.append(name + ' = %s')
-            # don't let SQL injections in - make sure the name is an existing comment column
+            # Prevent SQL injections: make sure name is an existing column
             self.assert_name(name)
         conditions_str = ' AND '.join(conditions)
         return conditions_str, values
@@ -108,14 +127,17 @@ class Comments:
         comment = Comment(self.req, self.env, args)
         comment.validate()
         comment.time = int(time())
-        column_names_to_insert = [column_name for column_name in comment.columns if column_name != 'id']
-        values = [getattr(comment, column_name) for column_name in column_names_to_insert]
+        column_names_to_insert = [n for n in comment.columns if n != 'id']
+        values = [getattr(comment, n) for n in column_names_to_insert]
         comment_id = [None]
+
         @self.env.with_transaction()
         def insert_comment(db):
             cursor = db.cursor()
-            sql = "INSERT INTO code_comments (%s) values(%s)" % (', '.join(column_names_to_insert), ', '.join(['%s'] * len(values)))
-            self.env.log.debug(sql)
+            sql = """
+                INSERT INTO code_comments (%s) VALUES(%s)
+                """ % (', '.join(column_names_to_insert),
+                       ', '.join(['%s'] * len(values)))
             cursor.execute(sql, values)
             comment_id[0] = db.get_last_id(cursor, 'code_comments')
 

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from trac.config import BoolOption
 from trac.core import Component, implements
 from trac.notification import NotifyEmail

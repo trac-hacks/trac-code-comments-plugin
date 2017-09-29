@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from trac.core import Component, ExtensionPoint, Interface
 
 

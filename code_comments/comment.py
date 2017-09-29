@@ -1,5 +1,9 @@
-import re
+# -*- coding: utf-8 -*-
+
+import hashlib
+import json
 import locale
+import re
 
 import trac.wiki.formatter
 from trac.mimeview.api import Context
@@ -7,22 +11,15 @@ from time import strftime, localtime
 from code_comments import db
 from trac.util import Markup
 from trac.web.href import Href
-from trac.test import EnvironmentStub, Mock, MockPerm
+from trac.test import Mock, MockPerm
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
 
-try:
-    import hashlib
-    md5_hexdigest = lambda s: hashlib.md5(s).hexdigest()
-except ImportError:
-    import md5
-    md5_hexdigest = lambda s: md5.new(s).hexdigest()
+def md5_hexdigest(s):
+    return hashlib.md5(s).hexdigest()
 
 
 VERSION = 1
+
 
 class Comment:
     columns = [column.name for column in db.schema['code_comments'].columns]
@@ -40,7 +37,7 @@ class Comment:
         self.req = req
         if self._empty('version'):
             self.version = VERSION
-        if self._empty( 'path' ):
+        if self._empty('path'):
             self.path = ''
         self.html = format_to_html(self.req, self.env, self.text)
         email = self.email_map().get(self.author, 'baba@baba.net')
@@ -64,17 +61,25 @@ class Comment:
         return Comment._email_map
 
     def validate(self):
-        missing = [column_name for column_name in self.required if self._empty(column_name)]
+        missing = [
+            column_name
+            for column_name in self.required if self._empty(column_name)
+        ]
         if missing:
-            raise ValueError("Comment column(s) missing: %s" % ', '.join(missing))
+            raise ValueError("Comment column(s) missing: %s"
+                             % ', '.join(missing))
 
     def href(self):
         if self.is_comment_to_file:
-            href = self.req.href.browser(self.path, rev=self.revision, codecomment=self.id)
+            href = self.req.href.browser(self.path, rev=self.revision,
+                                         codecomment=self.id)
         elif self.is_comment_to_changeset:
             href = self.req.href.changeset(self.revision, codecomment=self.id)
         elif self.is_comment_to_attachment:
-            href = self.req.href('/attachment/ticket/%d/%s' % (self.attachment_ticket, self.attachment_filename), codecomment=self.id)
+            href = self.req.href('/attachment/ticket/%d/%s'
+                                 % (self.attachment_ticket,
+                                    self.attachment_filename),
+                                 codecomment=self.id)
         if self.line and not self.is_comment_to_changeset:
             href += '#L' + str(self.line)
         return href
@@ -96,7 +101,8 @@ class Comment:
 
     def changeset_link_text(self):
         if 0 != self.line:
-            return 'Changeset @%d#L%d (in %s)' % ( self.revision, self.line, self.path )
+            return 'Changeset @%d#L%d (in %s)' % (self.revision, self.line,
+                                                  self.path)
         else:
             return 'Changeset @%s' % self.revision
 
@@ -109,8 +115,8 @@ class Comment:
         return 'source:' + self.link_text()
 
     def attachment_info(self):
-        info = { 'ticket': None, 'filename': None }
-        if not self.path.startswith( 'attachment' ):
+        info = {'ticket': None, 'filename': None}
+        if not self.path.startswith('attachment'):
             return info
         match = re.match(r'attachment:/ticket/(\d+)/(.*)', self.path)
         if not match:
@@ -124,17 +130,20 @@ class Comment:
 
     def formatted_date(self):
         encoding = locale.getlocale()[1] if locale.getlocale()[1] else 'utf-8'
-        return strftime('%d %b %Y, %H:%M', localtime(self.time)).decode(encoding)
+        return strftime('%d %b %Y, %H:%M',
+                        localtime(self.time)).decode(encoding)
 
     def get_ticket_relations(self):
-        relations = set()
-        db = self.env.get_db_cnx()
-        cursor = db.cursor()
-        query = """SELECT ticket FROM ticket_custom WHERE name = 'code_comment_relation' AND
-                        (value LIKE '%(comment_id)d' OR
-                         value LIKE '%(comment_id)d,%%' OR
-                         value LIKE '%%,%(comment_id)d' OR value LIKE '%%,%(comment_id)d,%%')""" % {'comment_id': self.id}
+        query = """
+            SELECT ticket FROM ticket_custom
+            WHERE name = 'code_comment_relation' AND
+             (VALUE LIKE '%(comment_id)d' OR
+              VALUE LIKE '%(comment_id)d,%%' OR
+              VALUE LIKE '%%,%(comment_id)d' OR
+              VALUE LIKE '%%,%(comment_id)d,%%')
+            """ % {'comment_id': self.id}
         result = {}
+
         @self.env.with_transaction()
         def get_ticket_ids(db):
             cursor = db.cursor()
@@ -153,17 +162,24 @@ class Comment:
             cursor = db.cursor()
             cursor.execute("DELETE FROM code_comments WHERE id=%s", [self.id])
 
+
 class CommentJSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, Comment):
-            for_json = dict([(name, getattr(o, name)) for name in o.__dict__ if isinstance(getattr(o, name), (basestring, int, list, dict))])
+            for_json = dict([
+                (name, getattr(o, name))
+                for name in o.__dict__
+                if isinstance(getattr(o, name), (basestring, int, list, dict))
+            ])
             for_json['formatted_date'] = o.formatted_date()
             for_json['permalink'] = o.href()
             return for_json
         else:
             return json.JSONEncoder.default(self, o)
 
+
 def format_to_html(req, env, text):
-    req = Mock(href=Href('/'), abs_href=Href('http://www.example.com/'), authname='anonymous', perm=MockPerm(), args={})
+    req = Mock(href=Href('/'), abs_href=Href('http://www.example.com/'),
+               authname='anonymous', perm=MockPerm(), args={})
     context = Context.from_request(req)
     return trac.wiki.formatter.format_to_html(env, context, text)

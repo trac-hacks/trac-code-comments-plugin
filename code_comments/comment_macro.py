@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+
 from code_comments.comments import Comments
 from genshi.builder import tag
 from trac.wiki.macros import WikiMacroBase
+
 
 class CodeCommentLinkMacro(WikiMacroBase):
     """CodeCommentLink macro.
@@ -8,11 +11,11 @@ class CodeCommentLinkMacro(WikiMacroBase):
         [[CodeCommentLink(5)]]
         where the number in the parentheses is the comment ID.
     """
-    
+
     revision = "$Rev$"
     url = "$URL$"
     re = r'\[\[CodeCommentLink\((\d+)\)\]\]'
-    
+
     def expand_macro(self, formatter, name, text, args):
         try:
             comment = Comments(formatter.req, formatter.env).by_id(text)

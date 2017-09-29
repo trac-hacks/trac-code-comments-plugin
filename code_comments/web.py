@@ -1,26 +1,31 @@
-import re
+# -*- coding: utf-8 -*-
+
 import copy
-from trac.core import *
-from trac.web.chrome import INavigationContributor, ITemplateProvider, add_script, add_script_data, add_stylesheet, add_notice, add_link
-from trac.web.main import IRequestHandler, IRequestFilter
+import json
+import re
+
+from trac.core import Component, implements
 from trac.util import Markup
-from trac.util.text import to_unicode
 from trac.util.presentation import Paginator
+from trac.util.text import to_unicode
 from trac.versioncontrol.api import RepositoryManager
+from trac.web.chrome import (
+    INavigationContributor, ITemplateProvider, add_link, add_notice,
+    add_script, add_script_data, add_stylesheet)
+from trac.web.main import IRequestHandler, IRequestFilter
+
 from code_comments.comments import Comments
 from code_comments.comment import CommentJSONEncoder, format_to_html
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
 
 class CodeComments(Component):
+
     implements(ITemplateProvider, IRequestFilter)
 
     href = 'code-comments'
 
     # ITemplateProvider methods
+
     def get_templates_dirs(self):
         return [self.get_template_dir()]
 
@@ -33,6 +38,7 @@ class CodeComments(Component):
         return [('code-comments', resource_filename(__name__, 'htdocs'))]
 
     # IRequestFilter methods
+
     def pre_process_request(self, req, handler):
         return handler
 
@@ -40,24 +46,30 @@ class CodeComments(Component):
         add_stylesheet(req, 'code-comments/code-comments.css')
         return template, data, content_type
 
+
 class MainNavigation(CodeComments):
     implements(INavigationContributor)
 
     # INavigationContributor methods
+
     def get_active_navigation_item(self, req):
         return self.href
 
     def get_navigation_items(self, req):
         if 'TRAC_ADMIN' in req.perm:
-            yield 'mainnav', 'code-comments', Markup('<a href="%s">Code Comments</a>' % (
-                     req.href(self.href) ) )
+            yield ('mainnav', 'code-comments',
+                   Markup('<a href="%s">Code Comments</a>'
+                          % (req.href(self.href))))
+
 
 class JSDataForRequests(CodeComments):
     implements(IRequestFilter)
 
-    js_templates = ['page-comments-block', 'comment', 'add-comment-dialog', 'comment', 'comments-for-a-line',]
+    js_templates = ['page-comments-block', 'comment', 'add-comment-dialog',
+                    'comment', 'comments-for-a-line']
 
     # IRequestFilter methods
+
     def pre_process_request(self, req, handler):
         return handler
 
@@ -90,7 +102,8 @@ class JSDataForRequests(CodeComments):
         add_script(req, 'code-comments/json2.js')
         add_script(req, 'code-comments/underscore-min.js')
         add_script(req, 'code-comments/backbone-min.js')
-        # jQuery UI includes: UI Core, Interactions, Button & Dialog Widgets, Core Effects, custom theme
+        # jQuery UI includes: UI Core, Interactions, Button & Dialog Widgets,
+        # Core Effects, custom theme
         add_script(req, 'code-comments/jquery-ui/jquery-ui.js')
         add_stylesheet(req, 'code-comments/jquery-ui/trac-theme.css')
         add_script(req, 'code-comments/jquery.ba-throttle-debounce.min.js')
@@ -101,23 +114,40 @@ class JSDataForRequests(CodeComments):
     def templates_js_data(self):
         data = {}
         for name in self.js_templates:
-            # we want to use the name as JS identifier and we can't have dashes there
+            # we want to use the name as JS identifier and can't have dashes
             data[name.replace('-', '_')] = self.template_js_data(name)
         return data
 
     def changeset_js_data(self, req, data):
-        return {'page': 'changeset', 'revision': data['new_rev'], 'path': '', 'selectorToInsertAfter': 'div.diff div.diff:last'}
+        return {
+            'page': 'changeset',
+            'revision': data['new_rev'],
+            'path': '', 'selectorToInsertAfter':
+            'div.diff div.diff:last'
+        }
 
     def browser_js_data(self, req, data):
-        return {'page': 'browser', 'revision': data['rev'], 'path': data['path'], 'selectorToInsertAfter': 'table.code'}
+        return {
+            'page': 'browser',
+            'revision': data['rev'],
+            'path': data['path'],
+            'selectorToInsertAfter': 'table.code'
+        }
 
     def attachment_js_data(self, req, data):
         path = req.path_info.replace('/attachment/', 'attachment:/')
-        return {'page': 'attachment', 'revision': 0, 'path': path, 'selectorToInsertAfter': 'div#preview'}
+        return {
+            'page': 'attachment',
+            'revision': 0,
+            'path': path,
+            'selectorToInsertAfter': 'div#preview'
+        }
 
     def template_js_data(self, name):
         file_name = name + '.html'
-        return to_unicode(open(self.get_template_dir() + '/js/' + file_name).read())
+        with open(self.get_template_dir() + '/js/' + file_name) as fd:
+            return to_unicode(fd.read())
+
 
 class ListComments(CodeComments):
     implements(IRequestHandler)
@@ -142,9 +172,12 @@ class ListComments(CodeComments):
 
         self.add_path_and_author_filters()
 
-        self.comments = Comments(req, self.env);
-        self.data['comments'] = self.comments.search(self.args, self.order, self.per_page, self.page, self.order_by)
-        self.data['reponame'], repos, path = RepositoryManager(self.env).get_repository_by_path('/')
+        self.comments = Comments(req, self.env)
+        self.data['comments'] = \
+            self.comments.search(self.args, self.order, self.per_page,
+                                 self.page, self.order_by)
+        self.data['reponame'], repos, path = \
+            RepositoryManager(self.env).get_repository_by_path('/')
         self.data['can_delete'] = 'TRAC_ADMIN' in req.perm
         self.data['paginator'] = self.get_paginator()
         self.data['current_sorting_method'] = self.order_by
@@ -162,40 +195,59 @@ class ListComments(CodeComments):
         return template, data, content_type
 
     def add_path_and_author_filters(self):
-        self.data['current_path_selection'] = '';
-        self.data['current_author_selection'] = '';
+        self.data['current_path_selection'] = ''
+        self.data['current_author_selection'] = ''
 
         if self.req.args.get('filter-by-path'):
-            self.args['path__prefix'] = self.req.args['filter-by-path'];
-            self.data['current_path_selection'] = self.req.args['filter-by-path']
+            self.args['path__prefix'] = \
+                self.req.args['filter-by-path']
+            self.data['current_path_selection'] = \
+                self.req.args['filter-by-path']
         if self.req.args.get('filter-by-author'):
             self.args['author'] = self.req.args['filter-by-author']
-            self.data['current_author_selection'] = self.req.args['filter-by-author']
+            self.data['current_author_selection'] = \
+                self.req.args['filter-by-author']
 
     def get_paginator(self):
         def href_with_page(page):
             args = copy.copy(self.req.args)
             args['page'] = page
             return self.req.href(self.href, args)
-        paginator = Paginator(self.data['comments'], self.page-1, self.per_page, Comments(self.req, self.env).count(self.args))
+        comment_count = Comments(self.req, self.env).count(self.args)
+        paginator = Paginator(self.data['comments'], self.page - 1,
+                              self.per_page, comment_count)
         if paginator.has_next_page:
-            add_link(self.req, 'next', href_with_page(self.page + 1), 'Next Page')
+            add_link(self.req, 'next', href_with_page(self.page + 1),
+                     'Next Page')
         if paginator.has_previous_page:
-            add_link(self.req, 'prev', href_with_page(self.page - 1), 'Previous Page')
-        shown_pages = paginator.get_shown_pages(page_index_count = 11)
-        links = [{'href': href_with_page(page), 'class': None, 'string': str(page), 'title': 'Page %d' % page}
-            for page in shown_pages]
+            add_link(self.req, 'prev', href_with_page(self.page - 1),
+                     'Previous Page')
+        shown_pages = paginator.get_shown_pages(page_index_count=11)
+        links = [{
+            'href': href_with_page(page),
+            'class': None,
+            'string': str(page),
+            'title': 'Page %d' % page
+        } for page in shown_pages]
         paginator.shown_pages = links
-        paginator.current_page = {'href': None, 'class': 'current', 'string': str(paginator.page + 1), 'title': None}
+        paginator.current_page = {
+            'href': None,
+            'class': 'current',
+            'string': str(paginator.page + 1),
+            'title': None
+        }
         return paginator
 
     def prepare_sortable_headers(self):
-        displayed_sorting_methods = ('id', 'author', 'time', 'path', 'text')
-        displayed_sorting_method_names = ('ID', 'Author', 'Date', 'Path', 'Text')
+        displayed_sorting_methods = \
+            ('id', 'author', 'time', 'path', 'text')
+        displayed_sorting_method_names = \
+            ('ID', 'Author', 'Date', 'Path', 'Text')
         query_args = self.req.args
-        if ( query_args.has_key('page') ):
+        if 'page' in query_args:
             del query_args['page']
-        for sorting_method, sorting_method_name in zip(displayed_sorting_methods, displayed_sorting_method_names):
+        for sorting_method, sorting_method_name in \
+                zip(displayed_sorting_methods, displayed_sorting_method_names):
             query_args['orderby'] = sorting_method
             html_class = 'header'
             if self.order_by == sorting_method:
@@ -206,7 +258,12 @@ class ListComments(CodeComments):
                     query_args['order'] = 'ASC'
                     html_class += ' headerSortDown'
             link = self.req.href(self.href, query_args)
-            self.data['sortable_headers'].append({ 'name': sorting_method_name, 'link': link, 'html_class': html_class })
+            self.data['sortable_headers'].append({
+                'name': sorting_method_name,
+                'link': link,
+                'html_class': html_class
+            })
+
 
 class DeleteCommentForm(CodeComments):
     implements(IRequestHandler)
@@ -237,6 +294,7 @@ class DeleteCommentForm(CodeComments):
         add_notice(req, 'Comment deleted.')
         req.redirect(req.args['return_to'] or req.href())
 
+
 class BundleCommentsRedirect(CodeComments):
     implements(IRequestHandler)
 
@@ -257,6 +315,7 @@ class BundleCommentsRedirect(CodeComments):
 """.lstrip() % {'id': id, 'comment_text': comment.text}
         req.redirect(req.href.newticket(description=text))
 
+
 class CommentsREST(CodeComments):
     implements(IRequestHandler)
 
@@ -270,7 +329,7 @@ class CommentsREST(CodeComments):
         req.send(json.dumps(data, cls=CommentJSONEncoder), 'application/json')
 
     def process_request(self, req):
-        #TODO: catch errors
+        # TODO: catch errors
         if '/' + self.href == req.path_info:
             if 'GET' == req.method:
                 self.return_json(req, Comments(req, self.env).search(req.args))
@@ -278,6 +337,7 @@ class CommentsREST(CodeComments):
                 comments = Comments(req, self.env)
                 id = comments.create(json.loads(req.read()))
                 self.return_json(req, comments.by_id(id))
+
 
 class WikiPreview(CodeComments):
     implements(IRequestHandler)
@@ -289,4 +349,5 @@ class WikiPreview(CodeComments):
         return req.path_info.startswith('/' + self.href)
 
     def process_request(self, req):
-        req.send(format_to_html(req, self.env, req.args.get('text', '')).encode('utf-8'))
+        html = format_to_html(req, self.env, req.args.get('text', ''))
+        req.send(html.encode('utf-8'))

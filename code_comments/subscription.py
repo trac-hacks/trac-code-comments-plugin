@@ -1,14 +1,16 @@
+# -*- coding: utf-8 -*-
+
 import json
 import re
 
 from trac.admin import IAdminCommandProvider
 from trac.attachment import Attachment, IAttachmentChangeListener
 from trac.core import Component, implements
+from trac.util.html import html as tag
 from trac.versioncontrol import (
     RepositoryManager, NoSuchChangeset, IRepositoryChangeListener)
 from trac.web.api import HTTPNotFound, IRequestHandler, ITemplateStreamFilter
 
-from genshi.builder import tag
 from genshi.filters import Transformer
 
 from code_comments.api import ICodeCommentChangeListener
@@ -509,8 +511,9 @@ class SubscriptionModule(Component):
         """
         Generates a (disabled) button to connect JavaScript to.
         """
-        return tag.button('Subscribe', id_='subscribe', disabled=True,
-                          title=('Code comment subscriptions require '
-                                 'JavaScript to be enabled'),
-                          data_base_url=self.env.project_url or self.env.abs_href(),
-                          data_path=path)
+        return tag.button(
+            'Subscribe', id_='subscribe', disabled=True,
+            title=('Code comment subscriptions require JavaScript '
+                   'to be enabled'),
+            data_base_url=self.env.project_url or self.env.abs_href(),
+            data_path=path)
