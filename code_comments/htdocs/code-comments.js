@@ -363,7 +363,7 @@ var underscore = _.noConflict();
 			button.prop('title', title);
 		},
 
-		doToggle: function( event ){
+		doToggle: function( event ) {
 			this.model.save({'notify': !this.model.get('notify')}, {wait: true});
 			if (this.model.isNew()) {
 				this.model.fetch();

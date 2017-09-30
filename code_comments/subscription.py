@@ -145,7 +145,7 @@ class Subscription(object):
             return None
 
     @classmethod
-    def _from_dict(cls, env, dict_, create=True):
+    def from_dict(cls, env, dict_, create=True):
         """
         Retrieves or (optionally) creates a subscription from a dict.
         """
@@ -174,11 +174,12 @@ class Subscription(object):
                                 subscription.id, subscription)
 
         # (Optionally) create a new subscription if we didn't find one
-        if subscription is None and create:
+        if subscription is None:
             subscription = cls(env, dict_)
-            subscription.insert()
-            env.log.info('Subscription created: [%d] %s',
-                         subscription.id, subscription)
+            if create:
+                subscription.insert()
+                env.log.info('Subscription created: [%d] %s',
+                             subscription.id, subscription)
 
         return subscription
 
@@ -199,7 +200,7 @@ class Subscription(object):
             'rev': '',
             'notify': notify,
         }
-        return cls._from_dict(env, sub)
+        return cls.from_dict(env, sub)
 
     @classmethod
     def from_changeset(cls, env, changeset, user=None, notify=True):
@@ -214,7 +215,7 @@ class Subscription(object):
             'rev': changeset.rev,
             'notify': notify,
         }
-        return cls._from_dict(env, sub)
+        return cls.from_dict(env, sub)
 
     @classmethod
     def from_comment(cls, env, comment, user=None, notify=True):
@@ -250,7 +251,7 @@ class Subscription(object):
             else:
                 sub['rev'] = _cs.rev
 
-        return cls._from_dict(env, sub)
+        return cls.from_dict(env, sub)
 
     @classmethod
     def for_attachment(cls, env, attachment, path=None, notify=None):
@@ -334,7 +335,7 @@ class Subscription(object):
             dict_['rev'] = req.args.get('rev') or ''
             dict_['repos'] = reponame
 
-        return cls._from_dict(env, dict_, create=create)
+        return cls.from_dict(env, dict_, create=create)
 
 
 class SubscriptionJSONEncoder(json.JSONEncoder):
@@ -479,20 +480,18 @@ class SubscriptionModule(Component):
                  'application/json')
 
     def _do_POST(self, req):
-        subscription = Subscription.for_request(self.env, req, create=True)
+        content = req.read()
+        data = json.loads(content)
+        subscription = Subscription.from_dict(self.env, data, create=True)
         status = 201
         req.send(json.dumps(subscription, cls=SubscriptionJSONEncoder),
                  'application/json', status)
 
     def _do_PUT(self, req):
-        subscription = Subscription.for_request(self.env, req)
-        if subscription is None:
-            raise HTTPNotFound('Subscription to /%s%s for %s not found',
-                               req.args.get('realm'), req.args.get('path'),
-                               req.authname)
         content = req.read()
         if len(content) > 0:
             data = json.loads(content)
+            subscription = Subscription.from_dict(self.env, data, create=True)
             subscription.notify = data['notify']
             subscription.update()
         req.send(json.dumps(subscription, cls=SubscriptionJSONEncoder),
