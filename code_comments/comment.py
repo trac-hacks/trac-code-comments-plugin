@@ -21,7 +21,7 @@ def md5_hexdigest(s):
 VERSION = 1
 
 
-class Comment:
+class Comment(object):
     columns = [column.name for column in db.schema['code_comments'].columns]
 
     required = 'text', 'author'
@@ -101,7 +101,7 @@ class Comment:
 
     def changeset_link_text(self):
         if 0 != self.line:
-            return 'Changeset @%d#L%d (in %s)' % (self.revision, self.line,
+            return 'Changeset @%s#L%d (in %s)' % (self.revision, self.line,
                                                   self.path)
         else:
             return 'Changeset @%s' % self.revision
@@ -142,14 +142,7 @@ class Comment:
               VALUE LIKE '%%,%(comment_id)d' OR
               VALUE LIKE '%%,%(comment_id)d,%%')
             """ % {'comment_id': self.id}
-        result = {}
-
-        @self.env.with_transaction()
-        def get_ticket_ids(db):
-            cursor = db.cursor()
-            cursor.execute(query)
-            result['tickets'] = cursor.fetchall()
-        return set([int(row[0]) for row in result['tickets']])
+        return set([int(row[0]) for row in self.env.db_query(query)])
 
     def get_ticket_links(self):
         relations = self.get_ticket_relations()
@@ -157,10 +150,9 @@ class Comment:
         return format_to_html(self.req, self.env, ', '.join(links))
 
     def delete(self):
-        @self.env.with_transaction()
-        def delete_comment(db):
-            cursor = db.cursor()
-            cursor.execute("DELETE FROM code_comments WHERE id=%s", [self.id])
+        self.env.db_transaction("""
+            DELETE FROM code_comments WHERE id=%s
+            """, (self.id,))
 
 
 class CommentJSONEncoder(json.JSONEncoder):

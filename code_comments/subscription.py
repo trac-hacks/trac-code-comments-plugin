@@ -21,6 +21,7 @@ class Subscription(object):
     """
     Representation of a code comment subscription.
     """
+
     id = 0
     user = ''
     type = ''
@@ -73,12 +74,10 @@ class Subscription(object):
                 criteria.append(template.format(key, value))
             select += ' AND '.join(criteria)
 
-        cursor = env.get_read_db().cursor()
-        cursor.execute(select)
-        for row in cursor:
+        for row in env.db_query(select):
             yield cls._from_row(env, row)
 
-    def insert(self, db=None):
+    def insert(self):
         """
         Insert a new subscription. Returns bool to indicate success.
         """
@@ -86,19 +85,18 @@ class Subscription(object):
             # Already has an id, don't insert
             return False
         else:
-            @self.env.with_transaction()
-            def do_insert(db):
+            with self.env.db_transaction as db:
                 cursor = db.cursor()
-                insert = ("INSERT INTO code_comments_subscriptions "
-                          "(user, type, path, repos, rev, notify) "
-                          "VALUES (%s, %s, %s, %s, %s, %s)")
-                values = (self.user, self.type, self.path, self.repos,
-                          self.rev, self.notify)
-                cursor.execute(insert, values)
+                cursor.execute("""
+                    INSERT INTO code_comments_subscriptions
+                     (user, type, path, repos, rev, notify)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    """, (self.user, self.type, self.path, self.repos,
+                          self.rev, self.notify))
                 self.id = db.get_last_id(cursor, 'code_comments_subscriptions')
                 return True
 
-    def update(self, db=None):
+    def update(self):
         """
         Update an existing subscription. Returns bool to indicate success.
         """
@@ -106,32 +104,26 @@ class Subscription(object):
             # Doesn't have a valid id, don't update
             return False
         else:
-            @self.env.with_transaction()
-            def do_update(db):
-                cursor = db.cursor()
-                update = ("UPDATE code_comments_subscriptions SET "
-                          "user=%s, type=%s, path=%s, repos=%s, rev=%s, "
-                          "notify=%s WHERE id=%s")
-                values = (self.user, self.type, self.path, self.repos,
-                          self.rev, self.notify, self.id)
-                try:
-                    cursor.execute(update, values)
-                except db.IntegrityError:
-                    self.env.log.warning("Subscription update failed.")
-                    return False
-                return True
+            try:
+                self.env.db_transaction("""
+                    UPDATE code_comments_subscriptions
+                    SET user=%s, type=%s, path=%s, repos=%s, rev=%s,
+                        notify=%s WHERE id=%s
+                    """, (self.user, self.type, self.path, self.repos,
+                          self.rev, self.notify, self.id))
+            except self.env.db_exc.IntegrityError:
+                self.env.log.warning("Subscription update failed.")
+                return False
+            return True
 
-    def delete(self, db=None):
+    def delete(self):
         """
         Delete an existing subscription.
         """
         if self.id > 0:
-            @self.env.with_transaction()
-            def do_delete(db):
-                cursor = db.cursor()
-                delete = ("DELETE FROM code_comments_subscriptions WHERE "
-                          "id=%s")
-                cursor.execute(delete, (self.id,))
+            self.env.db_transaction("""
+                DELETE FROM code_comments_subscriptions WHERE id=%s
+                """, (self.id,))
 
     @classmethod
     def _from_row(cls, env, row):
@@ -243,21 +235,20 @@ class Subscription(object):
 
         # Munge changesets and browser
         if comment.type in ('changeset', 'browser'):
+            rm = RepositoryManager(env)
+            reponame, repos, path = rm.get_repository_by_path(comment.path)
             if comment.type == 'browser':
-                sub['path'] = comment.path
+                sub['path'] = path
             else:
                 sub['path'] = ''
-            repo = RepositoryManager(env).get_repository(None)
+            sub['repos'] = reponame or '(default)'
             try:
-                sub['repos'] = repo.reponame
-                try:
-                    _cs = repo.get_changeset(comment.revision)
-                    sub['rev'] = _cs.rev
-                except NoSuchChangeset:
-                    # Invalid changeset
-                    return None
-            finally:
-                repo.close()
+                _cs = repos.get_changeset(comment.revision)
+            except NoSuchChangeset:
+                # Invalid changeset
+                return None
+            else:
+                sub['rev'] = _cs.rev
 
         return cls._from_dict(env, sub)
 
@@ -304,9 +295,12 @@ class Subscription(object):
             args['rev'] = str(comment.revision)
 
         if comment.type == 'browser':
+            rm = RepositoryManager(env)
+            reponame, _, path = rm.get_repository_by_path(comment.path)
             args['type'] = ('browser', 'changeset')
-            args['path'] = (comment.path, '')
-            args['rev'] = str(comment.revision)
+            args['path'] = (path, '')
+            args['repos'] = reponame
+            args['rev'] = (str(comment.revision), '')
 
         return cls.select(env, args, notify)
 
@@ -315,12 +309,7 @@ class Subscription(object):
         """
         Return a **single** subscription for a HTTP request.
         """
-        reponame = req.args.get('reponame')
         rm = RepositoryManager(env)
-        repos = rm.get_repository(reponame)
-
-        path = req.args.get('path') or ''
-        rev = req.args.get('rev') or repos.youngest_rev
 
         dict_ = {
             'user': req.authname,
@@ -329,21 +318,21 @@ class Subscription(object):
             'rev': '',
             'repos': '',
         }
+        path = req.args.get('path') or ''
 
         if dict_['type'] == 'attachment':
             dict_['path'] = path
 
         if dict_['type'] == 'changeset':
-            dict_['rev'] = path[1:]
-            dict_['repos'] = repos.reponame
+            parts = [p for p in path.split('/') if p]
+            dict_['rev'] = parts[0]
+            dict_['repos'] = parts[1]
 
         if dict_['type'] == 'browser':
-            if len(path) == 0:
-                dict_['path'] = '/'
-            else:
-                dict_['path'] = path[1:]
-            dict_['rev'] = rev
-            dict_['repos'] = repos.reponame
+            reponame, repos, path = rm.get_repository_by_path(path)
+            dict_['path'] = '/' if len(path) == 0 else path
+            dict_['rev'] = req.args.get('rev') or ''
+            dict_['repos'] = reponame
 
         return cls._from_dict(env, dict_, create=create)
 
@@ -375,10 +364,9 @@ class SubscriptionAdmin(Component):
 
     def _do_seed(self):
         # Create a subscription for all existing attachments
-        cursor = self.env.get_read_db().cursor()
-        cursor.execute("SELECT DISTINCT type, id FROM attachment")
-        rows = cursor.fetchall()
-        for row in rows:
+        for row in self.env.db_query("""
+                SELECT DISTINCT type, id FROM attachment
+                """):
             for attachment in Attachment.select(self.env, row[0], row[1]):
                 Subscription.from_attachment(self.env, attachment)
 
@@ -473,9 +461,12 @@ class SubscriptionModule(Component):
     # ITemplateStreamFilter methods
 
     def filter_stream(self, req, method, filename, stream, data):
-        if re.match(r'^/(changeset|browser|attachment).*', req.path_info):
+        if re.match(r'^/(changeset|browser|attachment/ticket/\d+/.?).*',
+                    req.path_info):
             filter = Transformer('//h1')
-            stream |= filter.before(self._subscription_button(req.path_info))
+            button = self._subscription_button(req.path_info,
+                                               req.args.get('rev'))
+            stream |= filter.before(button)
         return stream
 
     # Internal methods
@@ -507,7 +498,7 @@ class SubscriptionModule(Component):
         req.send(json.dumps(subscription, cls=SubscriptionJSONEncoder),
                  'application/json')
 
-    def _subscription_button(self, path):
+    def _subscription_button(self, path, rev):
         """
         Generates a (disabled) button to connect JavaScript to.
         """
@@ -516,4 +507,5 @@ class SubscriptionModule(Component):
             title=('Code comment subscriptions require JavaScript '
                    'to be enabled'),
             data_base_url=self.env.project_url or self.env.abs_href(),
-            data_path=path)
+            data_path=path,
+            data_rev=rev)

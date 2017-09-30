@@ -28,7 +28,7 @@ Alternatively build your own egg by checking out the repository and running
 `python setup.py bdist_egg` in your working copy. Copy the resultant .egg to
 your `plugins` directory.
 
-Trac Code Comments plugin requres at least python 2.4 and runs on Trac 0.12.
+Trac Code Comments plugin requires at least Trac 1.2.
 
 Enable all the modules through the admin web UI or by editing `trac.ini`.
 

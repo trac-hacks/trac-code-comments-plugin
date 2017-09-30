@@ -10,7 +10,7 @@ from trac.util.presentation import Paginator
 from trac.util.text import to_unicode
 from trac.versioncontrol.api import RepositoryManager
 from trac.web.chrome import (
-    INavigationContributor, ITemplateProvider, add_link, add_notice,
+    Chrome, INavigationContributor, ITemplateProvider, add_link, add_notice,
     add_script, add_script_data, add_stylesheet)
 from trac.web.main import IRequestHandler, IRequestFilter
 
@@ -74,8 +74,9 @@ class JSDataForRequests(CodeComments):
         return handler
 
     def post_process_request(self, req, template, data, content_type):
-        if data is None:
-            return
+        original_return_value = template, data, content_type
+        if data is None or ('reponame' in data and not data.get('reponame')):
+            return original_return_value
 
         js_data = {
             'comments_rest_url': req.href(CommentsREST.href),
@@ -88,7 +89,6 @@ class JSDataForRequests(CodeComments):
             'is_admin': 'TRAC_ADMIN' in req.perm,
         }
 
-        original_return_value = template, data, content_type
         if req.path_info.startswith('/changeset'):
             js_data.update(self.changeset_js_data(req, data))
         elif req.path_info.startswith('/browser'):
@@ -98,12 +98,12 @@ class JSDataForRequests(CodeComments):
         else:
             return original_return_value
 
-        add_script(req, 'code-comments/jquery-1.11.1.min.js')
         add_script(req, 'code-comments/json2.js')
         add_script(req, 'code-comments/underscore-min.js')
         add_script(req, 'code-comments/backbone-min.js')
         # jQuery UI includes: UI Core, Interactions, Button & Dialog Widgets,
         # Core Effects, custom theme
+        # Chrome(self.env).add_jquery_ui(req)
         add_script(req, 'code-comments/jquery-ui/jquery-ui.js')
         add_stylesheet(req, 'code-comments/jquery-ui/trac-theme.css')
         add_script(req, 'code-comments/jquery.ba-throttle-debounce.min.js')
@@ -122,15 +122,15 @@ class JSDataForRequests(CodeComments):
         return {
             'page': 'changeset',
             'revision': data['new_rev'],
-            'path': '', 'selectorToInsertAfter':
-            'div.diff div.diff:last'
+            'path': data['reponame'],
+            'selectorToInsertAfter': 'div.diff div.diff:last'
         }
 
     def browser_js_data(self, req, data):
         return {
             'page': 'browser',
             'revision': data['rev'],
-            'path': data['path'],
+            'path': (data['reponame'] or '') + '/' + data['path'],
             'selectorToInsertAfter': 'table.code'
         }
 

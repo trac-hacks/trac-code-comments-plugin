@@ -29,7 +29,7 @@ var underscore = _.noConflict();
 		defaultFetchParams: {
 			path: CodeComments.path || undefined,
 			revision: CodeComments.revision,
-			type: CodeComments.page
+			type: CodeComments.page,
 		},
 		fetchPageComments: function() {
 			return this.fetch( { data: _.extend( { line: 0 }, this.defaultFetchParams ) } );
@@ -213,7 +213,14 @@ var underscore = _.noConflict();
 				},
 				wait: true
 			};
-			this.collection.create({text: text, author: CodeComments.username, path: this.path, revision: CodeComments.revision, line: line, type: CodeComments.page}, options);
+			this.collection.create({
+				text: text,
+				author: CodeComments.username,
+				path: this.path,
+				revision: CodeComments.revision,
+				line: line,
+				type: CodeComments.page
+			}, options);
 		},
 		previewThrottled: $.throttle(1500, function(e) { return this.preview(e); }),
 		preview: function(e) {
@@ -326,7 +333,9 @@ var underscore = _.noConflict();
 		initialize: function(){
 			_.bindAll(this, "render");
 			this.model.listenTo(this.model, 'change', this.render);
-			this.model.url = $(this.$el).data('baseUrl') + '/subscription' + $(this.$el).data('path');
+			var rev = $(this.$el).data('rev');
+			this.model.url = $(this.$el).data('baseUrl') + '/subscription' +
+				$(this.$el).data('path') + (rev ? '?rev=' + rev : '');
 			this.render();
 		},
 
@@ -341,7 +350,7 @@ var underscore = _.noConflict();
 					label: 'Unsubscribe',
 					icons: {primary: 'ui-icon-check'}
 				};
-			    var title = 'You receive notifications for comments';
+				var title = 'You receive notifications for comments';
 			} else {
 				var options = {
 					disabled: false,
@@ -364,7 +373,7 @@ var underscore = _.noConflict();
 
 	window.subscription = new Subscription();
 	window.subscriptionView = new SubscriptionView({model: subscription});
-    if (subscriptionView.el) {
-        subscription.fetch();
-    }
+	if (subscriptionView.el) {
+		subscription.fetch();
+	}
 }); }( jQuery.noConflict( true ) ) );

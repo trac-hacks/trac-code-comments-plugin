@@ -7,7 +7,7 @@ from code_comments.api import CodeCommentSystem
 from code_comments.comment import Comment
 
 
-class Comments:
+class Comments(object):
 
     FILTER_MAX_PATH_DEPTH = 2
 
@@ -39,14 +39,8 @@ class Comments:
         return sorted(list(set([comment.author for comment in comments])))
 
     def select(self, *query):
-        result = {}
-
-        @self.env.with_transaction()
-        def get_comments(db):
-            cursor = db.cursor()
-            cursor.execute(*query)
-            result['comments'] = cursor.fetchall()
-        return [self.comment_from_row(row) for row in result['comments']]
+        return [self.comment_from_row(row)
+                for row in self.env.db_query(*query)]
 
     def count(self, args={}):
         conditions_str, values = \
@@ -57,11 +51,9 @@ class Comments:
         query = 'SELECT COUNT(*) FROM code_comments ' + where
         result = {}
 
-        @self.env.with_transaction()
-        def get_comment_count(db):
-            cursor = db.cursor()
-            cursor.execute(query, values)
-            result['count'] = cursor.fetchone()[0]
+        for count, in self.env.db_query(query, values):
+            result['count'] = count
+
         return result['count']
 
     def all(self):
@@ -131,14 +123,12 @@ class Comments:
         values = [getattr(comment, n) for n in column_names_to_insert]
         comment_id = [None]
 
-        @self.env.with_transaction()
-        def insert_comment(db):
+        with self.env.db_transaction as db:
             cursor = db.cursor()
-            sql = """
+            cursor.execute("""
                 INSERT INTO code_comments (%s) VALUES(%s)
                 """ % (', '.join(column_names_to_insert),
-                       ', '.join(['%s'] * len(values)))
-            cursor.execute(sql, values)
+                       ', '.join(['%s'] * len(values))), values)
             comment_id[0] = db.get_last_id(cursor, 'code_comments')
 
         CodeCommentSystem(self.env).comment_created(

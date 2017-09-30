@@ -7,6 +7,7 @@ from trac.db.api import DatabaseManager
 
 # Database version identifier for upgrades.
 db_version = 3
+db_version_key = 'code_comments_schema_version'
 
 # Database schema
 schema = {
@@ -30,7 +31,6 @@ schema = {
         Column('user'),
         Column('type'),
         Column('path'),
-        Column('repos'),
         Column('rev'),
         Column('notify', type='bool'),
         Index(['user']),
@@ -39,48 +39,24 @@ schema = {
 }
 
 
-def to_sql(env, table):
-    """ Convenience function to get the to_sql for the active connector."""
-    dc = DatabaseManager(env)._get_connector()[0]
-    return dc.to_sql(table)
-
-
-def create_tables(env, db):
-    cursor = db.cursor()
-    for table_name in schema:
-        for stmt in to_sql(env, schema[table_name]):
-            cursor.execute(stmt)
-    cursor.execute(
-        "INSERT INTO system VALUES ('code_comments_schema_version', %s)",
-        str(db_version))
-
-
 # Upgrades
 
-def upgrade_from_1_to_2(env, db):
-    # Add the new column "type"
-    @env.with_transaction()
-    def add_type_column(db):
-        cursor = db.cursor()
-        cursor.execute('ALTER TABLE code_comments ADD COLUMN type TEXT')
-
-    # Convert all the current comments to the new schema
-    @env.with_transaction()
-    def convert_comments(db):
-        comments = {}
-        cursor = db.cursor()
-        cursor.execute('SELECT id, path FROM code_comments')
-        comments = cursor.fetchall()
+def upgrade_from_1_to_2(env):
+    with env.db_transaction as db:
+        # Add the new column "type"
+        db('ALTER TABLE code_comments ADD COLUMN type TEXT')
+        # Convert all the current comments to the new schema
         # options:
         # 1: comment on file (path != "" && path != "attachment")
         # 2: comment on changeset (path == "")
         # 3: comment on attachment (path == "attachment")
-        for comment in comments:
+        for comment in db("""
+                SELECT id, path FROM code_comments
+                """):
             path = comment[1]
             is_comment_to_attachment = path.startswith('attachment')
             is_comment_to_file = not is_comment_to_attachment and '' != path
             is_comment_to_changeset = '' == path
-            cursor = db.cursor()
             update = 'UPDATE code_comments SET type={0} WHERE id={1}'
             sql = ''
 
@@ -91,16 +67,13 @@ def upgrade_from_1_to_2(env, db):
             elif is_comment_to_file:
                 sql = update.format("'browser'", str(comment[0]))
 
-            cursor.execute(sql)
+            db(sql)
 
 
-def upgrade_from_2_to_3(env, db):
+def upgrade_from_2_to_3(env):
     # Add the new table
-    @env.with_transaction()
-    def add_subscriptions_table(db):
-        cursor = db.cursor()
-        for stmt in to_sql(env, schema['code_comments_subscriptions']):
-            cursor.execute(stmt)
+    dbm = DatabaseManager(env)
+    dbm.create_tables((schema['code_comments_subscriptions'],))
 
 
 upgrade_map = {
@@ -118,40 +91,25 @@ class CodeCommentsSetup(Component):
         """Called when a new Trac environment is created."""
         pass
 
-    def environment_needs_upgrade(self, db):
+    def environment_needs_upgrade(self):
         """
         Called when Trac checks whether the environment needs to be upgraded.
         Returns `True` if upgrade is needed, `False` otherwise.
         """
-        return self._get_version(db) != db_version
+        dbm = DatabaseManager(self.env)
+        return dbm.get_database_version(db_version_key) != db_version
 
-    def upgrade_environment(self, db):
+    def upgrade_environment(self):
         """
         Actually perform an environment upgrade, but don't commit as
         that is done by the common upgrade procedure when all plugins are done.
         """
-        current_ver = self._get_version(db)
+        dbm = DatabaseManager(self.env)
+        current_ver = dbm.get_database_version(db_version_key)
         if current_ver == 0:
-            create_tables(self.env, db)
+            dbm.create_tables(schema.values())
         else:
             while current_ver + 1 <= db_version:
-                upgrade_map[current_ver + 1](self.env, db)
+                upgrade_map[current_ver + 1](self.env)
                 current_ver += 1
-            cursor = db.cursor()
-            cursor.execute("""
-                UPDATE system SET value=%s
-                WHERE name='code_comments_schema_version'
-                """, str(db_version))
-
-    def _get_version(self, db):
-        cursor = db.cursor()
-        try:
-            cursor.execute("""
-                SELECT value FROM system
-                WHERE name='code_comments_schema_version'
-                """)
-            for row in cursor:
-                return int(row[0])
-            return 0
-        except:
-            return 0
+        dbm.set_database_version(db_version, db_version_key)

@@ -4,7 +4,7 @@ YOU WANT TO CONTRIBUTE BUT YOU DON'T KNOW HOW? NO MORE SUCH EXCUSES
 
 In most cases this can be done via easy_install:
 
-	 # easy_install Trac==0.12
+	 # easy_install Trac==1.2
 
 If you run into problems, see Trac documentation [1][2].
 
@@ -42,7 +42,7 @@ repository_type = svn
 Remember the file location.
 
 6. Add yourself as admin:
- 
+
 	$ trac-admin <trac-name> permission add <username> TRAC_ADMIN
 
 6. Run trac server:
@@ -67,7 +67,7 @@ You should now have a working vanilla Trac at http://localhost:8000/, where you 
 
 # Footnotes
 
-[1] http://trac.edgewall.org/wiki/0.12/TracInstall
+[1] http://trac.edgewall.org/wiki/1.2/TracInstall
 [2] http://trac.edgewall.org/wiki/TracDev/DevelopmentEnvironmentSetup
 [3] http://trac.edgewall.org/wiki/TracSubversion#GettingSubversion
 [4] http://stackoverflow.com/questions/14538468/how-to-install-python-subversion-bindings-needed-by-hg-convert-on-mac-os-x-10-8/16950786#16950786
