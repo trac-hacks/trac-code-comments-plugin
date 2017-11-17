@@ -196,6 +196,7 @@ var underscore = _.noConflict();
 				title += ( displayLine ? 'line ' + displayLine + ' of ' : '' )
 				      + this.path + '@' + CodeComments.revision;
 			}
+			title += ' in ' + CodeComments.reponame;
 			return title;
 		},
 		close: function() {
@@ -213,7 +214,7 @@ var underscore = _.noConflict();
 				},
 				wait: true
 			};
-			this.collection.create({text: text, author: CodeComments.username, path: this.path, revision: CodeComments.revision, line: line, type: CodeComments.page}, options);
+			this.collection.create({text: text, author: CodeComments.username, path: this.path, reponame: CodeComments.reponame, revision: CodeComments.revision, line: line, type: CodeComments.page}, options);
 		},
 		previewThrottled: $.throttle(1500, function(e) { return this.preview(e); }),
 		preview: function(e) {
