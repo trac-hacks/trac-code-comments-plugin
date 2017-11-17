@@ -121,16 +121,18 @@ class JSDataForRequests(CodeComments):
     def changeset_js_data(self, req, data):
         return {
             'page': 'changeset',
+            'reponame': data['reponame'],
             'revision': data['new_rev'],
-            'path': data['reponame'],
+            'path': '',
             'selectorToInsertAfter': 'div.diff div.diff:last'
         }
 
     def browser_js_data(self, req, data):
         return {
             'page': 'browser',
+            'reponame': data['reponame'],
             'revision': data['rev'],
-            'path': (data['reponame'] or '') + '/' + data['path'],
+            'path': data['path'],
             'selectorToInsertAfter': 'table.code'
         }
 
@@ -138,6 +140,7 @@ class JSDataForRequests(CodeComments):
         path = req.path_info.replace('/attachment/', 'attachment:/')
         return {
             'page': 'attachment',
+            'reponame': '',
             'revision': 0,
             'path': path,
             'selectorToInsertAfter': 'div#preview'
