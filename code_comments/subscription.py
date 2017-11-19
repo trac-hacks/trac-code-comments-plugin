@@ -245,7 +245,7 @@ class Subscription(object):
                 sub['path'] = comment.path
             else:
                 sub['path'] = ''
-            repo = RepositoryManager(env).get_repository(None)
+            repo = RepositoryManager(env).get_repository(comment.reponame)
             try:
                 sub['repos'] = repo.reponame
                 try:
