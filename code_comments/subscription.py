@@ -236,13 +236,13 @@ class Subscription(object):
 
         # Munge changesets and browser
         if comment.type in ('changeset', 'browser'):
-            rm = RepositoryManager(env)
-            reponame, repos, path = rm.get_repository_by_path(comment.path)
             if comment.type == 'browser':
-                sub['path'] = path
+                sub['path'] = comment.path
             else:
                 sub['path'] = ''
-            sub['repos'] = reponame or '(default)'
+            sub['repos'] = comment.reponame
+            rm = RepositoryManager(env)
+            repos = rm.get_repository(comment.reponame)
             try:
                 _cs = repos.get_changeset(comment.revision)
             except NoSuchChangeset:
