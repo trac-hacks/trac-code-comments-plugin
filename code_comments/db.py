@@ -4,9 +4,10 @@ from trac.core import Component, implements
 from trac.db.schema import Table, Column, Index
 from trac.env import IEnvironmentSetupParticipant
 from trac.db.api import DatabaseManager
+from trac.versioncontrol.api import RepositoryManager
 
 # Database version identifier for upgrades.
-db_version = 3
+db_version = 4
 db_version_key = 'code_comments_schema_version'
 
 # Database schema
@@ -21,8 +22,11 @@ schema = {
         Column('author'),
         Column('time', type='int'),
         Column('type'),
+        Column('reponame'),
         Index(['path']),
         Index(['author']),
+        Index(['reponame', 'path']),
+        Index(['revision', 'reponame']),
     ],
     'code_comments_subscriptions': Table('code_comments_subscriptions',
                                          key=('id', 'user', 'type', 'path',
@@ -76,9 +80,34 @@ def upgrade_from_2_to_3(env):
     dbm.create_tables((schema['code_comments_subscriptions'],))
 
 
+def upgrade_from_3_to_4(env):
+    with env.db_transaction as db:
+        # Add the new column "reponame" and indexes.
+        db('ALTER TABLE code_comments ADD COLUMN reponame text')
+        db('CREATE INDEX code_comments_reponame_path_idx ON code_comments (reponame, path)')
+        db('CREATE INDEX code_comments_revision_reponame_idx ON code_comments (revision, reponame)')
+
+        # Comments on attachments need to have the empty string as the reponame instead of NULL.
+        db("UPDATE code_comments SET reponame = '' WHERE type = 'attachment'")
+
+        # Comments on changesets have the reponame in the 'path' column.
+        db("UPDATE code_comments SET reponame = path, path = '' WHERE type = 'changeset'")
+
+        # Comments on files have the reponame as the first component of the 'path' column.
+        db("""
+            UPDATE code_comments
+            SET
+                reponame = substr(path, 1, instr(path, '/') - 1),
+                path = substr(path, instr(path, '/') + 1)
+            WHERE
+                type = 'browser'
+            """)
+
+
 upgrade_map = {
     2: upgrade_from_1_to_2,
     3: upgrade_from_2_to_3,
+    4: upgrade_from_3_to_4,
 }
 
 
