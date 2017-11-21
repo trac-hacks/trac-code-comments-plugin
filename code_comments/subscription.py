@@ -313,13 +313,6 @@ class Subscription(object):
         """
         Return a **single** subscription for a HTTP request.
         """
-        reponame = req.args.get('reponame')
-        rm = RepositoryManager(env)
-        repos = rm.get_repository(reponame)
-
-        path = req.args.get('path') or ''
-        rev = req.args.get('rev') or repos.youngest_rev
-
         dict_ = {
             'user': req.authname,
             'type': req.args.get('realm'),
@@ -329,19 +322,15 @@ class Subscription(object):
         }
 
         if dict_['type'] == 'attachment':
-            dict_['path'] = path
+            dict_['path'] = "/" + req.args.get('arg1') + "/" + req.args.get('arg2')
 
         if dict_['type'] == 'changeset':
-            dict_['rev'] = path[1:]
-            dict_['repos'] = repos.reponame
+            dict_['rev'] = req.args.get('arg1')
+            dict_['repos'] = req.args.get('arg2')
 
         if dict_['type'] == 'browser':
-            if len(path) == 0:
-                dict_['path'] = '/'
-            else:
-                dict_['path'] = path[1:]
-            dict_['rev'] = rev
-            dict_['repos'] = repos.reponame
+            dict_['path'] = '/' + req.args.get('arg2')
+            dict_['repos'] = req.args.get('arg1')
 
         return cls._from_dict(env, dict_, create=create)
 
@@ -453,12 +442,11 @@ class SubscriptionModule(Component):
     # IRequestHandler methods
 
     def match_request(self, req):
-        match = re.match(r'\/subscription\/(\w+)(\/?.*)$', req.path_info)
+        match = re.match(r'\/subscription\/(\w+)\/(\w+)\/?(.*)$', req.path_info)
         if match:
-            if match.group(1):
-                req.args['realm'] = match.group(1)
-            if match.group(2):
-                req.args['path'] = match.group(2)
+            req.args['realm'] = match.group(1)
+            req.args['arg1'] = match.group(2)
+            req.args['arg2'] = match.group(3)
             return True
 
     def process_request(self, req):
@@ -471,7 +459,7 @@ class SubscriptionModule(Component):
     # ITemplateStreamFilter methods
 
     def filter_stream(self, req, method, filename, stream, data):
-        if re.match(r'^/(changeset|browser|attachment).*', req.path_info):
+        if re.match(r'^\/(changeset|browser|attachment)\/\w+', req.path_info):
             filter = Transformer('//h1')
             stream |= filter.before(self._subscription_button(req.path_info))
         return stream
