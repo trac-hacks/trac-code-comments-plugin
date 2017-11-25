@@ -130,3 +130,9 @@ button#subscribe {
 	float: right;
 	margin: 5px 0 5px 5px;
 }
+
+/* Highlight links to commented revisions */
+.chglist td.rev a.chgset.chgset-commented {
+	background-image: url(jquery-ui/images/ui-icons_4b954f_256x240.png);
+	background-position: -131px -98px;
+}
