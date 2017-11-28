@@ -303,11 +303,22 @@ var underscore = _.noConflict();
 		getFile: function() {
 			return this.$el.parents( 'li' ).find( 'h2>a:first' ).text();
 		},
+		getLineNumberInFile: function() {
+			var lineNumber = this.$lineNumberCell.text().trim();
+			if (lineNumber)
+				return lineNumber;
+			else
+				return this.$th.first().text().trim() * -1;
+		},
 		getLineNumberInDiff: function() {
 			return Rows.getLineNumberInDiffByTr( this.el );
 		},
 		getDisplayLine: function() {
-			return this.$lineNumberCell.text().trim() || this.$th.first().text() + ' (deleted)';
+			var lineNumber = this.getLineNumberInFile()
+			if (lineNumber > 0)
+				return lineNumber;
+			else
+				return lineNumber * -1 + ' (deleted)';
 		}
 	} );
 
