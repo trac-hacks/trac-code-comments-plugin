@@ -36,7 +36,7 @@ var underscore = _.noConflict();
 			return this.fetch( { data: _.extend( { line: 0 }, this.defaultFetchParams ) } );
 		},
 		fetchLineComments: function() {
-			return this.fetch( { data: _.extend( { line__gt: 0 }, this.defaultFetchParams ) } );
+			return this.fetch( { data: _.extend( { line__ne: 0 }, this.defaultFetchParams ) } );
 		}
 	});
 
@@ -112,13 +112,15 @@ var underscore = _.noConflict();
 		},
 		addOne: function(comment) {
 			var line = comment.get('line');
-			if (!this.viewPerLine[line]) {
-				this.viewPerLine[line] = new CommentsForALineView( { line: line } );
+			var file = comment.get('path');
+			var key = 'file_' + file + ':' + line;
+			if (!this.viewPerLine[key]) {
+				this.viewPerLine[key] = new CommentsForALineView( { file: file, line: line } );
 
-				var $tr = $( Rows.getTrByLineNumberInDiff( line ) );
-				$tr.after(this.viewPerLine[line].render().el).addClass('with-comments');
+				var $tr = $( Rows.getTrByFileAndLineNumberInFile( file, line ) );
+				$tr.after(this.viewPerLine[key].render().el).addClass('with-comments');
 			}
-			this.viewPerLine[line].addOne(comment);
+			this.viewPerLine[key].addOne(comment);
 		},
 		addAll: function() {
 			var view = this;
@@ -134,6 +136,7 @@ var underscore = _.noConflict();
 		template: _.template(CodeComments.templates.comments_for_a_line),
 		initialize: function(attrs) {
 			this.line = attrs.line;
+			this.file = attrs.file;
 		},
 		events: {
 			'click button': 'showAddCommentDialog'
@@ -239,7 +242,7 @@ var underscore = _.noConflict();
 			var callbackMouseover = function( event ) {
 				var row = new RowView( { el: this } ),
 					file = row.getFile(),
-					line = row.getLineNumberInDiff(),
+					line = row.getLineNumberInFile(),
 					displayLine = row.getDisplayLine();
 				row.replaceLineNumberCellContent( '<a title="Comment on this line" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>' );
 
@@ -273,6 +276,34 @@ var underscore = _.noConflict();
 		},
 		getTrByLineNumberInDiff: function( line ) {
 			return this.$rows[line - 1];
+		},
+		getTrByFileAndLineNumberInFile: function ( file, line) {
+			var col;
+			var container;
+			if (CodeComments.page == "browser" && CodeComments.path == file) {
+				container = $( 'thead', 'table.code' );
+				col = 0;
+			} else {
+				if (line < 0) {
+					line = -line;
+					col = 0;
+				} else {
+					col = 1
+				}
+				var containers = $( 'thead', 'table.code, table.trac-diff' );
+				for ( var i = 0; (container = containers[i]) != null; i++ ) {
+					if ($(container).parents( 'li' ).find( 'h2>a:first' ).text() == file) {
+						break;
+					}
+				}
+			}
+			var trs = $(container).parents( 'table' ).find( 'tbody>tr' ).not('.comments');
+			for ( var i = 0, tr; (tr = trs[i]) != null; i++ ) {
+				if ($(tr).find( 'th>span' )[col].textContent == line) {
+					return tr;
+				}
+			}
+			return null;
 		},
 		wrapTHsInSpans: function() {
 			$( 'th', this.$rows ).each( function( i, elem ) {

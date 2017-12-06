@@ -101,6 +101,9 @@ class Comments(object):
             elif name.endswith('__lt'):
                 name = name.replace('__lt', '')
                 conditions.append(name + ' < %s')
+            elif name.endswith('__ne'):
+                name = name.replace('__ne', '')
+                conditions.append(name + ' != %s')
             elif name.endswith('__prefix'):
                 values.append(
                     args[name].replace('%', '\\%').replace('_', '\\_') + '%')
