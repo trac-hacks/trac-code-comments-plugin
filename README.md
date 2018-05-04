@@ -1,3 +1,9 @@
+NOT ACTIVELY MAINTAINED
+=======================
+
+This Trac plugin served an important purpose for us, but it was replaced with Phabricator or GitHub in many Automattic properties.
+
+
 Code Comments, an enhancement for Trac
 =====================================
 
