@@ -96,7 +96,7 @@ class Comment:
 
     def changeset_link_text(self):
         if 0 != self.line:
-            return 'Changeset @%d#L%d (in %s)' % ( self.revision, self.line, self.path )
+            return 'Changeset @%s#L%d (in %s)' % ( self.revision, self.line, self.path )
         else:
             return 'Changeset @%s' % self.revision
 
