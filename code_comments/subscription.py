@@ -15,6 +15,80 @@ from code_comments.api import ICodeCommentChangeListener
 from code_comments.comments import Comments
 
 
+import codecs
+import cStringIO as StringIO
+
+def utf8(s):
+    """
+    Convert a string (UNICODE or ANSI) to a utf8 string.
+
+    @param s String.
+    @return UTF8 string.
+    """
+    info = codecs.lookup('utf8')
+    try:
+        out = StringIO.StringIO()
+        srw = codecs.StreamReaderWriter(out,
+                info.streamreader, info.streamwriter, 'strict')
+        srw.write(s)
+        return out.getvalue()
+    except UnicodeError:
+        # Try again by forcing convert to unicode type first.
+        srw.write(_unicode(s, strict=True))
+        return out.getvalue()
+    finally:
+        srw.close()
+        out.close()
+
+import locale
+
+def _unicode(s, strict=False, encodings=None, throw=True):
+    """
+    Force to UNICODE string (UNICODE type or string type with utf8 content).
+
+    @param s String.
+    @param strict If strict is True, we always return UNICODE type string, this
+                  means it will ignore to try convert it to utf8 string.
+    @param encodings Native encodings for decode. It will be tried to decode
+                     string, try and error.
+    @param throw Raise exception if it fails to convert string.
+    @return UNICODE type string or utf8 string.
+    """
+    try:
+        if isinstance(s, unicode):
+            if strict:
+                return s
+            else:
+                return utf8(s)
+        else:
+            return unicode(s, 'utf8')
+    except: # For UNICODE, cp950...
+        try:
+            return unicode(s)
+        except:
+            if not encodings:
+                encodings = (locale.getpreferredencoding(),)
+
+            for encoding in encodings:
+                try:
+                    return unicode(s, encoding)
+                except:
+                    pass
+            else:
+                if strict:
+                    if throw:
+                        raise
+                    else:
+                        return u''
+                else:
+                    try:
+                        return str(s)
+                    except:
+                        if throw:
+                            raise
+                        else:
+                            return u''
+
 class Subscription(object):
     """
     Representation of a code comment subscription.
@@ -51,26 +125,33 @@ class Subscription(object):
         """
         Retrieve existing subscription(s).
         """
-        select = 'SELECT * FROM code_comments_subscriptions'
+        select = u'SELECT * FROM code_comments_subscriptions'
 
         if notify:
             args['notify'] = bool(notify)
 
         if len(args) > 0:
-            select += ' WHERE '
+            select += u' WHERE '
             criteria = []
             for key, value in args.iteritems():
-                template = '{0}={1}'
+                template = u'{0}={1}'
                 if isinstance(value, basestring):
-                    template = '{0}=\'{1}\''
+                    template = u'{0}=\'{1}\''
                 if (isinstance(value, tuple) or isinstance(value, list)):
-                    template = '{0} IN (\'{1}\')'
-                    value = '\',\''.join(value)
+                    template = u'{0} IN (\'{1}\')'
+                    _value = []
+                    for v in value:
+                        _value.append(_unicode(v, strict=True))                   
+                    value = u'\',\''.join(_value)
                 if isinstance(value, bool):
-                    value = int(value)
-                criteria.append(template.format(key, value))
-            select += ' AND '.join(criteria)
+                    value = int(value)           
 
+                value = _unicode(value, strict=True)               
+                key = _unicode(key, strict=True)
+                
+                criteria.append(template.format(key, value))
+            select += u' AND '.join(criteria)
+        
         cursor = env.get_read_db().cursor()
         cursor.execute(select)
         for row in cursor:
@@ -87,11 +168,12 @@ class Subscription(object):
             @self.env.with_transaction()
             def do_insert(db):
                 cursor = db.cursor()
-                insert = ("INSERT INTO code_comments_subscriptions "
-                          "(user, type, path, repos, rev, notify) "
-                          "VALUES (%s, %s, %s, %s, %s, %s)")
+                insert = (u"INSERT INTO code_comments_subscriptions "
+                          u"(user, type, path, repos, rev, notify) "
+                          u"VALUES (%s, %s, %s, %s, %s, %s)")
+                self.path = _unicode(self.path, strict=True)  
                 values = (self.user, self.type, self.path, self.repos,
-                          self.rev, self.notify)
+                          self.rev, self.notify)                    
                 cursor.execute(insert, values)
                 self.id = db.get_last_id(cursor, 'code_comments_subscriptions')
                 return True
@@ -107,9 +189,10 @@ class Subscription(object):
             @self.env.with_transaction()
             def do_update(db):
                 cursor = db.cursor()
-                update = ("UPDATE code_comments_subscriptions SET "
-                          "user=%s, type=%s, path=%s, repos=%s, rev=%s, "
-                          "notify=%s WHERE id=%s")
+                update = (u"UPDATE code_comments_subscriptions SET "
+                          u"user=%s, type=%s, path=%s, repos=%s, rev=%s, "
+                          u"notify=%s WHERE id=%s")
+                self.path = _unicode(self.path, strict=True)  
                 values = (self.user, self.type, self.path, self.repos,
                           self.rev, self.notify, self.id)
                 try:
@@ -130,6 +213,8 @@ class Subscription(object):
                 delete = ("DELETE FROM code_comments_subscriptions WHERE "
                           "id=%s")
                 cursor.execute(delete, (self.id,))
+
+    
 
     @classmethod
     def _from_row(cls, env, row):
@@ -193,10 +278,14 @@ class Subscription(object):
         """
         Creates a subscription from an Attachment object.
         """
-        _path = "/{0}/{1}/{2}".format(attachment.parent_realm,
+        
+        filename = attachment.filename
+        
+        _path = u"/{0}/{1}/{2}".format(attachment.parent_realm,
                                       attachment.parent_id,
-                                      attachment.filename)
-
+                                      filename)
+        _path = _path.encode('utf8')
+        
         sub = {
             'user': user or attachment.author,
             'type': 'attachment',
@@ -265,10 +354,13 @@ class Subscription(object):
         Returns all subscriptions for an attachment. The path can be
         overridden.
         """
-        path_template = "/{0}/{1}/{2}"
+        path_template = u"/{0}/{1}/{2}"
+        filename = attachment.filename
         _path = path or path_template.format(attachment.parent_realm,
                                              attachment.parent_id,
-                                             attachment.filename)
+                                             filename)
+        _path = _path.encode('utf8')
+        
         args = {
             'type': 'attachment',
             'path': _path,
@@ -418,13 +510,17 @@ class SubscriptionListeners(Component):
 
     def attachment_reparented(self, attachment, old_parent_realm,
                               old_parent_id):
-        path_template = "/{0}/{1}/{2}"
+        path_template = u"/{0}/{1}/{2}"
+        filename = attachment.filename
         old_path = path_template.format(old_parent_realm,
                                         old_parent_id,
-                                        attachment.filename)
+                                        filename)
+        old_path = old_path.encode('utf8')
+        
         new_path = path_template.format(attachment.parent_realm,
                                         attachment.parent_id,
-                                        attachment.filename)
+                                        filename)
+        new_path = new_path.encode('utf8')
 
         for subscription in Subscription.for_attachment(self.env, attachment,
                                                         old_path):
