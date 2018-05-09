@@ -1,6 +1,8 @@
-from trac.config import BoolOption
+from trac import __version__
+from trac.config import BoolOption, Option
 from trac.core import Component, implements
-from trac.notification import NotifyEmail
+from trac.notification import NotifyEmail, NotificationSystem
+from trac.util.translation import deactivate, reactivate
 
 from code_comments.api import ICodeCommentChangeListener
 from code_comments.comments import Comments
@@ -28,6 +30,15 @@ class CodeCommentNotifyEmail(NotifyEmail):
     notify_self = BoolOption('code_comments', 'notify_self', False,
                              doc="Send comment notifications to the author of "
                                  "the comment.")
+    smtp_always_cc = Option('code_comments', 'smtp_always_cc', 'default',
+                            doc="Email address(es) to always send notifications"
+                                " to, addresses can be seen by all recipients"
+                                "(Cc:).")
+
+    smtp_always_bcc = Option('code_comments', 'smtp_always_bcc', 'default',
+                             doc="Email address(es) to always send "
+                                 "notifications to addresses do not appear "
+                                 "publicly (Bcc:).")
 
     template_name = "code_comment_notify_email.txt"
     from_email = "trac+comments@localhost"
@@ -110,9 +121,83 @@ class CodeCommentNotifyEmail(NotifyEmail):
             self.env.log.error("Failure sending notification on creation of "
                                "comment #%d: %s", comment.id, e)
 
-    def send(self, torcpts, ccrcpts):
-        """
-        Override NotifyEmail.send() so we can provide from_name.
-        """
+    def send(self, torcpts, ccrcpts, mime_headers={}):
+        from email.MIMEText import MIMEText
+        from email.Utils import formatdate
         self.from_name = self.comment_author
-        NotifyEmail.send(self, torcpts, ccrcpts)
+        stream = self.template.generate(**self.data)
+        # don't translate the e-mail stream
+        t = deactivate()
+        try:
+            body = stream.render('text', encoding='utf-8')
+        finally:
+            reactivate(t)
+        public_cc = self.config.getbool('notification', 'use_public_cc')
+        headers = {}
+        headers['X-Mailer'] = 'Trac %s, by Edgewall Software' % __version__
+        headers['X-Trac-Version'] = __version__
+        headers['X-Trac-Project'] = self.env.project_name
+        headers['X-URL'] = self.env.project_url
+        headers['Precedence'] = 'bulk'
+        headers['Auto-Submitted'] = 'auto-generated'
+        headers['Subject'] = self.subject
+        headers['From'] = (self.from_name, self.from_email) if self.from_name \
+                           else self.from_email
+        headers['Reply-To'] = self.replyto_email
+
+        def build_addresses(rcpts):
+            """Format and remove invalid addresses"""
+            return filter(lambda x: x, \
+                          [self.get_smtp_address(addr) for addr in rcpts])
+
+        def remove_dup(rcpts, all):
+            """Remove duplicates"""
+            tmp = []
+            for rcpt in rcpts:
+                if not rcpt in all:
+                    tmp.append(rcpt)
+                    all.append(rcpt)
+            return (tmp, all)
+
+        toaddrs = build_addresses(torcpts)
+        ccaddrs = build_addresses(ccrcpts)
+        accparam = self.config.get('code_comments', 'smtp_always_cc')
+        if accparam == "default":
+            accparam = self.config.get('notification', 'smtp_always_cc') 
+        accaddrs = accparam and \
+                   build_addresses(accparam.replace(',', ' ').split()) or []
+        bccparam = self.config.get('code_comments', 'smtp_always_bcc')
+        if bccparam == "default":
+            bccparam = self.config.get('notification', 'smtp_always_bcc')
+        bccaddrs = bccparam and \
+                   build_addresses(bccparam.replace(',', ' ').split()) or []
+
+        recipients = []
+        (toaddrs, recipients) = remove_dup(toaddrs, recipients)
+        (ccaddrs, recipients) = remove_dup(ccaddrs, recipients)
+        (accaddrs, recipients) = remove_dup(accaddrs, recipients)
+        (bccaddrs, recipients) = remove_dup(bccaddrs, recipients)
+
+        # if there is not valid recipient, leave immediately
+        if len(recipients) < 1:
+            self.env.log.info("no recipient for a ticket notification")
+            return
+
+        pcc = accaddrs
+        if public_cc:
+            pcc += ccaddrs
+            if toaddrs:
+                headers['To'] = ', '.join(toaddrs)
+        if pcc:
+            headers['Cc'] = ', '.join(pcc)
+        headers['Date'] = formatdate()
+        msg = MIMEText(body, 'plain')
+        # Message class computes the wrong type from MIMEText constructor,
+        # which does not take a Charset object as initializer. Reset the
+        # encoding type to force a new, valid evaluation
+        del msg['Content-Transfer-Encoding']
+        msg.set_charset(self._charset)
+        self.add_headers(msg, headers)
+        self.add_headers(msg, mime_headers)
+        NotificationSystem(self.env).send_email(self.from_email, recipients,
+                                                msg.as_string())
