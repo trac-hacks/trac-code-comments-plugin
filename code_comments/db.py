@@ -2,9 +2,10 @@ from trac.core import Component, implements
 from trac.db.schema import Table, Column, Index
 from trac.env import IEnvironmentSetupParticipant
 from trac.db.api import DatabaseManager
+from trac.versioncontrol.api import RepositoryManager
 
 # Database version identifier for upgrades.
-db_version = 3
+db_version = 4
 
 # Database schema
 schema = {
@@ -18,6 +19,7 @@ schema = {
         Column('author'),
         Column('time', type='int'),
         Column('type'),
+        Column('reponame'),
         Index(['path']),
         Index(['author']),
     ],
@@ -101,9 +103,20 @@ def upgrade_from_2_to_3(env, db):
             cursor.execute(stmt)
 
 
+def upgrade_from_3_to_4(env, db):
+    # Add the new column "reponame" and populate it with the name of the default repository.
+    @env.with_transaction()
+    def add_reponame_column(db):
+        cursor = db.cursor()
+        cursor.execute('ALTER TABLE code_comments ADD COLUMN reponame TEXT')
+        reponame = RepositoryManager(env).get_repository(None).reponame
+        cursor.execute('UPDATE code_comments SET reponame = %s', [reponame])
+
+
 upgrade_map = {
     2: upgrade_from_1_to_2,
     3: upgrade_from_2_to_3,
+    4: upgrade_from_3_to_4,
 }
 
 

@@ -70,9 +70,9 @@ class Comment:
 
     def href(self):
         if self.is_comment_to_file:
-            href = self.req.href.browser(self.path, rev=self.revision, codecomment=self.id)
+            href = self.req.href.browser(self.reponame + '/' + self.path, rev=self.revision, codecomment=self.id)
         elif self.is_comment_to_changeset:
-            href = self.req.href.changeset(self.revision, codecomment=self.id)
+            href = self.req.href.changeset(self.revision + '/' + self.reponame, codecomment=self.id)
         elif self.is_comment_to_attachment:
             href = self.req.href('/attachment/ticket/%d/%s' % (self.attachment_ticket, self.attachment_filename), codecomment=self.id)
         if self.line and not self.is_comment_to_changeset:

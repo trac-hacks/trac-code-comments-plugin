@@ -106,14 +106,14 @@ class JSDataForRequests(CodeComments):
         return data
 
     def changeset_js_data(self, req, data):
-        return {'page': 'changeset', 'revision': data['new_rev'], 'path': '', 'selectorToInsertAfter': 'div.diff div.diff:last'}
+        return {'page': 'changeset', 'reponame': data['reponame'], 'revision': data['new_rev'], 'path': '', 'selectorToInsertAfter': 'div.diff div.diff:last'}
 
     def browser_js_data(self, req, data):
-        return {'page': 'browser', 'revision': data['rev'], 'path': data['path'], 'selectorToInsertAfter': 'table.code'}
+        return {'page': 'browser', 'reponame': data['reponame'], 'revision': data['rev'], 'path': data['path'], 'selectorToInsertAfter': 'table.code'}
 
     def attachment_js_data(self, req, data):
         path = req.path_info.replace('/attachment/', 'attachment:/')
-        return {'page': 'attachment', 'revision': 0, 'path': path, 'selectorToInsertAfter': 'div#preview'}
+        return {'page': 'attachment', 'reponame': '', 'revision': 0, 'path': path, 'selectorToInsertAfter': 'div#preview'}
 
     def template_js_data(self, name):
         file_name = name + '.html'
