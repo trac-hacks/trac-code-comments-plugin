@@ -14,7 +14,6 @@ var underscore = _.noConflict();
 				console.log(traceback);
 			}
 		}
-		alert(errorText);
 	});
 
 	window.Comment = Backbone.Model.extend({

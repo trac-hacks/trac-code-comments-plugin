@@ -14,7 +14,6 @@ from genshi.filters import Transformer
 from code_comments.api import ICodeCommentChangeListener
 from code_comments.comments import Comments
 
-
 class Subscription(object):
     """
     Representation of a code comment subscription.
@@ -87,11 +86,12 @@ class Subscription(object):
             @self.env.with_transaction()
             def do_insert(db):
                 cursor = db.cursor()
-                insert = ("INSERT INTO code_comments_subscriptions "
-                          "(user, type, path, repos, rev, notify) "
-                          "VALUES (%s, %s, %s, %s, %s, %s)")
+                insert = (u"INSERT INTO code_comments_subscriptions "
+                          u"(user, type, path, repos, rev, notify) "
+                          u"VALUES (%s, %s, %s, %s, %s, %s)")        
+                self.path = self.path.decode('utf8')
                 values = (self.user, self.type, self.path, self.repos,
-                          self.rev, self.notify)
+                          self.rev, self.notify)                      
                 cursor.execute(insert, values)
                 self.id = db.get_last_id(cursor, 'code_comments_subscriptions')
                 return True
@@ -107,9 +107,10 @@ class Subscription(object):
             @self.env.with_transaction()
             def do_update(db):
                 cursor = db.cursor()
-                update = ("UPDATE code_comments_subscriptions SET "
-                          "user=%s, type=%s, path=%s, repos=%s, rev=%s, "
-                          "notify=%s WHERE id=%s")
+                update = (u"UPDATE code_comments_subscriptions SET "
+                          u"user=%s, type=%s, path=%s, repos=%s, rev=%s, "
+                          u"notify=%s WHERE id=%s")
+                self.path = self.path.encode('utf8')
                 values = (self.user, self.type, self.path, self.repos,
                           self.rev, self.notify, self.id)
                 try:
@@ -130,6 +131,8 @@ class Subscription(object):
                 delete = ("DELETE FROM code_comments_subscriptions WHERE "
                           "id=%s")
                 cursor.execute(delete, (self.id,))
+
+    
 
     @classmethod
     def _from_row(cls, env, row):
@@ -193,10 +196,14 @@ class Subscription(object):
         """
         Creates a subscription from an Attachment object.
         """
-        _path = "/{0}/{1}/{2}".format(attachment.parent_realm,
+        
+        filename = attachment.filename
+        
+        _path = u"/{0}/{1}/{2}".format(attachment.parent_realm,
                                       attachment.parent_id,
-                                      attachment.filename)
-
+                                      filename)
+        _path = _path.encode('utf8')
+        
         sub = {
             'user': user or attachment.author,
             'type': 'attachment',
@@ -265,10 +272,13 @@ class Subscription(object):
         Returns all subscriptions for an attachment. The path can be
         overridden.
         """
-        path_template = "/{0}/{1}/{2}"
+        path_template = u"/{0}/{1}/{2}"
+        filename = attachment.filename
         _path = path or path_template.format(attachment.parent_realm,
                                              attachment.parent_id,
-                                             attachment.filename)
+                                             filename)
+        _path = _path.encode('utf8')
+        
         args = {
             'type': 'attachment',
             'path': _path,
@@ -418,13 +428,17 @@ class SubscriptionListeners(Component):
 
     def attachment_reparented(self, attachment, old_parent_realm,
                               old_parent_id):
-        path_template = "/{0}/{1}/{2}"
+        path_template = u"/{0}/{1}/{2}"
+        filename = attachment.filename
         old_path = path_template.format(old_parent_realm,
                                         old_parent_id,
-                                        attachment.filename)
+                                        filename)
+        old_path = old_path.encode('utf8')
+        
         new_path = path_template.format(attachment.parent_realm,
                                         attachment.parent_id,
-                                        attachment.filename)
+                                        filename)
+        new_path = new_path.encode('utf8')
 
         for subscription in Subscription.for_attachment(self.env, attachment,
                                                         old_path):
