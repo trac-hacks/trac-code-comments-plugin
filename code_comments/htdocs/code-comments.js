@@ -173,7 +173,7 @@ var underscore = _.noConflict();
 			// propoagating in order to avoid unexpected navigation while the
 			// user is typing their comment.
 			this.$el.keydown(function(e) {
-				event.stopPropagation();
+				e.stopPropagation();
 			});
 			this.$('button.add-comment').button();
 			return this;
