@@ -35,7 +35,7 @@ var underscore = _.noConflict();
 			return this.fetch( { data: _.extend( { line: 0 }, this.defaultFetchParams ) } );
 		},
 		fetchLineComments: function() {
-			return this.fetch( { data: _.extend( { line__gt: 0 }, this.defaultFetchParams ) } );
+			return this.fetch( { data: _.extend( { line__ne: 0 }, this.defaultFetchParams ) } );
 		}
 	});
 
@@ -111,13 +111,15 @@ var underscore = _.noConflict();
 		},
 		addOne: function(comment) {
 			var line = comment.get('line');
-			if (!this.viewPerLine[line]) {
-				this.viewPerLine[line] = new CommentsForALineView( { line: line } );
+			var file = comment.get('path');
+			var key = 'file_' + file + ':' + line;
+			if (!this.viewPerLine[key]) {
+				this.viewPerLine[key] = new CommentsForALineView( { file: file, line: line } );
 
-				var $tr = $( Rows.getTrByLineNumber( line ) );
-				$tr.after(this.viewPerLine[line].render().el).addClass('with-comments');
+				var $tr = $( Rows.getTrByFileAndLineNumberInFile( file, line ) );
+				$tr.after(this.viewPerLine[key].render().el).addClass('with-comments');
 			}
-			this.viewPerLine[line].addOne(comment);
+			this.viewPerLine[key].addOne(comment);
 		},
 		addAll: function() {
 			var view = this;
@@ -133,6 +135,7 @@ var underscore = _.noConflict();
 		template: _.template(CodeComments.templates.comments_for_a_line),
 		initialize: function(attrs) {
 			this.line = attrs.line;
+			this.file = attrs.file;
 		},
 		events: {
 			'click button': 'showAddCommentDialog'
@@ -151,7 +154,12 @@ var underscore = _.noConflict();
 		},
 		showAddCommentDialog: function() {
 			row = new RowView( { el: $( this.el ).prev().get( 0 ) } );
-			AddCommentDialog.open( LineComments, this.line, row.getFile(), row.getDisplayLine() );
+			var displayLine = row.getLineNumberInFile();
+			var displayLineText = displayLine;
+			if (displayLine < 0) {
+				displayLineText = -displayLine + ' (deleted)';
+			}
+			AddCommentDialog.open( LineComments, this.line, row.getFile(), displayLineText);
 		}
 	});
 
@@ -237,13 +245,17 @@ var underscore = _.noConflict();
 			var callbackMouseover = function( event ) {
 				var row = new RowView( { el: this } ),
 					file = row.getFile(),
-					line = row.getLineNumber(),
-					displayLine = row.getDisplayLine();
+					line = row.getLineNumberInFile(),
+					displayLine = row.getLineNumberInFile(),
+					displayLineText = displayLine;
+				if (displayLine < 0) {
+					displayLineText = -displayLine + ' (deleted)';
+				}
 				row.replaceLineNumberCellContent( '<a title="Comment on this line" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>' );
 
 				$( 'a.bubble' ).click( function( e ) {
 					e.preventDefault();
-					AddCommentDialog.open( LineComments, line, file, displayLine );
+					AddCommentDialog.open( LineComments, line, file, displayLineText );
 				} );
 			};
 
@@ -266,11 +278,33 @@ var underscore = _.noConflict();
 			// wrap TH content in spans so we can hide/show them
 			this.wrapTHsInSpans();
 		},
-		getLineByTR: function( tr ) {
-			return $.inArray( tr, this.$rows ) + 1;
-		},
-		getTrByLineNumber: function( line ) {
-			return this.$rows[line - 1];
+		getTrByFileAndLineNumberInFile: function ( file, line) {
+			var col;
+			var container;
+			if (CodeComments.page == "browser" && CodeComments.path == file) {
+				container = $( 'thead', 'table.code' );
+				col = 0;
+			} else {
+				if (line < 0) {
+					line = -line;
+					col = 0;
+				} else {
+					col = 1
+				}
+				var containers = $( 'thead', 'table.code, table.trac-diff' );
+				for ( var i = 0; (container = containers[i]) != null; i++ ) {
+					if ($(container).parents( 'li' ).find( 'h2>a:first' ).text() == file) {
+						break;
+					}
+				}
+			}
+			var trs = $(container).parents( 'table' ).find( 'tbody>tr' ).not('.comments');
+			for ( var i = 0, tr; (tr = trs[i]) != null; i++ ) {
+				if ($(tr).find( 'th>span' )[col].textContent == line) {
+					return tr;
+				}
+			}
+			return null;
 		},
 		wrapTHsInSpans: function() {
 			$( 'th', this.$rows ).each( function( i, elem ) {
@@ -301,11 +335,13 @@ var underscore = _.noConflict();
 		getFile: function() {
 			return this.$el.parents( 'li' ).find( 'h2>a:first' ).text();
 		},
-		getLineNumber: function() {
-			return Rows.getLineByTR( this.el );
-		},
-		getDisplayLine: function() {
-			return this.$lineNumberCell.text().trim() || this.$th.first().text() + ' (deleted)';
+		getLineNumberInFile: function() {
+			// Get the linenumber within the file of this row. If the row is deleted, return it negated.
+			var l = this.$lineNumberCell.text().trim();
+			if (l)
+				return l;
+			else
+				return -this.$th.first().text().trim();
 		}
 	} );
 
