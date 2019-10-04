@@ -5,6 +5,7 @@ import json
 import re
 
 from trac.core import Component, implements
+from trac.web.api import ITemplateStreamFilter
 from trac.util import Markup
 from trac.util.presentation import Paginator
 from trac.util.text import to_unicode
@@ -13,6 +14,7 @@ from trac.web.chrome import (
     Chrome, INavigationContributor, ITemplateProvider, add_link, add_notice,
     add_script, add_script_data, add_stylesheet)
 from trac.web.main import IRequestHandler, IRequestFilter
+from genshi.filters import Transformer
 
 from code_comments.comments import Comments
 from code_comments.comment import CommentJSONEncoder, format_to_html
@@ -351,3 +353,28 @@ class WikiPreview(CodeComments):
     def process_request(self, req):
         html = format_to_html(req, self.env, req.args.get('text', ''))
         req.send(html.encode('utf-8'))
+
+class HighlightCommentedRevisions(Component):
+    implements(ITemplateStreamFilter)
+
+    def filter_stream(self, req, method, filename, stream, data):
+        if re.match(r'^\/log\/\w+', req.path_info):
+            filter = Transformer('//a[@class="chgset"]')
+            stream |= filter.attr("class", lambda name, event: self.addCssClassIfCommented(name, event))
+            self.env.log.info(str(data))
+        return stream
+
+    def addCssClassIfCommented(self, name, event):
+        attrs = event[1][1]
+        link = attrs.get('href')
+        match = re.match(r'^\/changeset\/([^\/]+)\/([^\/\?\#]+)', link)
+        if match:
+            query_params = {}
+            query_params['type'] = 'changeset'
+            query_params['revision'] = match.group(1)
+            query_params['reponame'] = match.group(2)
+            count = Comments(None, self.env).count(query_params)
+            return attrs.get(name) + (" chgset-commented" if (count > 0) else "")
+        else:
+            # Should not happen, link contained no revision-id
+            return attrs.get(name)
