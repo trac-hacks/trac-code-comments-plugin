@@ -376,4 +376,4 @@ var underscore = _.noConflict();
 	if (subscriptionView.el) {
 		subscription.fetch();
 	}
-}); }( jQuery.noConflict( true ) ) );
+}); }( jQuery.noConflict() ) );
