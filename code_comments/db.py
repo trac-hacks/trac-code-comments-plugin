@@ -26,7 +26,7 @@ schema = {
     ],
     'code_comments_subscriptions': Table('code_comments_subscriptions',
                                          key=('id', 'user', 'type', 'path',
-                                              'repos', 'rev'))[
+                                              'rev', 'notify'))[
         Column('id', auto_increment=True),
         Column('user'),
         Column('type'),
