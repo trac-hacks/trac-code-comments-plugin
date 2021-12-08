@@ -165,6 +165,8 @@ class CommentJSONEncoder(json.JSONEncoder):
             ])
             for_json['formatted_date'] = o.formatted_date()
             for_json['permalink'] = o.href()
+            for_json['id'] = o.id
+            for_json['line'] = o.line
             return for_json
         else:
             return json.JSONEncoder.default(self, o)
