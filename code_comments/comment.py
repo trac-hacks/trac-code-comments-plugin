@@ -6,7 +6,7 @@ import locale
 import re
 
 import trac.wiki.formatter
-from trac.mimeview.api import Context
+from trac.web.chrome import web_context
 from time import strftime, localtime
 from code_comments import db
 from trac.util import Markup
@@ -173,5 +173,5 @@ class CommentJSONEncoder(json.JSONEncoder):
 def format_to_html(req, env, text):
     req = Mock(href=Href('/'), abs_href=Href('http://www.example.com/'),
                authname='anonymous', perm=MockPerm(), args={})
-    context = Context.from_request(req)
+    context = web_context(req)
     return trac.wiki.formatter.format_to_html(env, context, text)
