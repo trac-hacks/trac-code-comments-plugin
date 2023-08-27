@@ -28,6 +28,7 @@ var underscore = _.noConflict();
 		},
 		defaultFetchParams: {
 			path: CodeComments.path || undefined,
+			reponame: CodeComments.reponame,
 			revision: CodeComments.revision,
 			type: CodeComments.page,
 		},
