@@ -218,6 +218,7 @@ var underscore = _.noConflict();
 				text: text,
 				author: CodeComments.username,
 				path: this.path,
+				reponame: CodeComments.reponame,
 				revision: CodeComments.revision,
 				line: line,
 				type: CodeComments.page
