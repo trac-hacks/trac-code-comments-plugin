@@ -6,11 +6,11 @@ import re
 from trac.admin import IAdminCommandProvider
 from trac.attachment import Attachment, IAttachmentChangeListener
 from trac.core import Component, implements
-from trac.util.html import html as tag
 from trac.versioncontrol import (
     RepositoryManager, NoSuchChangeset, IRepositoryChangeListener)
 from trac.web.api import HTTPNotFound, IRequestHandler, ITemplateStreamFilter
 
+from genshi.builder import tag  # Note that trac.util.html.html is NOT a drop-in replacement. (see #85)
 from genshi.filters import Transformer
 
 from code_comments.api import ICodeCommentChangeListener
