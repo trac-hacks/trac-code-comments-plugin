@@ -54,7 +54,7 @@ class Subscription(object):
         """
         Retrieve existing subscription(s).
         """
-        select = 'SELECT * FROM code_comments_subscriptions'
+        select = u'SELECT * FROM code_comments_subscriptions'
 
         if notify:
             args['notify'] = bool(notify)
@@ -63,16 +63,16 @@ class Subscription(object):
             select += ' WHERE '
             criteria = []
             for key, value in args.iteritems():
-                template = '{0}={1}'
+                template = u'{0}={1}'
                 if isinstance(value, basestring):
-                    template = '{0}=\'{1}\''
+                    template = u'{0}=\'{1}\''
                 if (isinstance(value, tuple) or isinstance(value, list)):
-                    template = '{0} IN (\'{1}\')'
-                    value = '\',\''.join(value)
+                    template = u'{0} IN (\'{1}\')'
+                    value = u'\',\''.join(value)
                 if isinstance(value, bool):
                     value = int(value)
                 criteria.append(template.format(key, value))
-            select += ' AND '.join(criteria)
+            select += u' AND '.join(criteria)
 
         for row in env.db_query(select):
             yield cls._from_row(env, row)
@@ -188,7 +188,7 @@ class Subscription(object):
         """
         Creates a subscription from an Attachment object.
         """
-        _path = "/{0}/{1}/{2}".format(attachment.parent_realm,
+        _path = u"/{0}/{1}/{2}".format(attachment.parent_realm,
                                       attachment.parent_id,
                                       attachment.filename)
 
