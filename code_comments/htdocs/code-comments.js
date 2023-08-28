@@ -115,7 +115,7 @@ var underscore = _.noConflict();
 			if (!this.viewPerLine[line]) {
 				this.viewPerLine[line] = new CommentsForALineView( { line: line } );
 
-				var $tr = $( Rows.getTrByLineNumber( line ) );
+				var $tr = $( Rows.getTrByLineNumberInDiff( line ) );
 				$tr.after(this.viewPerLine[line].render().el).addClass('with-comments');
 			}
 			this.viewPerLine[line].addOne(comment);
@@ -239,7 +239,7 @@ var underscore = _.noConflict();
 			var callbackMouseover = function( event ) {
 				var row = new RowView( { el: this } ),
 					file = row.getFile(),
-					line = row.getLineNumber(),
+					line = row.getLineNumberInDiff(),
 					displayLine = row.getDisplayLine();
 				row.replaceLineNumberCellContent( '<a title="Comment on this line" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>' );
 
@@ -268,10 +268,10 @@ var underscore = _.noConflict();
 			// wrap TH content in spans so we can hide/show them
 			this.wrapTHsInSpans();
 		},
-		getLineByTR: function( tr ) {
+		getLineNumberInDiffByTr: function( tr ) {
 			return $.inArray( tr, this.$rows ) + 1;
 		},
-		getTrByLineNumber: function( line ) {
+		getTrByLineNumberInDiff: function( line ) {
 			return this.$rows[line - 1];
 		},
 		wrapTHsInSpans: function() {
@@ -303,8 +303,8 @@ var underscore = _.noConflict();
 		getFile: function() {
 			return this.$el.parents( 'li' ).find( 'h2>a:first' ).text();
 		},
-		getLineNumber: function() {
-			return Rows.getLineByTR( this.el );
+		getLineNumberInDiff: function() {
+			return Rows.getLineNumberInDiffByTr( this.el );
 		},
 		getDisplayLine: function() {
 			return this.$lineNumberCell.text().trim() || this.$th.first().text() + ' (deleted)';
