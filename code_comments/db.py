@@ -7,7 +7,7 @@ from trac.db.api import DatabaseManager
 from trac.versioncontrol.api import RepositoryManager
 
 # Database version identifier for upgrades.
-db_version = 4
+db_version = 5
 db_version_key = 'code_comments_schema_version'
 
 # Database schema
@@ -104,10 +104,37 @@ def upgrade_from_3_to_4(env):
             """)
 
 
+def upgrade_from_4_to_5(env):
+    with env.db_transaction as db:
+        # The line numbers of all present comments on changesets are bogus,
+        # see https://github.com/trac-hacks/trac-code-comments-plugin/issues/67
+        # We therefore set them to 0 detaching the comment from the line. We leave a note in
+        # the text of the comment explaining this.
+
+        notice = '\n\nThis comment was created by a previous version of the '\
+                 "code-comments plugin and '''is not properly attached to a line of code'''. "\
+                 'See [https://github.com/trac-hacks/trac-code-comments-plugin/issues/67 '\
+                 'issue #67].\n\nThe comment was originally placed on line $oldLineNumber$ of '\
+                 'the diff as it was displayed when the comment was created.'
+        notice = notice.replace("'", "''")
+        sql = """
+            UPDATE code_comments
+            SET
+                line = 0,
+                text = text || REPLACE('{0}', '$oldLineNumber$', line)
+            WHERE
+                type = 'changeset'
+                AND
+                line != 0
+            """
+        db(sql.format(notice))
+
+
 upgrade_map = {
     2: upgrade_from_1_to_2,
     3: upgrade_from_2_to_3,
     4: upgrade_from_3_to_4,
+    5: upgrade_from_4_to_5
 }
 
 
