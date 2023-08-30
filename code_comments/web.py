@@ -243,9 +243,9 @@ class ListComments(CodeComments):
 
     def prepare_sortable_headers(self):
         displayed_sorting_methods = \
-            ('id', 'author', 'time', 'path', 'text')
+            ('id', 'author', 'time', 'reponame', 'path', 'text')
         displayed_sorting_method_names = \
-            ('ID', 'Author', 'Date', 'Path', 'Text')
+            ('ID', 'Author', 'Date', 'Repository', 'Path', 'Text')
         query_args = self.req.args
         if 'page' in query_args:
             del query_args['page']
