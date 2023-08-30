@@ -198,9 +198,15 @@ class ListComments(CodeComments):
         return template, data, content_type
 
     def add_path_and_author_filters(self):
+        self.data['current_repo_selection'] = ''
         self.data['current_path_selection'] = ''
         self.data['current_author_selection'] = ''
 
+        if self.req.args.get('filter-by-repo'):
+            self.args['reponame'] = \
+                self.req.args['filter-by-repo']
+            self.data['current_repo_selection'] = \
+                self.req.args['filter-by-repo']
         if self.req.args.get('filter-by-path'):
             self.args['path__prefix'] = \
                 self.req.args['filter-by-path']

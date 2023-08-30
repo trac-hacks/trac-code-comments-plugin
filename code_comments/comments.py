@@ -21,9 +21,14 @@ class Comments(object):
     def get_filter_values(self):
         comments = self.all()
         return {
+            'repos': self.get_all_repos(comments),
             'paths': self.get_all_paths(comments),
             'authors': self.get_all_comment_authors(comments),
         }
+
+    def get_all_repos(self, comments):
+        # Skip the empty string which is the repository for comments on attachments
+        return sorted(list(set([comment.reponame for comment in comments if comment.reponame != ''])))
 
     def get_all_paths(self, comments):
         def get_directory(path):
