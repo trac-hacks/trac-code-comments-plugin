@@ -47,8 +47,8 @@
                 <tr class="${idx % 2 and 'odd' or 'even'}">
                     <td class="check"><input type="checkbox" id="checked-$comment.id" /></td>
                     <td>$comment.id</td>
-                    <th>$comment.author</th>
-                    <th>${comment.formatted_date()}</th>
+                    <td>$comment.author</td>
+                    <td>${comment.formatted_date()}</td>
                     <td>${comment.path_link_tag()}</td>
                     <td>$comment.html</td>
                     <td>${comment.get_ticket_links()}</td>
