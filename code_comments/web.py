@@ -121,16 +121,18 @@ class JSDataForRequests(CodeComments):
     def changeset_js_data(self, req, data):
         return {
             'page': 'changeset',
+            'reponame': data['reponame'],
             'revision': data['new_rev'],
-            'path': data['reponame'],
+            'path': '',
             'selectorToInsertAfter': 'div.diff div.diff:last'
         }
 
     def browser_js_data(self, req, data):
         return {
             'page': 'browser',
+            'reponame': data['reponame'],
             'revision': data['rev'],
-            'path': (data['reponame'] or '') + '/' + data['path'],
+            'path': data['path'],
             'selectorToInsertAfter': 'table.code'
         }
 
@@ -138,6 +140,7 @@ class JSDataForRequests(CodeComments):
         path = req.path_info.replace('/attachment/', 'attachment:/')
         return {
             'page': 'attachment',
+            'reponame': '',
             'revision': 0,
             'path': path,
             'selectorToInsertAfter': 'div#preview'
@@ -195,9 +198,15 @@ class ListComments(CodeComments):
         return template, data, content_type
 
     def add_path_and_author_filters(self):
+        self.data['current_repo_selection'] = ''
         self.data['current_path_selection'] = ''
         self.data['current_author_selection'] = ''
 
+        if self.req.args.get('filter-by-repo'):
+            self.args['reponame'] = \
+                self.req.args['filter-by-repo']
+            self.data['current_repo_selection'] = \
+                self.req.args['filter-by-repo']
         if self.req.args.get('filter-by-path'):
             self.args['path__prefix'] = \
                 self.req.args['filter-by-path']
@@ -240,9 +249,9 @@ class ListComments(CodeComments):
 
     def prepare_sortable_headers(self):
         displayed_sorting_methods = \
-            ('id', 'author', 'time', 'path', 'text')
+            ('id', 'author', 'time', 'reponame', 'path', 'text')
         displayed_sorting_method_names = \
-            ('ID', 'Author', 'Date', 'Path', 'Text')
+            ('ID', 'Author', 'Date', 'Repository', 'Path', 'Text')
         query_args = self.req.args
         if 'page' in query_args:
             del query_args['page']

@@ -13,7 +13,7 @@ class Comments(object):
 
     def __init__(self, req, env):
         self.req, self.env = req, env
-        self.valid_sorting_methods = ('id', 'author', 'time', 'path', 'text')
+        self.valid_sorting_methods = ('id', 'author', 'time', 'reponame', 'path', 'text')
 
     def comment_from_row(self, row):
         return Comment(self.req, self.env, row)
@@ -21,9 +21,14 @@ class Comments(object):
     def get_filter_values(self):
         comments = self.all()
         return {
+            'repos': self.get_all_repos(comments),
             'paths': self.get_all_paths(comments),
             'authors': self.get_all_comment_authors(comments),
         }
+
+    def get_all_repos(self, comments):
+        # Skip the empty string which is the repository for comments on attachments
+        return sorted(list(set([comment.reponame for comment in comments if comment.reponame != ''])))
 
     def get_all_paths(self, comments):
         def get_directory(path):
@@ -96,6 +101,9 @@ class Comments(object):
             elif name.endswith('__lt'):
                 name = name.replace('__lt', '')
                 conditions.append(name + ' < %s')
+            elif name.endswith('__ne'):
+                name = name.replace('__ne', '')
+                conditions.append(name + ' != %s')
             elif name.endswith('__prefix'):
                 values.append(
                     args[name].replace('%', '\\%').replace('_', '\\_') + '%')

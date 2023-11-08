@@ -15,6 +15,12 @@
         <button id="send-to-ticket" type="submit" data-url="${href('code-comments', 'create-ticket')}">Create ticket with selected</button>
         &nbsp;Filter comments:
         <form action="${href('code-comments')}" method="GET" style="display: inline;">
+            <select id="filter-by-repo" name="filter-by-repo">
+                <option value='' selected="selected">-- All repositories --</option>
+                <option py:for="repo in repos"
+                           selected="${current_repo_selection == repo or None}"
+                           value="$repo" py:content="repo"></option>
+            </select>
             <select id="filter-by-path" name="filter-by-path">
                 <option value='' selected="selected">-- All paths --</option>
                 <option py:for="path in paths"
@@ -49,6 +55,7 @@
                     <td>$comment.id</td>
                     <th>$comment.author</th>
                     <th>${comment.formatted_date()}</th>
+                    <td>$comment.reponame</td>
                     <td>${comment.path_link_tag()}</td>
                     <td>$comment.html</td>
                     <td>${comment.get_ticket_links()}</td>
